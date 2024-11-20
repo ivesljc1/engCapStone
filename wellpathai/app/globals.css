@@ -19,3 +19,76 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Center the page content */
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+/* Form wrapper styles */
+.form-wrapper {
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+}
+
+/* Title styles */
+.title {
+  margin-bottom: 20px;
+  font-size: 24px;
+  color: #333;
+}
+
+/* Error message styles */
+.error {
+  color: red;
+  margin-bottom: 15px;
+}
+
+/* Form styles */
+.form {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Input styles */
+.input {
+  margin-bottom: 15px;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  color: #333;
+}
+
+/* Button styles */
+.button {
+  padding: 10px;
+  font-size: 16px;
+  color: #fff;
+  background-color: #007bff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Link container */
+.link {
+  margin-top: 15px;
+  font-size: 14px;
+  color: #555;
+}
+
+/* Anchor styles */
+.anchor {
+  color: #007bff;
+  text-decoration: none;
+}

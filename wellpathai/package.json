@@ -2,30 +2,40 @@
   "name": "wellpathai",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
+  "proxy": "http://localhost:5002",
   "scripts": {
     "dev": "concurrently \"npm run api\" \"next dev\"",
-    "api": "nodemon app.js",
+    "api": "nodemon ./server/app.py",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
+    "@eslint/config-array": "^0.19.0",
+    "@eslint/object-schema": "^2.1.4",
+    "autoprefixer": "^10.4.20",
     "concurrently": "^9.1.0",
     "cors": "^2.8.5",
     "express": "^4.21.1",
     "firebase": "^11.0.2",
+    "firebase-admin": "^13.0.0",
+    "glob": "^11.0.0",
+    "lru-cache": "^11.0.2",
     "next": "15.0.3",
     "nodemon": "^3.1.7",
     "react": "19.0.0-rc-66855b96-20241106",
-    "react-dom": "19.0.0-rc-66855b96-20241106"
+    "react-dom": "19.0.0-rc-66855b96-20241106",
+    "rimraf": "^6.0.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
-    "eslint": "^8",
+    "@types/react": "^18.3.12",
+    "eslint": "^9.15.0",
     "eslint-config-next": "15.0.3",
     "eslint-config-prettier": "^9.1.0",
-    "postcss": "^8",
+    "postcss": "^8.4.49",
     "tailwindcss": "^3.4.15"
   }
 }
