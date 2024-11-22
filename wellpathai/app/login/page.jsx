@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button.jsx";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebase";
 
 export default function LoginPage() {
   const [credential, setCredential] = useState("");
@@ -34,7 +35,7 @@ export default function LoginPage() {
             body: JSON.stringify({ token: idToken }),
           }).then((data) => {
             if (!data.error) {
-              window.location.href = "/patient";
+              window.location.href = "/dashboard";
             }
           });
         })
