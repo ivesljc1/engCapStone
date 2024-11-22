@@ -1,28 +1,63 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import Image from "next/image"
-import { useState } from "react"
-import { Eye, EyeOff } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { CardHeader, CardTitle } from "@/components/ui/card"
+import Link from "next/link";
+import Image from "next/image";
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function RegisterPage() {
-  const [showPassword, setShowPassword] = useState(false)
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [isEmailValid, setIsEmailValid] = useState(true)
-  const [isPasswordValid, setIsPasswordValid] = useState(true)
+  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [birthday, setBirthday] = useState("");
+  const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
+  const [isEmailValid, setIsEmailValid] = useState(true);
+  const [isPasswordValid, setIsPasswordValid] = useState(true);
 
   const validateEmail = (email) => {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    setIsEmailValid(regex.test(email))
-  }
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    setIsEmailValid(regex.test(email));
+  };
 
   const validatePassword = (password) => {
-    setIsPasswordValid(password.length >= 8)
-  }
+    setIsPasswordValid(password.length >= 8);
+  };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch("/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          firstName,
+          lastName,
+          birthday,
+          password,
+          phone,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.error) {
+        alert(data.error);
+      } else {
+        alert("Registration successful! Please login to continue.");
+        window.location.href = "/login";
+      }
+    } catch (error) {
+      console.error("Error during registration:", error);
+    }
+  };
 
   return (
     <div className="min-h-screen flex">
@@ -38,40 +73,66 @@ export default function RegisterPage() {
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label htmlFor="firstName" className="text-[14px] leading-4">First name</label>
-                <Input id="firstName" placeholder="John" />
+                <label htmlFor="firstName" className="text-[14px] leading-4">
+                  First name
+                </label>
+                <Input
+                  id="firstName"
+                  placeholder="John"
+                  onChange={(e) => setFirstName(e.target.value)}
+                />
               </div>
               <div className="space-y-2">
-                <label htmlFor="lastName" className="text-[14px] leading-4">Last name</label>
-                <Input id="lastName" placeholder="Wick" />
+                <label htmlFor="lastName" className="text-[14px] leading-4">
+                  Last name
+                </label>
+                <Input
+                  id="lastName"
+                  placeholder="Wick"
+                  onChange={(e) => setLastName(e.target.value)}
+                />
               </div>
             </div>
-            
+
             <div className="space-y-2">
-              <label htmlFor="email" className="text-[14px] leading-4">Email Address</label>
-              <Input 
-                id="email" 
-                type="email" 
+              <label htmlFor="email" className="text-[14px] leading-4">
+                Email Address
+              </label>
+              <Input
+                id="email"
+                type="email"
                 placeholder="john.dowry@example.com"
-                className={!isEmailValid ? "border-red-500 focus:border-red-500" : ""}
+                className={
+                  !isEmailValid ? "border-red-500 focus:border-red-500" : ""
+                }
                 value={email}
                 onChange={(e) => {
-                  setEmail(e.target.value)
-                  validateEmail(e.target.value)
+                  setEmail(e.target.value);
+                  validateEmail(e.target.value);
                 }}
               />
               {!isEmailValid && (
-                <p className="text-sm text-red-500">Please enter a valid email address</p>
+                <p className="text-sm text-red-500">
+                  Please enter a valid email address
+                </p>
               )}
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="phone" className="text-[14px] leading-4">Phone Number</label>
-              <Input id="phone" placeholder="(226) - 988 - 8888" />
+              <label htmlFor="phone" className="text-[14px] leading-4">
+                Phone Number
+              </label>
+              <Input
+                id="phone"
+                placeholder="(226) - 988 - 8888"
+                onChange={(e) => setPhone(e.target.value)}
+              />
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="birthday" className="text-[14px] leading-4">Birthday</label>
+              <label htmlFor="birthday" className="text-[14px] leading-4">
+                Birthday
+              </label>
               <div className="relative">
                 <Input
                   id="birthday"
@@ -79,8 +140,9 @@ export default function RegisterPage() {
                   placeholder="mm/dd/yyyy"
                   className="date-input"
                   style={{
-                    colorScheme: 'light',
+                    colorScheme: "light",
                   }}
+                  onChange={(e) => setBirthday(e.target.value)}
                 />
                 <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
                   <svg
@@ -103,17 +165,23 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="password" className="text-[14px] leading-4">Password</label>
+              <label htmlFor="password" className="text-[14px] leading-4">
+                Password
+              </label>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Create a password"
-                  className={!isPasswordValid ? "border-red-500 focus:border-red-500" : ""}
+                  className={
+                    !isPasswordValid
+                      ? "border-red-500 focus:border-red-500"
+                      : ""
+                  }
                   value={password}
                   onChange={(e) => {
-                    setPassword(e.target.value)
-                    validatePassword(e.target.value)
+                    setPassword(e.target.value);
+                    validatePassword(e.target.value);
                   }}
                 />
                 <button
@@ -128,12 +196,19 @@ export default function RegisterPage() {
                   )}
                 </button>
               </div>
-              <p className={`text-sm ${!isPasswordValid ? "text-red-500" : "text-muted-foreground"}`}>
+              <p
+                className={`text-sm ${
+                  !isPasswordValid ? "text-red-500" : "text-muted-foreground"
+                }`}
+              >
                 Must be at least 8 characters
               </p>
             </div>
 
-            <Button className="w-full bg-primary hover:bg-primary-hover">
+            <Button
+              className="w-full bg-primary hover:bg-primary-hover"
+              onClick={handleRegister}
+            >
               Create an account
             </Button>
 
@@ -157,14 +232,18 @@ export default function RegisterPage() {
             className="object-cover"
           />
           {/* Quote overlay with blur effect */}
-          <div className="absolute bottom-16 left-8 right-8 rounded-xl p-6"
-               style={{
-                 background: "rgba(255, 255, 255, 0.70)",
-                 backdropFilter: "blur(25px)",
-                 borderRadius: "12px"
-               }}>
+          <div
+            className="absolute bottom-16 left-8 right-8 rounded-xl p-6"
+            style={{
+              background: "rgba(255, 255, 255, 0.70)",
+              backdropFilter: "blur(25px)",
+              borderRadius: "12px",
+            }}
+          >
             <p className="text-xl font-medium mb-4">
-              "WellPath AI transforms the diagnostic process, providing patients with accurate, actionable insights while saving time and resources."
+              "WellPath AI transforms the diagnostic process, providing patients
+              with accurate, actionable insights while saving time and
+              resources."
             </p>
             <div className="flex items-center gap-3">
               <div className="h-12 w-12 rounded-full bg-gray-200 overflow-hidden relative">
@@ -177,12 +256,14 @@ export default function RegisterPage() {
               </div>
               <div>
                 <p className="font-medium">Dr. Doug Grace</p>
-                <p className="text-gray-500 text-sm">Healthcare Expert & Project Advisor</p>
+                <p className="text-gray-500 text-sm">
+                  Healthcare Expert & Project Advisor
+                </p>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }
