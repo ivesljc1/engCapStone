@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
@@ -8,11 +8,7 @@ export default function RegisterPage() {
   const [birthday, setBirthday] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
-  const [verificationCode, setVerificationCode] = useState("");
-  const [isVerifying, setIsVerifying] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-
-  console.log(email, firstName, lastName, birthday, password, phone);
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -35,14 +31,11 @@ export default function RegisterPage() {
       });
 
       const data = await response.json();
-      console.log(data);
       if (data.error) {
         setErrorMessage(data.error);
       } else {
-        alert(
-          "Registration successful! A verification email and SMS have been sent."
-        );
-        setIsVerifying(true); // Show verification input
+        alert("Registration successful! Please login to continue.");
+        window.location.href = "/login";
       }
     } catch (error) {
       console.error("Error during registration:", error);
@@ -50,36 +43,12 @@ export default function RegisterPage() {
     }
   };
 
-  // const verifyPhoneCode = async () => {
-  //   try {
-  //     const response = await fetch("http://localhost:5002/verify-phone", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({ phone, verificationCode }),
-  //     });
-
-  //     const data = await response.json();
-  //     if (data.error) {
-  //       setErrorMessage(data.error);
-  //     } else {
-  //       alert("Phone number verified! You can now log in.");
-  //       window.location.href = "/login";
-  //     }
-  //   } catch (error) {
-  //     console.error("Error during phone verification:", error);
-  //     setErrorMessage("Invalid verification code. Please try again.");
-  //   }
-  // };
-
   return (
     <div className="container">
       <div className="form-wrapper">
         <h1 className="title">Register</h1>
         {errorMessage && <p className="error">{errorMessage}</p>}
         {
-          // !isVerifying ?
           <form onSubmit={handleRegister} className="form">
             <input
               type="text"
@@ -139,25 +108,6 @@ export default function RegisterPage() {
               Register
             </button>
           </form>
-          //  : (
-          //   <div className="verification-wrapper">
-          //     <h2 className="title">Verify Your Phone</h2>
-          //     <p className="info">
-          //       A 6-digit verification code has been sent to your phone number.
-          //     </p>
-          //     <input
-          //       type="text"
-          //       placeholder="Verification Code"
-          //       value={verificationCode}
-          //       onChange={(e) => setVerificationCode(e.target.value)}
-          //       required
-          //       className="input"
-          //     />
-          //     <button onClick={verifyPhoneCode} className="button">
-          //       Verify
-          //     </button>
-          //   </div>
-          // )
         }
         <p className="link">
           Already have an account?{" "}
