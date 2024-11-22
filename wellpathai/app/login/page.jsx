@@ -8,16 +8,14 @@ import { Button } from "@/components/ui/button.jsx";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase";
 
 export default function LoginPage() {
   const [credential, setCredential] = useState("");
   const [password, setPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setErrorMessage("");
 
     try {
       const auth = getAuth();
@@ -35,9 +33,7 @@ export default function LoginPage() {
             },
             body: JSON.stringify({ token: idToken }),
           }).then((data) => {
-            if (data.error) {
-              setErrorMessage(data.error);
-            } else {
+            if (!data.error) {
               window.location.href = "/patient";
             }
           });
@@ -47,10 +43,8 @@ export default function LoginPage() {
         });
     } catch (error) {
       console.error("Error during login:", error);
-      setErrorMessage("An unexpected error occurred. Please try again.");
     }
   };
-  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <div className="min-h-screen flex items-center justify-center">
@@ -65,12 +59,18 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent className="px-8 pb-8">
           <div className="grid gap-4">
-            <Input type="email" placeholder="Email" className="rounded-lg" />
+            <Input
+              type="email"
+              placeholder="Email"
+              className="rounded-lg"
+              onChange={(e) => setCredential(e.target.value)}
+            />
             <div className="relative">
               <Input
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
                 className="rounded-lg"
+                onChange={(e) => setPassword(e.target.value)}
               />
               <button
                 type="button"
@@ -83,6 +83,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               className="w-full rounded-lg bg-primary hover:bg-primary-hover"
+              onClick={handleLogin}
             >
               Log in
             </Button>

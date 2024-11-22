@@ -11,7 +11,11 @@ import { CardHeader, CardTitle } from "@/components/ui/card";
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [birthday, setBirthday] = useState("");
   const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
   const [isEmailValid, setIsEmailValid] = useState(true);
   const [isPasswordValid, setIsPasswordValid] = useState(true);
 
@@ -22,6 +26,37 @@ export default function RegisterPage() {
 
   const validatePassword = (password) => {
     setIsPasswordValid(password.length >= 8);
+  };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch("/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          firstName,
+          lastName,
+          birthday,
+          password,
+          phone,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.error) {
+        alert(data.error);
+      } else {
+        alert("Registration successful! Please login to continue.");
+        window.location.href = "/login";
+      }
+    } catch (error) {
+      console.error("Error during registration:", error);
+    }
   };
 
   return (
@@ -41,13 +76,21 @@ export default function RegisterPage() {
                 <label htmlFor="firstName" className="text-[14px] leading-4">
                   First name
                 </label>
-                <Input id="firstName" placeholder="John" />
+                <Input
+                  id="firstName"
+                  placeholder="John"
+                  onChange={(e) => setFirstName(e.target.value)}
+                />
               </div>
               <div className="space-y-2">
                 <label htmlFor="lastName" className="text-[14px] leading-4">
                   Last name
                 </label>
-                <Input id="lastName" placeholder="Wick" />
+                <Input
+                  id="lastName"
+                  placeholder="Wick"
+                  onChange={(e) => setLastName(e.target.value)}
+                />
               </div>
             </div>
 
@@ -79,7 +122,11 @@ export default function RegisterPage() {
               <label htmlFor="phone" className="text-[14px] leading-4">
                 Phone Number
               </label>
-              <Input id="phone" placeholder="(226) - 988 - 8888" />
+              <Input
+                id="phone"
+                placeholder="(226) - 988 - 8888"
+                onChange={(e) => setPhone(e.target.value)}
+              />
             </div>
 
             <div className="space-y-2">
@@ -95,6 +142,7 @@ export default function RegisterPage() {
                   style={{
                     colorScheme: "light",
                   }}
+                  onChange={(e) => setBirthday(e.target.value)}
                 />
                 <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
                   <svg
@@ -157,7 +205,10 @@ export default function RegisterPage() {
               </p>
             </div>
 
-            <Button className="w-full bg-primary hover:bg-primary-hover">
+            <Button
+              className="w-full bg-primary hover:bg-primary-hover"
+              onClick={handleRegister}
+            >
               Create an account
             </Button>
 
