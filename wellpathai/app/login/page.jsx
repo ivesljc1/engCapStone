@@ -98,7 +98,7 @@ export default function LoginPage() {
           </div>
         </CardHeader>
         <CardContent className="px-8 pb-8">
-          <div className="grid gap-4">
+          <form onSubmit={handleLogin} className="grid gap-4">
             <Input
               type="email"
               placeholder="Email"
@@ -123,11 +123,10 @@ export default function LoginPage() {
             <Button
               type="submit"
               className="w-full rounded-lg bg-primary hover:bg-primary-hover"
-              onClick={handleLogin}
             >
               Log in
             </Button>
-          </div>
+          </form>
           <div className="mt-4 text-center">
             <Link
               href="#"
