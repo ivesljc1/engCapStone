@@ -1,24 +1,52 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import dynamic from 'next/dynamic'
-import { XMarkIcon } from '@heroicons/react/24/outline'
-import Navigation from './Navigation'
+import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
+import { XMarkIcon } from "@heroicons/react/24/outline";
+import Navigation from "./Navigation";
+import { signOut, getAuth } from "firebase/auth";
+import { auth } from "../../../app/firebase";
 
-const Dialog = dynamic(() => import('@headlessui/react').then(mod => mod.Dialog), { ssr: false })
-const DialogBackdrop = dynamic(() => import('@headlessui/react').then(mod => mod.DialogBackdrop), { ssr: false })
-const DialogPanel = dynamic(() => import('@headlessui/react').then(mod => mod.DialogPanel), { ssr: false })
-const TransitionChild = dynamic(() => import('@headlessui/react').then(mod => mod.TransitionChild), { ssr: false })
+const Dialog = dynamic(
+  () => import("@headlessui/react").then((mod) => mod.Dialog),
+  { ssr: false }
+);
+const DialogBackdrop = dynamic(
+  () => import("@headlessui/react").then((mod) => mod.DialogBackdrop),
+  { ssr: false }
+);
+const DialogPanel = dynamic(
+  () => import("@headlessui/react").then((mod) => mod.DialogPanel),
+  { ssr: false }
+);
+const TransitionChild = dynamic(
+  () => import("@headlessui/react").then((mod) => mod.TransitionChild),
+  { ssr: false }
+);
 
-function Sidebar({ sidebarOpen, setSidebarOpen }) {
-  const [mounted, setMounted] = useState(false)
+function Sidebar({ sidebarOpen, setSidebarOpen, onLogout }) {
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
+
+  const handleSignOut = async () => {
+    try {
+      const auth = getAuth();
+      await signOut(auth);
+      window.location.href = "/login";
+    } catch (error) {
+      console.error("Error during sign out:", error);
+    }
+  };
 
   const renderDialog = mounted && (
-    <Dialog open={sidebarOpen} onClose={setSidebarOpen} className="relative z-50 lg:hidden">
+    <Dialog
+      open={sidebarOpen}
+      onClose={setSidebarOpen}
+      className="relative z-50 lg:hidden"
+    >
       <DialogBackdrop
         transition
         className="fixed inset-0 bg-gray-900/80 transition-opacity duration-300 ease-linear data-[closed]:opacity-0"
@@ -31,7 +59,11 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
         >
           <TransitionChild>
             <div className="absolute left-full top-0 flex w-16 justify-center pt-5 duration-300 ease-in-out data-[closed]:opacity-0">
-              <button type="button" onClick={() => setSidebarOpen(false)} className="-m-2.5 p-2.5">
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(false)}
+                className="-m-2.5 p-2.5"
+              >
                 <span className="sr-only">Close sidebar</span>
                 <XMarkIcon aria-hidden="true" className="size-6 text-white" />
               </button>
@@ -39,11 +71,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
           </TransitionChild>
           <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-2">
             <div className="flex h-16 shrink-0 items-center">
-              <img
-                alt="WellPathAI"
-                src="/wplogo.svg"
-                className="h-8 w-auto"
-              />
+              <img alt="WellPathAI" src="/wplogo.svg" className="h-8 w-auto" />
             </div>
             <nav className="flex flex-1 flex-col">
               <ul role="list" className="flex flex-1 flex-col gap-y-7">
@@ -56,26 +84,34 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
         </DialogPanel>
       </div>
     </Dialog>
-  )
+  );
 
   return (
     <>
       {renderDialog}
-      
+
       {/* Static sidebar for desktop */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
         <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6">
           <div className="flex h-16 shrink-0 items-center">
-            <img
-              alt="WellPathAI"
-              src="/wplogo.svg"
-              className="h-8 w-auto"
-            />
+            <img alt="WellPathAI" src="/wplogo.svg" className="h-8 w-auto" />
           </div>
           <nav className="flex flex-1 flex-col">
             <ul role="list" className="flex flex-1 flex-col gap-y-7">
               <li>
                 <Navigation />
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleSignOut();
+                    onLogout();
+                  }}
+                  className="flex items-center gap-x-4 px-6 py-3 text-sm/6 font-semibold text-gray-900 hover:bg-gray-50"
+                >
+                  <span>Sign out</span>
+                </button>
               </li>
               <li className="-mx-6 mt-auto">
                 <a
@@ -96,7 +132,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
         </div>
       </div>
     </>
-  )
+  );
 }
 
-export default Sidebar
+export default Sidebar;
