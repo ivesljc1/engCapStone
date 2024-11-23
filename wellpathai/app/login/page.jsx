@@ -7,7 +7,11 @@ import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button.jsx";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+} from "firebase/auth";
 import { auth } from "../firebase";
 
 export default function LoginPage() {
@@ -18,32 +22,67 @@ export default function LoginPage() {
   const handleLogin = async (e) => {
     e.preventDefault();
 
+    if (!credential || !password) {
+      alert("Please enter your email and password to login.");
+      return;
+    }
+
     try {
       const auth = getAuth();
-      signInWithEmailAndPassword(auth, credential, password)
-        .then((userCredential) => {
-          // Get the user token
-          return userCredential.user.getIdToken();
-        })
-        .then((idToken) => {
-          // Send the token to your server for validation
-          fetch("/api/login", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ token: idToken }),
-          }).then((data) => {
-            if (!data.error) {
-              window.location.href = "/dashboard";
-            }
-          });
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        credential,
+        password
+      );
+
+      // Get the user token
+      const idToken = await userCredential.user.getIdToken();
+
+      // Send the token to your server for validation
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token: idToken }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to authenticate.");
+      }
+
+      const data = await response.json(); // Parse the response JSON
+
+      // Check if the user is an admin
+      if (data.isAdmin) {
+        window.location.href = "/admin"; // Redirect to admin dashboard
+      } else {
+        window.location.href = "/dashboard"; // Redirect to user dashboard
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("Invalid email or password, please try again.");
+    }
+  };
+
+  const forgetPassword = async () => {
+    if (!credential) {
+      alert("Please enter your email address to reset your password.");
+      return;
+    }
+    try {
+      const auth = getAuth();
+      sendPasswordResetEmail(auth, credential)
+        .then(() => {
+          alert("Password reset email sent!");
+          setCredential("");
+          setPassword("");
         })
         .catch((error) => {
-          console.error("Error during login:", error);
+          alert("Error during password reset:", error);
         });
     } catch (error) {
-      console.error("Error during login:", error);
+      alert("Error during password reset:", error);
     }
   };
 
@@ -90,7 +129,11 @@ export default function LoginPage() {
             </Button>
           </div>
           <div className="mt-4 text-center">
-            <Link href="#" className="text-sm text-gray-500">
+            <Link
+              href="#"
+              className="text-sm text-gray-500"
+              onClick={forgetPassword}
+            >
               Forgot password?
             </Link>
           </div>
