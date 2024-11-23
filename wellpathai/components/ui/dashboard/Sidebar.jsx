@@ -26,14 +26,21 @@ const TransitionChild = dynamic(
 
 function Sidebar({ sidebarOpen, setSidebarOpen, onLogout }) {
   const [mounted, setMounted] = useState(false);
+  const [name, setName] = useState("");
+  const auth = getAuth();
 
   useEffect(() => {
     setMounted(true);
+    const user = auth.currentUser;
+    console.log(user.uid);
+    user;
+    if (user) {
+      setName(user.displayName);
+    }
   }, []);
 
   const handleSignOut = async () => {
     try {
-      const auth = getAuth();
       await signOut(auth);
       window.location.href = "/login";
     } catch (error) {
@@ -124,7 +131,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, onLogout }) {
                     className="size-8 rounded-full bg-gray-50"
                   />
                   <span className="sr-only">Your profile</span>
-                  <span aria-hidden="true">Tom Cook</span>
+                  <span aria-hidden="true">{name}</span>
                 </a>
               </li>
             </ul>
