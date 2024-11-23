@@ -14,5 +14,25 @@ app.register_blueprint(login_blueprint)
 def home():
     return jsonify({"message": "Welcome to WellPath AI!"})
 
+
+#endpoint for recommendation
+@app.route('/api/recommend-tests', methods=['POST'])
+def recommend_tests():
+    data = request.get_json()
+    report = data.get('report')
+    recommendations = get_recommendations(report)
+    return jsonify(recommendations)
+
+def get_recommendations(report):
+    recommendations = []
+    if 'high cholesterol' in report:
+        recommendations.append('Lipid Panel')
+    if 'high blood pressure' in report:
+        recommendations.append('Blood Pressure Monitoring')
+    return recommendations
+
+
+
+
 if __name__ == '__main__':
     app.run(port=5002, debug=True)
