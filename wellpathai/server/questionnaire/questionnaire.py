@@ -55,6 +55,7 @@ def initialize_questionnaire_database(user_id):
             'questions': initial_questions,
             'created_at': datetime.utcnow(),
             'last_updated': datetime.utcnow(),
+            'status': 'in progress',
             'result': None
         })
         print("Questionnaire database initialized successfully")
