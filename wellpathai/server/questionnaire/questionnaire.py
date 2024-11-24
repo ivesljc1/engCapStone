@@ -97,6 +97,7 @@ def add_question_to_questionnaire(questionnaire_id, user_id, new_question):
         # Get existing questions and add new one
         current_questions = questionnaire_data.get('questions', [])
         new_question['id'] = f"q{len(current_questions) + 1}"
+        new_question["initialized"] = False
         current_questions.append(new_question)
         
         # Update the document
