@@ -1,44 +1,102 @@
 from openai import OpenAI
+from questionnaire.questionnaire import (
+    get_questions_in_questionnaire, 
+    add_question_to_questionnaire,
+    record_result_to_questionnaire
+)
+import json
+
 client = OpenAI()
 
+def call_gpt(questionnaire_id, user_id):
+    # Get the questionnaire data
+    questionnaire_data = get_questions_in_questionnaire(questionnaire_id, user_id)
+    
 
+    # Craft the prompt
+    prompt = f"""
+    You are an assistant guiding a medical questionnaire for a wellness app. 
+    The goal is to ask short, specific questions to help the user determine which supplements or tests they might need.
 
-# Sample questionnaire data
-questionnaire_data = """
-Age: 30
-Gender: Male
-Height: 5'9"
-Weight: 165 lbs
-Lifestyle: Sedentary job, exercises twice a week
-Diet: Balanced diet with occasional fast food
-Sleep: Averages 6 hours per night
-Concerns: Feels fatigued during the day, occasional headaches
-"""
+    ### Instructions:
+    1. Use the user's previous answers to decide the next most relevant question.
+    2. For each question, specify:
+        - **Type**: "text", "choice", or "multiselect".
+        - **Options**: Include options only for "choice" or "multiselect".
+    3. Follow these rules for the question type:
+        - For "choice" and "multiselect", the **number of options must not exceed 5**.
+        - You can include:
+            - Yes/No/Not Sure questions in "choice" if relevant.
+            - Scale questions on a range of 1-5 (e.g., 1 = low, 5 = high) in "choice" if applicable.
+    4. Respond in JSON format as shown below.
+    5. Provide a conclusion only when confident there is enough information to make accurate and relevant suggestions. Otherwise, continue gathering data.
 
-# Craft the prompt
-prompt = f"""
-You are a helpful assistant. Analyze the following medical questionnaire and provide general wellness advice based on the information provided.
+    {questionnaire_data}
 
-Questionnaire:
-{questionnaire_data}
-"""
+    ### Response Formats:
+    **For a question:**
+    ```json
+    {{
+    "question": "Your next question here",
+    "type": "text" | "choice" | "multiselect",
+    "options": ["option1", "option2", ...]  // Required only for "choice" or "multiselect"
+    }}
+    ```
+    **For a conclusion:**
+    ```json
+    {{
+    "conclusion": "Your conclusion here",
+    "suggestions": ["suggestion1", "suggestion2", ...]
+    }}
+    ```
+    """
+    
+    # Make the API call
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        temperature=0.5,
+        messages=[
+            {
+                "role": "system", 
+                "content": "You are a helpful assistant helping guide a medical questionnaire for a wellness app."},
+            {
+                "role": "user", 
+                "content": prompt}
+        ]
+    )
 
-# Make the API call
-response = client.chat.completions.create(
-    model="gpt-4o-mini",
-    messages=[
-        {
-            "role": "system", 
-            "content": "You are a helpful assistant. Analyze the following medical questionnaire and provide general wellness advice based on the information provided."},
-        {
-            "role": "user", 
-            "content": questionnaire_data}
-    ]
-)
+    # Get the response content
+    advice = response.choices[0].message.content
 
-# Get the advice
-advice = response.choices[0].message
+    # Strip the code block markers and newlines
+    json_string = advice.strip("```json\n").strip("```")
 
-# Display the advice
-print("General Wellness Advice:")
-print(advice)
+    try:
+        # Parse the JSON string
+        response_data = json.loads(json_string)
+
+        print("Debugging output from response of gpt: ", response_data, flush=True)
+
+        # Check if the response is a question or a conclusion
+        if "question" in response_data:
+            # Add the question to the questionnaire
+            response_data["initialized"] = False
+            success, message = add_question_to_questionnaire(questionnaire_id, user_id, response_data)
+            if success:
+                return {"status": "question_added", "data": response_data}
+            else:
+                return {"status": "error", "message": message}
+
+        elif "conclusion" in response_data:
+            # Record the result in the questionnaire
+            success, message = record_result_to_questionnaire(questionnaire_id, user_id, response_data)
+            if success:
+                return {"status": "result_recorded", "data": response_data}
+            else:
+                return {"status": "error", "message": message}
+
+        else:
+            return {"status": "error", "message": "Unknown response format"}
+
+    except json.JSONDecodeError:
+        return {"status": "error", "message": "Failed to parse JSON response"}
