@@ -15,35 +15,35 @@ def initialize_questionnaire_database(user_id):
             "id": "q1",
             "question": "How old are you?",
             "type": "text",
-            "category": "demographics"
+            "initialized": True
         },
         {
             "id": "q2",
             "question": "What is your gender?",
             "type": "choice",
             "options": ["Male", "Female", "Other", "Prefer not to say"],
-            "category": "demographics"
+            "initialized": True
         },
         {
             "id": "q3",
             "question": "What is your height?",
             "type": "text",
-            "unit": "cm/feet",
-            "category": "physical"
+            "unit": "feet",
+            "initialized": True
         },
         {
             "id": "q4",
             "question": "What is your weight?",
             "type": "text",
-            "unit": "kg/lbs",
-            "category": "physical"
+            "unit": "lbs",
+            "initialized": True
         },
         {
             "id": "q5",
             "question": "Do you have any chronic medical conditions?",
             "type": "multiselect",
             "options": ["Diabetes", "Hypertension", "Heart Disease", "Asthma", "None"],
-            "category": "medical"
+            "initialized": True
         }
     ]
 
@@ -70,10 +70,10 @@ def add_question_to_questionnaire(questionnaire_id, user_id, new_question):
     """
     questionnaire_id: str, ID of the questionnaire document\n
     user_id: str, ID of the user\n
-    new_question: dict. Required fields: question, type, category, options as list if applicable
+    new_question: dict. Required fields: question, type, initialized, options as list if applicable
     """ 
 
-    required_fields = ['question', 'type', 'category']
+    required_fields = ['question', 'type', 'initialized']
     if not all(field in new_question for field in required_fields):
         return False, "Missing required fields in question"
     
@@ -191,6 +191,48 @@ def record_result_to_questionnaire(questionnaire_id, user_id, result_text):
         })
         
         return True, "Result added successfully"
+        
+    except Exception as e:
+        return False, str(e)
+    
+def get_questions_in_questionnaire(questionnaire_id, user_id):
+    """
+    questionnaire_id: str, ID of the questionnaire document
+    user_id: str, ID of the user
+    """
+    try:
+        questionnaire_ref = db.collection('questionnaires').document(questionnaire_id)
+        questionnaire = questionnaire_ref.get()
+        
+        if not questionnaire.exists:
+            return False, "Questionnaire not found"
+        
+        questionnaire_data = questionnaire.to_dict()
+        if questionnaire_data['user_id'] != user_id:
+            return False, "Unauthorized access"
+        
+        questions = questionnaire_data.get('questions', [])
+        
+        return questions
+        
+    except Exception as e:
+        return False, str(e)
+    
+def get_most_recent_result(user_id):
+    """
+    user_id: str, ID of the user
+    """
+    try:
+        questionnaires_ref = db.collection('questionnaires')
+        query = questionnaires_ref.where('user_id', '==', user_id).order_by('created_at', direction=firestore.Query.DESCENDING).limit(1)
+        questionnaires = query.stream()
+        
+        for questionnaire in questionnaires:
+            questionnaire_data = questionnaire.to_dict()
+            if questionnaire_data['status'] == 'completed':
+                return True, questionnaire_data['result']['analysis']
+        
+        return False, "No completed questionnaires found"
         
     except Exception as e:
         return False, str(e)
