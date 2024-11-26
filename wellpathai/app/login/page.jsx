@@ -120,19 +120,12 @@ export default function LoginPage() {
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
-            <Button
-              type="submit"
-              className="w-full rounded-lg bg-primary hover:bg-primary-hover"
-            >
+            <Button type="submit" className="w-full rounded-lg bg-primary hover:bg-primary-hover text-white">
               Log in
             </Button>
           </form>
           <div className="mt-4 text-center">
-            <Link
-              href="#"
-              className="text-sm text-gray-500"
-              onClick={forgetPassword}
-            >
+            <Link href="/resetpassword" className="text-sm text-gray-500">
               Forgot password?
             </Link>
           </div>
