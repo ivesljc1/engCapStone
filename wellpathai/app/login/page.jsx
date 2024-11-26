@@ -52,12 +52,12 @@ export default function LoginPage() {
                 )}
               </button>
             </div>
-            <Button type="submit" className="w-full rounded-lg bg-primary hover:bg-primary-hover">
+            <Button type="submit" className="w-full rounded-lg bg-primary hover:bg-primary-hover text-white">
               Log in
             </Button>
           </div>
           <div className="mt-4 text-center">
-            <Link href="#" className="text-sm text-gray-500">
+            <Link href="/resetpassword" className="text-sm text-gray-500">
               Forgot password?
             </Link>
           </div>
