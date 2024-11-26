@@ -25,8 +25,8 @@ def register_user():
     last_name = data.get("lastName")
     birthday = data.get("birthday")
     phone = data.get("phone")
-    
-    print(data)
+    # Optional: isAdmin field
+    isAdmin = data.get("isAdmin", False)
 
     # Validate input
     if not all([email, password, first_name, last_name, birthday, phone]):
@@ -40,10 +40,11 @@ def register_user():
         user = auth.create_user(
             email=email,
             password=password,
+            display_name=f"{first_name} {last_name}"
         )
-
-        # Send email verification
-        auth.update_user(user.uid, email_verified=False)
+        
+        # Set custom claims to define the user's admin status
+        auth.set_custom_user_claims(user.uid, {"isAdmin": isAdmin})
 
         # Store additional details in Firestore
         db.collection("users").document(user.uid).set({
@@ -55,6 +56,6 @@ def register_user():
             "createdAt": datetime.utcnow(),
         })
 
-        return jsonify({"message": "User registered successfully. Please verify your email."}), 201
+        return jsonify({"message": "User registered successfully. Please login."}), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 500

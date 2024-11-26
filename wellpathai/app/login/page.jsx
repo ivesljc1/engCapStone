@@ -1,20 +1,90 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { useState } from "react"
-import { Eye, EyeOff } from "lucide-react"
+import Link from "next/link";
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
-import { Button } from "@/components/ui/button.jsx"
+import { Button } from "@/components/ui/button.jsx";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
+  getAuth,
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+} from "firebase/auth";
+import { auth } from "../firebase";
 
 export default function LoginPage() {
-  const [showPassword, setShowPassword] = useState(false)
+  const [credential, setCredential] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
+    if (!credential || !password) {
+      alert("Please enter your email and password to login.");
+      return;
+    }
+
+    try {
+      const auth = getAuth();
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        credential,
+        password
+      );
+
+      // Get the user token
+      const idToken = await userCredential.user.getIdToken();
+
+      // Send the token to your server for validation
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token: idToken }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to authenticate.");
+      }
+
+      const data = await response.json(); // Parse the response JSON
+
+      // Check if the user is an admin
+      if (data.isAdmin) {
+        window.location.href = "/admin"; // Redirect to admin dashboard
+      } else {
+        window.location.href = "/dashboard"; // Redirect to user dashboard
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("Invalid email or password, please try again.");
+    }
+  };
+
+  const forgetPassword = async () => {
+    if (!credential) {
+      alert("Please enter your email address to reset your password.");
+      return;
+    }
+    try {
+      const auth = getAuth();
+      sendPasswordResetEmail(auth, credential)
+        .then(() => {
+          alert("Password reset email sent!");
+          setCredential("");
+          setPassword("");
+        })
+        .catch((error) => {
+          alert("Error during password reset:", error);
+        });
+    } catch (error) {
+      alert("Error during password reset:", error);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center">
@@ -28,34 +98,32 @@ export default function LoginPage() {
           </div>
         </CardHeader>
         <CardContent className="px-8 pb-8">
-          <div className="grid gap-4">
-            <Input 
-              type="email" 
-              placeholder="Email" 
+          <form onSubmit={handleLogin} className="grid gap-4">
+            <Input
+              type="email"
+              placeholder="Email"
               className="rounded-lg"
+              onChange={(e) => setCredential(e.target.value)}
             />
             <div className="relative">
               <Input
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
                 className="rounded-lg"
+                onChange={(e) => setPassword(e.target.value)}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
               >
-                {showPassword ? (
-                  <EyeOff size={20} />
-                ) : (
-                  <Eye size={20} />
-                )}
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
             <Button type="submit" className="w-full rounded-lg bg-primary hover:bg-primary-hover text-white">
               Log in
             </Button>
-          </div>
+          </form>
           <div className="mt-4 text-center">
             <Link href="/resetpassword" className="text-sm text-gray-500">
               Forgot password?
@@ -64,5 +132,5 @@ export default function LoginPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
