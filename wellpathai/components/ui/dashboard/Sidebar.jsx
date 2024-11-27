@@ -32,8 +32,6 @@ function Sidebar({ sidebarOpen, setSidebarOpen, onLogout }) {
   useEffect(() => {
     setMounted(true);
     const user = auth.currentUser;
-    console.log(user.uid);
-    user;
     if (user) {
       setName(user.displayName);
     }

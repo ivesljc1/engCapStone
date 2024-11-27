@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 export default function DashboardPage() {
   return (
     <div>
@@ -11,9 +13,12 @@ export default function DashboardPage() {
             tailored recommendations in minutes.
           </p>
         </div>
-        <button className="rounded-full bg-gray-900 px-6 py-3 text-white hover:bg-gray-800">
+        <Link 
+          href="/survey"
+          className="rounded-full bg-gray-900 px-6 py-3 text-white hover:bg-gray-800"
+        >
           Start
-        </button>
+        </Link>
       </div>
     </div>
   )
