@@ -1,6 +1,6 @@
 from openai import OpenAI
 from questionnaire.questionnaire import (
-    get_questions_in_questionnaire, 
+    get_all_questions_in_questionnaire, 
     add_question_to_questionnaire,
     record_result_to_questionnaire
 )
@@ -10,7 +10,7 @@ client = OpenAI(api_key="your_openai_api_key_here")
 
 def call_gpt(questionnaire_id, user_id):
     # Get the questionnaire data
-    questionnaire_data = get_questions_in_questionnaire(questionnaire_id, user_id)
+    questionnaire_data = get_all_questions_in_questionnaire(questionnaire_id, user_id)
     
 
     # Craft the prompt
