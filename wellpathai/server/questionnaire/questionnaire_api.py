@@ -10,11 +10,7 @@ from agents.gpt import call_gpt
 
 """
 # Blueprint for questionnaire route
-# This blueprint handles all routes related to the questionnaire
-# /api/initialize-questionnaire: POST - Initialize the questionnaire database for a user
-# /api/questionnaire/add-question: POST - Add a new question to the questionnaire
-# /api/questionnaire/record-answer: POST - Record an answer to a specific question in the questionnaire    
-# /api/questionnaire/record-result: POST - Record the result of the questionnaire
+# Only Call GPT-4o mini to generate the next question is usefull, others are for api testing
 """
 
 questionnaire_blueprint = Blueprint("questionnaire", __name__)
@@ -113,7 +109,7 @@ def get_questions():
         return jsonify(questions), 200
     return jsonify({"error": "Failed to get questions"}), 400
 
-# Call GPT-3 to generate the next question
+# Call GPT-4o mini to generate the next question
 @questionnaire_blueprint.route("/api/questionnaire/generate-question", methods=["POST"])
 def generate_question():
     if not request.is_json:
