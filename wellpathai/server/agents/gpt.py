@@ -6,7 +6,7 @@ from questionnaire.questionnaire import (
 )
 import json
 
-# client = OpenAI()
+client = OpenAI(api_key="your_openai_api_key_here")
 
 def call_gpt(questionnaire_id, user_id):
     # Get the questionnaire data
