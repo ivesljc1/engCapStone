@@ -1,24 +1,37 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { RotateCcw } from "lucide-react"
-import { Button } from "@/components/ui/button.jsx"
-import { Input } from "@/components/ui/input"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { useState } from "react";
+import Link from "next/link";
+import { RotateCcw } from "lucide-react";
+import { Button } from "@/components/ui/button.jsx";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function ResetPassword() {
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState("");
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    // Add your reset password logic here
-  }
+  const forgetPassword = async (e) => {
+    e.preventDefault();
+
+    if (!credential) {
+      alert("Please enter your email address to reset your password.");
+      return;
+    }
+    try {
+      const auth = getAuth();
+      sendPasswordResetEmail(auth, credential)
+        .then(() => {
+          alert("Password reset email sent!");
+          setCredential("");
+          setPassword("");
+        })
+        .catch((error) => {
+          alert("Error during password reset:", error);
+        });
+    } catch (error) {
+      alert("Error during password reset:", error);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center">
@@ -30,12 +43,13 @@ export default function ResetPassword() {
             </div>
             <CardTitle className="text-2xl mb-2">Reset your password</CardTitle>
             <p className="text-gray-600">
-              Enter your email address associated with your account and will send you an email instruction to reset
+              Enter your email address associated with your account and will
+              send you an email instruction to reset
             </p>
           </div>
         </CardHeader>
         <CardContent className="px-8 pb-8">
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={forgetPassword}>
             <div className="mb-4">
               <label htmlFor="email" className="block mb-2 font-medium">
                 Email Address
@@ -51,7 +65,7 @@ export default function ResetPassword() {
               />
             </div>
 
-            <Button 
+            <Button
               type="submit"
               className="w-full rounded-lg bg-primary hover:bg-primary-hover text-white"
             >
@@ -67,5 +81,5 @@ export default function ResetPassword() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

@@ -1,23 +1,21 @@
 from flask import Flask, request, jsonify
-from flaskcors import CORS
+from flask_cors import CORS
 from firebase import auth
-from register.register import registerblueprint
-from login.login import loginblueprint
-from forgetpw.forgetpw import forgetpwblueprint
-from recommendation import recommendationblueprint
+from register.register import register_blueprint
+from login.login import login_blueprint
+from recommendation.recommendation import recommendation_blueprint
 
 
-app = Flask(_name)
+app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
 app.register_blueprint(register_blueprint)
 app.register_blueprint(login_blueprint)
-app.register_blueprint(forgetpw_blueprint)
 app.register_blueprint(recommendation_blueprint)
 
 @app.route('/', methods=['GET'])
 def home():
     return jsonify({"message": "Welcome to WellPath AI!"})
 
-if __name == '__main':
+if __name__ == '__main__':
     app.run(port=5002, debug=True)

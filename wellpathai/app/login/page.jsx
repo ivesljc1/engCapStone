@@ -65,27 +65,6 @@ export default function LoginPage() {
     }
   };
 
-  const forgetPassword = async () => {
-    if (!credential) {
-      alert("Please enter your email address to reset your password.");
-      return;
-    }
-    try {
-      const auth = getAuth();
-      sendPasswordResetEmail(auth, credential)
-        .then(() => {
-          alert("Password reset email sent!");
-          setCredential("");
-          setPassword("");
-        })
-        .catch((error) => {
-          alert("Error during password reset:", error);
-        });
-    } catch (error) {
-      alert("Error during password reset:", error);
-    }
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center">
       <Card className="w-[520px] rounded-[24px] shadow-[0_2px_6px_rgba(16,24,40,0.06)]">
@@ -120,7 +99,10 @@ export default function LoginPage() {
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
-            <Button type="submit" className="w-full rounded-lg bg-primary hover:bg-primary-hover text-white">
+            <Button
+              type="submit"
+              className="w-full rounded-lg bg-primary hover:bg-primary-hover text-white"
+            >
               Log in
             </Button>
           </form>
