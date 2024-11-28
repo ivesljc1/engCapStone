@@ -28,6 +28,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, onLogout }) {
   const [mounted, setMounted] = useState(false);
   const [name, setName] = useState("");
   const auth = getAuth();
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -106,31 +107,54 @@ function Sidebar({ sidebarOpen, setSidebarOpen, onLogout }) {
               <li>
                 <Navigation />
               </li>
-              <li>
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleSignOut();
-                    onLogout();
-                  }}
-                  className="flex items-center gap-x-4 px-6 py-3 text-sm/6 font-semibold text-gray-900 hover:bg-gray-50"
-                >
-                  <span>Sign out</span>
-                </button>
-              </li>
-              <li className="-mx-6 mt-auto">
-                <a
-                  href="#"
-                  className="flex items-center gap-x-4 px-6 py-3 text-sm/6 font-semibold text-gray-900 hover:bg-gray-50"
-                >
-                  <img
-                    alt=""
-                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                    className="size-8 rounded-full bg-gray-50"
-                  />
-                  <span className="sr-only">Your profile</span>
-                  <span aria-hidden="true">{name}</span>
-                </a>
+
+              <li className="-mx-6 mt-auto relative">
+                <div className="relative">
+                  <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="flex w-full items-center gap-x-4 px-6 py-3 text-sm/6 font-semibold text-gray-900 hover:bg-gray-50"
+                  >
+                    <img
+                      alt=""
+                      src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                      className="size-8 rounded-full bg-gray-50"
+                    />
+                    <span className="sr-only">Your profile</span>
+                    <span aria-hidden="true">{name}</span>
+                  </button>
+
+                  {isOpen && (
+                    <div className="absolute bottom-full left-0 w-auto mb-1 bg-white rounded-md">
+                      <div className="py-1">
+                        <button
+                          onClick={() => {
+                            handleSignOut();
+                            onLogout();
+                          }}
+                          className="flex w-full items-center px-4 py-2 text-sm font-semibold leading-6 group hover:bg-gray-50"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-6 w-6 mr-2 text-gray-400 group-hover:text-primary-hover"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                            />
+                          </svg>
+                          <span className="text-gray-900 group-hover:text-primary-hover">
+                            Sign out
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </li>
             </ul>
           </nav>
