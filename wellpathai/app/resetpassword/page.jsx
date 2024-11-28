@@ -6,6 +6,8 @@ import { RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button.jsx";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getAuth, sendPasswordResetEmail } from "firebase/auth";
+import { auth } from "../firebase";
 
 export default function ResetPassword() {
   const [email, setEmail] = useState("");
@@ -13,17 +15,17 @@ export default function ResetPassword() {
   const forgetPassword = async (e) => {
     e.preventDefault();
 
-    if (!credential) {
+    if (!email) {
       alert("Please enter your email address to reset your password.");
       return;
     }
     try {
       const auth = getAuth();
-      sendPasswordResetEmail(auth, credential)
+      sendPasswordResetEmail(auth, email, {
+        url: "http://localhost:3000/login",
+      })
         .then(() => {
           alert("Password reset email sent!");
-          setCredential("");
-          setPassword("");
         })
         .catch((error) => {
           alert("Error during password reset:", error);

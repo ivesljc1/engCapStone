@@ -5,18 +5,51 @@ import { Eye, EyeOff, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { getAuth, confirmPasswordReset } from "firebase/auth";
+import { auth } from "../firebase";
+import { useRouter, useSearchParams } from "next/navigation";
+
+function useQuery() {
+  const searchParams = useSearchParams();
+
+  const params = new URLSearchParams(searchParams.toString());
+
+  return params;
+}
 
 export default function CreateNewPassword() {
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const auth = getAuth();
+  const router = useRouter();
+  const query = useQuery();
+  const oobCode = query.get("oobCode");
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
 
-    const oobCode = new URLSearchParams(window.location.search).get("oobCode");
+    if (!newPassword || !confirmPassword) {
+      alert("Please enter your new password and confirm it.");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      alert("Passwords do not match.");
+      return;
+    }
+
     try {
-      await confirmPasswordReset(oobCode, newPassword);
-      alert("Password reset successful!");
+      confirmPasswordReset(auth, oobCode, newPassword)
+        .then(() => {
+          alert("Password reset successful!");
+          router.push("/login");
+        })
+        .catch((error) => {
+          alert("Error during password reset:", error);
+        });
     } catch (error) {
       console.error("Error during password reset:", error);
     }
@@ -33,9 +66,6 @@ export default function CreateNewPassword() {
             <CardTitle className="text-2xl mb-2">
               Create a new password
             </CardTitle>
-            <p className="text-gray-600">
-              New password must be different from current password
-            </p>
           </div>
         </CardHeader>
         <CardContent className="px-8 pb-8">
@@ -43,7 +73,9 @@ export default function CreateNewPassword() {
             <div className="relative">
               <Input
                 type={showPassword ? "text" : "password"}
+                value={newPassword}
                 placeholder="New password"
+                onChange={(e) => setNewPassword(e.target.value)}
                 className="rounded-lg"
               />
               <button
@@ -58,7 +90,9 @@ export default function CreateNewPassword() {
             <div className="relative">
               <Input
                 type={showConfirmPassword ? "text" : "password"}
+                value={confirmPassword}
                 placeholder="Confirm new password"
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 className="rounded-lg"
               />
               <button
