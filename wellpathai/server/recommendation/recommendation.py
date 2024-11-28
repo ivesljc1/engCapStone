@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 
-recommendationblueprint = Blueprint('recommendation', _name)
+recommendation_blueprint = Blueprint('recommendation', __name__)
 
 @recommendation_blueprint.route('/api/recommend-tests', methods=['POST'])
 def recommend_tests():
