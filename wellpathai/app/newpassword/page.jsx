@@ -1,19 +1,26 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Eye, EyeOff, Lock } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
+import { useState } from "react";
+import { Eye, EyeOff, Lock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 
 export default function CreateNewPassword() {
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+
+    const oobCode = new URLSearchParams(window.location.search).get("oobCode");
+    try {
+      await confirmPasswordReset(oobCode, newPassword);
+      alert("Password reset successful!");
+    } catch (error) {
+      console.error("Error during password reset:", error);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center">
@@ -23,14 +30,16 @@ export default function CreateNewPassword() {
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
               <Lock className="h-6 w-6 text-primary" />
             </div>
-            <CardTitle className="text-2xl mb-2">Create a new password</CardTitle>
+            <CardTitle className="text-2xl mb-2">
+              Create a new password
+            </CardTitle>
             <p className="text-gray-600">
               New password must be different from current password
             </p>
           </div>
         </CardHeader>
         <CardContent className="px-8 pb-8">
-          <form className="grid gap-4">
+          <form className="grid gap-4" onSubmit={handleResetPassword}>
             <div className="relative">
               <Input
                 type={showPassword ? "text" : "password"}
@@ -42,11 +51,7 @@ export default function CreateNewPassword() {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
               >
-                {showPassword ? (
-                  <EyeOff size={20} />
-                ) : (
-                  <Eye size={20} />
-                )}
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
 
@@ -61,15 +66,11 @@ export default function CreateNewPassword() {
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
               >
-                {showConfirmPassword ? (
-                  <EyeOff size={20} />
-                ) : (
-                  <Eye size={20} />
-                )}
+                {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
 
-            <Button 
+            <Button
               type="submit"
               className="w-full rounded-lg bg-primary hover:bg-primary-hover text-white"
             >
@@ -79,5 +80,5 @@ export default function CreateNewPassword() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
