@@ -196,7 +196,7 @@ def record_result_to_questionnaire(questionnaire_id, user_id, result_text):
     except Exception as e:
         return False, str(e)
     
-def get_questions_in_questionnaire(questionnaire_id, user_id):
+def get_all_questions_in_questionnaire(questionnaire_id, user_id):
     """
     questionnaire_id: str, ID of the questionnaire document
     user_id: str, ID of the user
@@ -219,6 +219,33 @@ def get_questions_in_questionnaire(questionnaire_id, user_id):
     except Exception as e:
         return False, str(e)
     
+def get_most_recent_question(questionnaire_id, user_id):
+    """
+    questionnaire_id: str, ID of the questionnaire document
+    user_id: str, ID of the user
+    """
+    try:
+        questionnaire_ref = db.collection('questionnaires').document(questionnaire_id)
+        questionnaire = questionnaire_ref.get()
+        
+        if not questionnaire.exists:
+            return False, "Questionnaire not found"
+        
+        questionnaire_data = questionnaire.to_dict()
+        if questionnaire_data['user_id'] != user_id:
+            return False, "Unauthorized access"
+        
+        questions = questionnaire_data.get('questions', [])
+        
+        for question in questions:
+            if 'answer' not in question:
+                return question
+        
+        return False, "No unanswered questions found"
+        
+    except Exception as e:
+        return False, str(e)
+
 def get_most_recent_result(user_id):
     """
     user_id: str, ID of the user

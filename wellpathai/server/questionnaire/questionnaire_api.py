@@ -4,7 +4,8 @@ from questionnaire.questionnaire import (
     add_question_to_questionnaire, 
     record_answer_to_question, 
     record_result_to_questionnaire,
-    get_questions_in_questionnaire
+    get_most_recent_question,
+    get_all_questions_in_questionnaire
 )
 from agents.gpt import call_gpt
 
@@ -91,7 +92,7 @@ def record_result():
     return jsonify({"error": message}), 400
 
 #get questions in questionnaire
-@questionnaire_blueprint.route("/api/questionnaire/get-questions", methods=["GET"])
+@questionnaire_blueprint.route("/api/questionnaire/get-all-questions", methods=["GET"])
 def get_questions():
     if not request.is_json:
         return jsonify({"error": "Content-Type must be application/json"}), 415
@@ -103,10 +104,29 @@ def get_questions():
     if not all([questionnaire_id, user_id]):
         return jsonify({"error": "Missing required fields"}), 400
     
-    questions = get_questions_in_questionnaire(questionnaire_id, user_id)
+    questions = get_all_questions_in_questionnaire(questionnaire_id, user_id)
     
     if questions:
         return jsonify(questions), 200
+    return jsonify({"error": "Failed to get questions"}), 400
+
+#get the newest question in questionnaire
+@questionnaire_blueprint.route("/api/questionnaire/get-most-recent-question", methods=["GET"])
+def get_newest_question():
+    if not request.is_json:
+        return jsonify({"error": "Content-Type must be application/json"}), 415
+    
+    data = request.get_json()
+    questionnaire_id = data.get('questionnaire_id')
+    user_id = data.get('user_id')
+    
+    if not all([questionnaire_id, user_id]):
+        return jsonify({"error": "Missing required fields"}), 400
+    
+    question = get_most_recent_question(questionnaire_id, user_id)
+    
+    if question:
+        return jsonify(question), 200
     return jsonify({"error": "Failed to get questions"}), 400
 
 # Call GPT-4o mini to generate the next question

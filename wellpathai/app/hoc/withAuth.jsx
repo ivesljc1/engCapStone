@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation"; // For Next.js navigation
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import LoadingPage from "@/components/ui/loadingPage"; // Import the loading spinner
 
 const withAuth = (Component, adminOnly = false) => {
   return (props) => {
@@ -50,15 +51,7 @@ const withAuth = (Component, adminOnly = false) => {
 
     if (loading) {
       // While checking authentication, display a loading spinner or blank screen
-      return (
-        <div className="fixed inset-0 bg-gray-100 flex justify-center items-center z-50">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
-          <div className="absolute text-center">
-            <h2 className="text-lg font-semibold text-gray-900">Loading...</h2>
-            <p className="text-gray-500">This won't take long.</p>
-          </div>
-        </div>
-      );
+      return <LoadingPage />;
     }
 
     if (!isAuthorized) {
