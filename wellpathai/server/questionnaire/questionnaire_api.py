@@ -5,6 +5,7 @@ from questionnaire.questionnaire import (
     record_answer_to_question, 
     record_result_to_questionnaire,
     get_most_recent_question,
+    get_most_recent_result,
     get_all_questions_in_questionnaire
 )
 from agents.gpt import call_gpt
@@ -145,3 +146,18 @@ def generate_question():
     response = call_gpt(questionnaire_id, user_id)
     
     return jsonify(response), 200
+
+# Get the most recent result of the questionnaire
+@questionnaire_blueprint.route("/api/questionnaire/get-most-recent-result", methods=["GET"])
+def get_newest_result():
+    # Get user_id from query parameters
+    user_id = request.args.get('user_id')
+    
+    if not user_id:
+        return jsonify({"error": "Missing user_id parameter"}), 400
+    
+    result = get_most_recent_result(user_id)
+    
+    if result:
+        return jsonify(result), 200
+    return jsonify({"error": "No result found"}), 404
