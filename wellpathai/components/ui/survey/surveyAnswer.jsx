@@ -1,42 +1,64 @@
-'use client';
+"use client";
 
-import PropTypes from 'prop-types';
-import { useState } from 'react';
-import MCQAnswer from './mcqAnswer';
-import TextAnswer from './textAnswer';
+import PropTypes from "prop-types";
+import { useState } from "react";
+import MCQAnswer from "./mcqAnswer";
+import TextAnswer from "./textAnswer";
 
-const SurveyAnswer = ({ 
-  type, 
-  numOptions, 
-  options,
-  placeholder,
-  onSubmit 
-}) => {
-  const [selectedOption, setSelectedOption] = useState('');
-  const [textInput, setTextInput] = useState('');
+const SurveyAnswer = ({ type, options, placeholder, onSubmit }) => {
+  const [selectedOption, setSelectedOption] = useState("");
+  const [selectedOptions, setSelectedOptions] = useState([]);
+  const [textInput, setTextInput] = useState("");
 
   const handleSubmit = () => {
-    if (type === 'mcq') {
-      onSubmit(selectedOption);
-    } else {
-      onSubmit(textInput);
+    let answer;
+    switch (type) {
+      case "choice":
+        if (!selectedOption) return;
+        answer = selectedOption;
+        break;
+      case "multiselect":
+        if (selectedOptions.length === 0) return;
+        answer = selectedOptions;
+        break;
+      case "text":
+        if (!textInput.trim()) return;
+        answer = textInput;
+        break;
     }
+    onSubmit(answer);
+    setSelectedOption("");
+    setSelectedOptions([]);
+    setTextInput("");
+  };
+
+  const handleMultiSelect = (option) => {
+    setSelectedOptions((prev) => {
+      if (prev.includes(option)) {
+        return prev.filter((item) => item !== option);
+      }
+      return [...prev, option];
+    });
   };
 
   return (
     <div className="w-full flex justify-center">
-      <div className={type === 'mcq' ? 'w-fit' : 'w-full max-w-lg'}>
-        {type === 'mcq' ? (
-          <MCQAnswer
-            numOptions={numOptions}
-            options={options}
-            onOptionSelect={onSubmit}
-          />
-        ) : (
+      <div className={type === "text" ? "w-full max-w-lg" : "w-fit"}>
+        {type === "text" ? (
           <TextAnswer
             placeholder={placeholder}
             value={textInput}
             onChange={setTextInput}
+            onSubmit={handleSubmit}
+          />
+        ) : (
+          <MCQAnswer
+            options={options}
+            selected={type === "choice" ? selectedOption : selectedOptions}
+            multiple={type === "multiselect"}
+            onOptionSelect={
+              type === "choice" ? setSelectedOption : handleMultiSelect
+            }
             onSubmit={handleSubmit}
           />
         )}
@@ -46,11 +68,10 @@ const SurveyAnswer = ({
 };
 
 SurveyAnswer.propTypes = {
-  type: PropTypes.oneOf(['mcq', 'text']).isRequired,
-  numOptions: PropTypes.number,
+  type: PropTypes.oneOf(["choice", "multiselect", "text"]).isRequired,
   options: PropTypes.arrayOf(PropTypes.string),
   placeholder: PropTypes.string,
-  onSubmit: PropTypes.func.isRequired
+  onSubmit: PropTypes.func.isRequired,
 };
 
 export default SurveyAnswer;
