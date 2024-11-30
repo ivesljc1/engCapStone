@@ -1,3 +1,4 @@
+from flask import jsonify
 from openai import OpenAI
 from questionnaire.questionnaire import (
     get_all_questions_in_questionnaire, 
@@ -6,7 +7,7 @@ from questionnaire.questionnaire import (
 )
 import json
 
-client = OpenAI(api_key="your_openai_api_key_here")
+client = OpenAI(api_key="key")
 
 def call_gpt(questionnaire_id, user_id):
     # Get the questionnaire data
@@ -91,26 +92,26 @@ def call_gpt(questionnaire_id, user_id):
         '''
 
         print("Debugging output from response of gpt: ", response_data, flush=True)
-
+        # response_data = {'question': 'How would you rate your overall energy levels on a scale of 1-5?', 'type': 'choice', 'options': ['1', '2', '3', '4', '5']}
         # Check if the response is a question or a conclusion
         if "question" in response_data:
             # Add the question to the questionnaire            
             success, message = add_question_to_questionnaire(questionnaire_id, user_id, response_data)
             if success:
-                return {"status": "question_added", "data": response_data}
+                return response_data
             else:
-                return {"status": "error", "message": message}
+                return {"status": "error", "error": message}
 
         elif "conclusion" in response_data:
             # Record the result in the questionnaire
             success, message = record_result_to_questionnaire(questionnaire_id, user_id, response_data)
             if success:
-                return {"status": "result_recorded", "data": response_data}
+                return response_data
             else:
-                return {"status": "error", "message": message}
+                return {"status": "error", "error": message}
 
         else:
-            return {"status": "error", "message": "Unknown response format"}
+            return {"status": "error", "error": "Unknown response format"}
 
     except json.JSONDecodeError:
-        return {"status": "error", "message": "Failed to parse JSON response"}
+        return {"status": "error", "error": "Failed to parse JSON response"}
