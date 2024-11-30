@@ -1,43 +1,64 @@
-'use client';
+"use client";
+import { useEffect } from "react";
+import { useState } from "react";
 
-import { useState } from 'react';
-import SurveyAnswer from "@/components/ui/survey/surveyAnswer";
-import Question from "@/components/ui/survey/surveyQuestion";
-import { questions } from '@/data/questions';
+import ReportPage from "@/app/survey/reportPage";
+import QuestionPage from "@/app/survey/questionPage";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { auth } from "../firebase";
 
-export default function SurveyPage() {
-  const handleSubmit = (answer) => {
-    console.log("Submitted:", answer);
+export default function Survey() {
+  const [userId, setUserId] = useState(null);
+  const [result, setResult] = useState(null);
+  const [hasResult, setHasResult] = useState(false);
+
+  const fetchData = async () => {
+    try {
+      const response = await fetch(
+        `/api/questionnaire/get-most-recent-result?user_id=${userId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = await response.json();
+
+      if (data.error) {
+        // No report exists, show QuestionPage
+        setHasResult(false);
+        setResult(null);
+      } else {
+        // Report exists, show result
+        setHasResult(true);
+        setResult(data);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setHasResult(false);
+    }
   };
 
-  const handleBack = () => {
-    console.log("Going back");
-  };
+  useEffect(() => {
+    const auth = getAuth();
+    const user = auth.currentUser;
 
-  // @Allen 看这里, 如果要看其他问题, 请修改这里 改成 questions.textQuestion 或 questions.mcqQuestion
-  // 这里是从 data/questions.js 里导入的问题
-  const currentQuestion = questions.mcqQuestion;
+    if (user) {
+      setUserId(user.uid);
+      fetchData();
+    }
 
+    // Listen for auth state changes
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUserId(user ? user.uid : null);
+    });
+    return () => unsubscribe();
+  }, []);
   return (
-    <div className="min-h-screen flex items-center justify-center py-6 xl:py-16">
-      <div className="flex h-[calc(100vh-48px)] xl:h-[calc(100vh-128px)] max-w-[1440px] w-full mx-auto px-6 xl:px-28">
-        <div className="w-1/2 pr-6">
-          <Question 
-            title={currentQuestion.title}
-            onBack={handleBack}
-          />
-        </div>
-
-        <div className="w-1/2 pl-6 flex items-center justify-center">
-          <SurveyAnswer
-            type={currentQuestion.type}
-            placeholder={currentQuestion.placeholder}
-            options={currentQuestion.options}
-            numOptions={currentQuestion.numOptions}
-            onSubmit={handleSubmit}
-          />
-        </div>
-      </div>
+    <div>
+      {/* if result is null, render questionpage, if not render report page */}
+      {hasResult ? <ReportPage result={result} /> : <QuestionPage />}
     </div>
   );
 }
