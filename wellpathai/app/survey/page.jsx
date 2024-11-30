@@ -10,7 +10,7 @@ import { auth } from "../firebase";
 export default function Survey() {
   const [userId, setUserId] = useState(null);
   const [result, setResult] = useState(null);
-  const [hasResult, setHasResult] = useState(false);
+  const [hasResult, setHasResult] = useState(true);
 
   const fetchData = async () => {
     try {
