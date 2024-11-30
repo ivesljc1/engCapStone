@@ -42,24 +42,24 @@ def init_questionnaire():
     return jsonify({"error": "Failed to initialize questionnaire"}), 500
 
 # Appends a new question to the questionnaire
-@questionnaire_blueprint.route("/api/questionnaire/add-question", methods=["POST"])
-def add_question():
-    if not request.is_json:
-        return jsonify({"error": "Content-Type must be application/json"}), 415
+# @questionnaire_blueprint.route("/api/questionnaire/add-question", methods=["POST"])
+# def add_question():
+#     if not request.is_json:
+#         return jsonify({"error": "Content-Type must be application/json"}), 415
     
-    data = request.get_json()
-    questionnaire_id = data.get('questionnaire_id')
-    user_id = data.get('user_id')
-    new_question = data.get('new_question')
+#     data = request.get_json()
+#     questionnaire_id = data.get('questionnaire_id')
+#     user_id = data.get('user_id')
+#     new_question = data.get('new_question')
     
-    if not all([questionnaire_id, user_id, new_question]):
-        return jsonify({"error": "Missing required fields"}), 400
+#     if not all([questionnaire_id, user_id, new_question]):
+#         return jsonify({"error": "Missing required fields"}), 400
     
-    success, message = add_question_to_questionnaire(questionnaire_id, user_id, new_question)
+#     success, message = add_question_to_questionnaire(questionnaire_id, user_id, new_question)
     
-    if success:
-        return jsonify({"message": message}), 200
-    return jsonify({"error": message}), 400
+#     if success:
+#         return jsonify({"message": message}), 200
+#     return jsonify({"error": message}), 400
 
 # Records an answer to a specific question in the questionnaire
 @questionnaire_blueprint.route("/api/questionnaire/record-answer", methods=["POST"])
@@ -84,24 +84,24 @@ def record_answer():
     return jsonify({"error": message}), 400
 
 # Record the result of the questionnaire
-@questionnaire_blueprint.route("/api/questionnaire/record-result", methods=["POST"])
-def record_result():
-    if not request.is_json:
-        return jsonify({"error": "Content-Type must be application/json"}), 415
+# @questionnaire_blueprint.route("/api/questionnaire/record-result", methods=["POST"])
+# def record_result():
+#     if not request.is_json:
+#         return jsonify({"error": "Content-Type must be application/json"}), 415
     
-    data = request.get_json()
-    questionnaire_id = data.get('questionnaire_id')
-    user_id = data.get('user_id')
-    result = data.get('result')
+#     data = request.get_json()
+#     questionnaire_id = data.get('questionnaire_id')
+#     user_id = data.get('user_id')
+#     result = data.get('result')
     
-    if not all([questionnaire_id, user_id, result]):
-        return jsonify({"error": "Missing required fields"}), 400
+#     if not all([questionnaire_id, user_id, result]):
+#         return jsonify({"error": "Missing required fields"}), 400
     
-    success, message = record_result_to_questionnaire(questionnaire_id, user_id, result)
+#     success, message = record_result_to_questionnaire(questionnaire_id, user_id, result)
     
-    if success:
-        return jsonify({"message": message}), 200
-    return jsonify({"error": message}), 400
+#     if success:
+#         return jsonify({"message": message}), 200
+#     return jsonify({"error": message}), 400
 
 #get questions in questionnaire
 @questionnaire_blueprint.route("/api/questionnaire/get-all-questions", methods=["GET"])
@@ -146,22 +146,22 @@ def get_newest_question():
             return jsonify({"error": gpt_response["error"]}), 500
     return jsonify({"error": response["error"]}), 404
 
-# Call GPT-4o mini to generate the next question
-@questionnaire_blueprint.route("/api/questionnaire/generate-question", methods=["POST"])
-def generate_question():
-    if not request.is_json:
-        return jsonify({"error": "Content-Type must be application/json"}), 415
+# # Call GPT-4o mini to generate the next question
+# @questionnaire_blueprint.route("/api/questionnaire/generate-question", methods=["POST"])
+# def generate_question():
+#     if not request.is_json:
+#         return jsonify({"error": "Content-Type must be application/json"}), 415
     
-    data = request.get_json()
-    questionnaire_id = data.get('questionnaire_id')
-    user_id = data.get('user_id')
+#     data = request.get_json()
+#     questionnaire_id = data.get('questionnaire_id')
+#     user_id = data.get('user_id')
     
-    if not all([questionnaire_id, user_id]):
-        return jsonify({"error": "Missing required fields"}), 400
+#     if not all([questionnaire_id, user_id]):
+#         return jsonify({"error": "Missing required fields"}), 400
     
-    response = call_gpt(questionnaire_id, user_id)
+#     response = call_gpt(questionnaire_id, user_id)
     
-    return jsonify(response), 200
+#     return jsonify(response), 200
 
 # Get the most recent result of the questionnaire
 @questionnaire_blueprint.route("/api/questionnaire/get-most-recent-result", methods=["GET"])
