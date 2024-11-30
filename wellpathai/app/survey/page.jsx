@@ -1,21 +1,50 @@
 "use client";
-import { useEffect } from "react";
-import { useState } from "react";
 
-import ReportPage from "@/app/survey/reportPage";
-import QuestionPage from "@/app/survey/questionPage";
+import { useState, useEffect } from "react";
+import SurveyAnswer from "@/components/ui/survey/surveyAnswer";
+import Question from "@/components/ui/survey/surveyQuestion";
+import LoadingPage from "@/components/ui/loadingPage";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase";
 
-export default function Survey() {
+export default function QuestionPage() {
   const [userId, setUserId] = useState(null);
-  const [result, setResult] = useState(null);
-  const [hasResult, setHasResult] = useState(false);
 
-  const fetchData = async () => {
+  const [questionnaireId, setQuestionnaireId] = useState(null);
+  const [currentQuestion, setCurrentQuestion] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const initializeQuestionnaire = async () => {
     try {
+      const response = await fetch("/api/questionnaire/initialize", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: userId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setQuestionnaireId(data.questionnaire_id);
+      await getNextQuestion(data.questionnaire_id);
+    } catch (error) {
+      console.error("Error initializing questionnaire:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getNextQuestion = async (qId) => {
+    try {
+      // First try to get an initialized/unanswered question
       const response = await fetch(
-        `/api/questionnaire/get-most-recent-result?user_id=${userId}`,
+        `/api/questionnaire/get-most-recent-question?questionnaire_id=${qId}&user_id=${userId}`,
         {
           method: "GET",
           headers: {
@@ -23,42 +52,106 @@ export default function Survey() {
           },
         }
       );
-      const data = await response.json();
 
-      if (data.error) {
-        // No report exists, show QuestionPage
-        setHasResult(false);
-        setResult(null);
-      } else {
-        // Report exists, show result
-        setHasResult(true);
-        setResult(data);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("data received: ", data);
+
+      // Handle different responses
+      if (data) {
+        console.log("Setting current question: ", data);
+        setCurrentQuestion(data);
+      } else if ("conclusion" in data) {
+        // Redirect to results page or show completion message
+        window.location.href = "/report";
       }
     } catch (error) {
-      console.error("Error fetching data:", error);
-      setHasResult(false);
+      console.error("Error fetching/generating question:", error);
     }
+  };
+
+  const handleSubmit = async (answer) => {
+    try {
+      const response = await fetch("/api/questionnaire/record-answer", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          questionnaire_id: questionnaireId,
+          user_id: userId,
+          question_id: currentQuestion.id,
+          answer: answer,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      await getNextQuestion(questionnaireId);
+    } catch (error) {
+      console.error("Error submitting answer:", error);
+    }
+  };
+
+  const handleBack = () => {
+    // Implement back functionality if needed
+    console.log("Going back");
   };
 
   useEffect(() => {
     const auth = getAuth();
-    const user = auth.currentUser;
+    setLoading(true);
 
-    if (user) {
-      setUserId(user.uid);
-      fetchData();
+    // Check initial auth state
+    if (auth.currentUser) {
+      setUserId(auth.currentUser.uid);
     }
 
-    // Listen for auth state changes
+    // Listen for auth changes
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUserId(user ? user.uid : null);
+      if (user) {
+        setUserId(user.uid);
+      } else {
+        setUserId(null);
+        window.location.href = "/login";
+      }
     });
+
     return () => unsubscribe();
-  }, []);
+  }, []); // Auth listener setup only runs once
+
+  // Separate useEffect for questionnaire initialization
+  useEffect(() => {
+    if (userId) {
+      initializeQuestionnaire();
+    }
+  }, [userId]); // Run when userId changes
+
+  if (loading) return <LoadingPage />;
+  if (!currentQuestion) return <div>No questions available</div>;
+
   return (
-    <div>
-      {/* if result is null, render questionpage, if not render report page */}
-      {hasResult ? <ReportPage result={result} /> : <QuestionPage />}
+    <div className="min-h-screen flex items-center justify-center py-6 xl:py-16">
+      <div className="flex h-[calc(100vh-48px)] xl:h-[calc(100vh-128px)] max-w-[1440px] w-full mx-auto px-6 xl:px-28">
+        <div className="w-1/2 pr-6">
+          <Question title={currentQuestion.question} onBack={handleBack} />
+        </div>
+
+        <div className="w-1/2 pl-6 flex items-center justify-center">
+          <SurveyAnswer
+            type={currentQuestion.type}
+            placeholder={currentQuestion.placeholder}
+            options={currentQuestion.options}
+            numOptions={currentQuestion.numOptions}
+            onSubmit={handleSubmit}
+          />
+        </div>
+      </div>
     </div>
   );
 }

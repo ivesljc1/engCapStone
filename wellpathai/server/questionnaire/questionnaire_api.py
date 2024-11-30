@@ -19,17 +19,27 @@ questionnaire_blueprint = Blueprint("questionnaire", __name__)
 
 # Add route to blueprint
 # Initialize the questionnaire database for a user
-@questionnaire_blueprint.route("/api/initialize-questionnaire", methods=["POST"])
+@questionnaire_blueprint.route("/api/questionnaire/initialize", methods=["POST"])
 def init_questionnaire():
+    # Validate content type
+    if not request.is_json:
+        return jsonify({"error": "Content-Type must be application/json"}), 415
+
     data = request.get_json()
     user_id = data.get("user_id")
-    if not user_id:
-        return {"error": "user_id is required"}, 400
     
-    success = initialize_questionnaire_database(user_id)
-    if success:
-        return {"message": "Questionnaire database initialized successfully"}, 201
-    return {"error": "Failed to initialize questionnaire database"}, 500
+    if not user_id:
+        return jsonify({"error": "user_id is required"}), 400
+    
+    doc_id = initialize_questionnaire_database(user_id)
+    
+    if doc_id:
+        return jsonify({
+            "message": "Questionnaire initialized successfully",
+            "questionnaire_id": doc_id
+        }), 201
+        
+    return jsonify({"error": "Failed to initialize questionnaire"}), 500
 
 # Appends a new question to the questionnaire
 @questionnaire_blueprint.route("/api/questionnaire/add-question", methods=["POST"])
@@ -63,6 +73,7 @@ def record_answer():
     question_id = data.get('question_id')
     answer = data.get('answer')
     
+    print(data, flush=True)
     if not all([questionnaire_id, user_id, question_id, answer]):
         return jsonify({"error": "Missing required fields"}), 400
     
@@ -114,21 +125,26 @@ def get_questions():
 #get the newest question in questionnaire
 @questionnaire_blueprint.route("/api/questionnaire/get-most-recent-question", methods=["GET"])
 def get_newest_question():
-    if not request.is_json:
-        return jsonify({"error": "Content-Type must be application/json"}), 415
-    
-    data = request.get_json()
-    questionnaire_id = data.get('questionnaire_id')
-    user_id = data.get('user_id')
+    questionnaire_id = request.args.get('questionnaire_id')
+    user_id = request.args.get('user_id')
     
     if not all([questionnaire_id, user_id]):
         return jsonify({"error": "Missing required fields"}), 400
     
-    question = get_most_recent_question(questionnaire_id, user_id)
+    response = get_most_recent_question(questionnaire_id, user_id)
     
-    if question:
-        return jsonify(question), 200
-    return jsonify({"error": "Failed to get questions"}), 400
+    if response["success"]:
+        return jsonify(response["data"]), 200
+    elif response["error"] == "NO_INITIALIZED_QUESTIONS":
+        # Call GPT to generate next question
+        print("Calling GPT to generate next question", flush=True)
+        gpt_response = call_gpt(questionnaire_id, user_id)
+        print("GPT response: ", gpt_response, flush=True)
+        if gpt_response:
+            return jsonify(gpt_response), 200
+        else:
+            return jsonify({"error": gpt_response["error"]}), 500
+    return jsonify({"error": response["error"]}), 404
 
 # Call GPT-4o mini to generate the next question
 @questionnaire_blueprint.route("/api/questionnaire/generate-question", methods=["POST"])
@@ -152,7 +168,7 @@ def generate_question():
 def get_newest_result():
     # Get user_id from query parameters
     user_id = request.args.get('user_id')
-    
+
     if not user_id:
         return jsonify({"error": "Missing user_id parameter"}), 400
     
