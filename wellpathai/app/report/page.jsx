@@ -1,43 +1,40 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { TestCard } from "@/components/ui/report/testCard"
-import { SupplementCard } from "@/components/ui/report/supplementCard"
+import Link from "next/link";
+import { TestCard } from "@/components/ui/report/testCard";
+import { SupplementCard } from "@/components/ui/report/supplementCard";
+import { useEffect, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
-export default function ReportPage() {
-  const tests = [
-    {
-      image: "/placeholder.png",
-      title: "Blood Test",
-      description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Consequatur amet labore."
-    },
-    {
-      image: "/placeholder.png",
-      title: "Blood Test",
-      description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Consequatur amet labore."
-    }
-  ]
+export default function ReportPage(result) {
+  /* For a conclution
+  '''json
+  {{
+    "conclusion": "Your conclusion here",
+    "suggestions": ["suggest1", "suggest2", ...]
+  }}
+    '''
+  */
 
-  const supplements = [
-    {
-      id: 1,
-      image: "/placeholder.png",
-      name: "NatureWise, Oral Health Probiotics, For Children and Adults (120 Capsules)",
-      price: "22.46"
-    },
-    {
-      id: 2,
-      image: "/placeholder.png",
-      name: "NatureWise, Oral Health Probiotics, For Children and Adults (120 Capsules)",
-      price: "19.99"
-    },
-    {
-      id: 3,
-      image: "/placeholder.png",
-      name: "NatureWise, Oral Health Probiotics, For Children and Adults (120 Capsules)",
-      price: "19.99"
-    }
-  ]
+  // conclusion is in markdown format, extract them from result
+  result = {
+    conclusion:
+      "### Summary\n\nBased on the survey, your health shows potential areas for improvement:\n\n- **Metabolic Health**: Elevated blood sugar risk.\n- **Vitamin Deficiency**: Symptoms suggest low Vitamin D levels.\n\nTaking proactive steps can help address these issues.",
+    suggestions: [
+      "Consider a blood test to evaluate HbA1c and fasting glucose levels.",
+      "Include Vitamin D-rich foods like salmon and fortified milk in your diet.",
+      "Adopt a consistent exercise routine to support overall cardiovascular health.",
+    ],
+  };
+  const { conclusion, suggestions } = result;
+  const [date, setDate] = useState(null);
+
+  useEffect(() => {
+    const today = new Date();
+    const options = { month: "long", day: "numeric" };
+    setDate(today.toLocaleDateString("en-US", options));
+  }, []);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -45,10 +42,14 @@ export default function ReportPage() {
         {/* Left Container - Fixed Title */}
         <div className="fixed w-[400px] pt-8">
           <h1 className="text-[40px] font-serif leading-tight">
-            Here's an health<br />report based on<br />survey results
+            Here's an health
+            <br />
+            report based on
+            <br />
+            survey results
           </h1>
-          <Link 
-            href="/dashboard" 
+          <Link
+            href="/dashboard"
             className="inline-block mt-4 px-4 py-2 rounded-full border border-primary text-primary hover:bg-gray-50 transition-colors"
           >
             Home
@@ -59,64 +60,27 @@ export default function ReportPage() {
         <div className="flex-1 ml-[400px]">
           {/* Header */}
           <div className="mb-8">
-            <h2 className="text-3xl font-bold text-center mb-10">Report Nov 23</h2>
-            <p className="mt-4 text-gray-600">
-              Based on your responses to the health survey, there are indications of potential risks related to metabolic health, vitamin deficiencies, and cardiovascular health. Addressing these areas proactively will help improve overall wellness.
-            </p>
+            <h2 className="text-3xl font-bold text-center mb-10">
+              Report {date}
+            </h2>
           </div>
-
-          {/* Report Sections */}
-          {[1, 2, 3, 4].map((section) => (
-            <div key={section} className="mb-8">
-              <h2 className="text-xl font-medium mb-4">Report subtitle</h2>
-              <div className="space-y-4">
-                <p className="text-gray-700">2.1 Metabolic Health</p>
-                <p className="text-gray-600">
-                  Survey Insight: You reported symptoms such as fatigue after meals, difficulty managing weight, and occasional sugar cravings, which could indicate blood sugar irregularities.
-                </p>
-                <div className="space-y-2">
-                  <p className="text-gray-700">Recommendation:</p>
-                  <ul className="list-disc list-inside space-y-2 text-gray-600">
-                    <li>Test: Fasting Blood Glucose and HbA1c to evaluate your blood sugar control and risk of prediabetes.</li>
-                    <li>Lifestyle Tip: Focus on reducing refined carbohydrates and increasing dietary fiber through vegetables, whole grains, and legumes.</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          ))}
-
-          {/* Tests Section */}
           <div className="mb-8">
-            <h2 className="text-xl font-medium mb-4">Test to do:</h2>
-            <div className="grid gap-6">
-              {tests.map((test, index) => (
-                <TestCard
-                  key={index}
-                  image={test.image}
-                  title={test.title}
-                  description={test.description}
-                />
-              ))}
-            </div>
+            <h2 className="text-xl font-medium mb-4">Conclusion:</h2>
+            <ReactMarkdown remarkPlugins={remarkGfm} className="text-gray-600">
+              {conclusion}
+            </ReactMarkdown>
           </div>
 
-          {/* Supplements Section */}
-          <div>
-            <h2 className="text-xl font-medium mb-4">Recommended Supplements:</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              {supplements.map((supplement) => (
-                <SupplementCard
-                  key={supplement.id}
-                  image={supplement.image}
-                  name={supplement.name}
-                  price={supplement.price}
-                  onClick={() => console.log('Clicked supplement:', supplement)}
-                />
+          <div className="mb-8">
+            <h2 className="text-xl font-medium mb-4">Suggestions:</h2>
+            <ul className="list-disc list-inside space-y-2 text-gray-600">
+              {suggestions.map((suggestion, index) => (
+                <li key={index}>{suggestion}</li>
               ))}
-            </div>
+            </ul>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

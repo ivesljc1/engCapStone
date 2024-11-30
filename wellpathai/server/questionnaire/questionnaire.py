@@ -1,6 +1,8 @@
 from firebase_admin import firestore
 from datetime import datetime
 
+from flask import jsonify
+
 db = firestore.client()
 
 def initialize_questionnaire_database(user_id):
@@ -28,14 +30,14 @@ def initialize_questionnaire_database(user_id):
             "id": "q3",
             "question": "What is your height?",
             "type": "text",
-            "unit": "feet",
+            "placeholder": "ex. 6 feet",
             "initialized": True
         },
         {
             "id": "q4",
             "question": "What is your weight?",
             "type": "text",
-            "unit": "lbs",
+            "placeholder": "ex. 140 lbs",
             "initialized": True
         },
         {
@@ -59,7 +61,7 @@ def initialize_questionnaire_database(user_id):
             'result': None
         })
         print("Questionnaire database initialized successfully")
-        return True
+        return questions_ref.id
     except Exception as e:
         print(f"Error initializing questionnaire database: {str(e)}")
         return False
@@ -70,10 +72,10 @@ def add_question_to_questionnaire(questionnaire_id, user_id, new_question):
     """
     questionnaire_id: str, ID of the questionnaire document\n
     user_id: str, ID of the user\n
-    new_question: dict. Required fields: question, type, initialized, options as list if applicable
+    new_question: dict. Required fields: question, type, options as list if applicable
     """ 
 
-    required_fields = ['question', 'type', 'initialized']
+    required_fields = ['question', 'type']
     if not all(field in new_question for field in required_fields):
         return False, "Missing required fields in question"
     
@@ -229,22 +231,23 @@ def get_most_recent_question(questionnaire_id, user_id):
         questionnaire = questionnaire_ref.get()
         
         if not questionnaire.exists:
-            return False, "Questionnaire not found"
+            return { "success": False, "data": None,"error": "Questionnaire not found" }
         
         questionnaire_data = questionnaire.to_dict()
         if questionnaire_data['user_id'] != user_id:
-            return False, "Unauthorized access"
+            return { "success": False, "data": None, "error": "Unauthorized access" }
         
         questions = questionnaire_data.get('questions', [])
         
         for question in questions:
             if 'answer' not in question:
-                return question
+                return { "success": True, "data": question, "error": None }
         
-        return False, "No unanswered questions found"
+        # No unanswered questions found - indicate need for GPT
+        return { "success": False, "data": None, "error": "NO_INITIALIZED_QUESTIONS" }
         
     except Exception as e:
-        return False, str(e)
+        return { "success": False, "data": None, "error": str(e) }
 
 def get_most_recent_result(user_id):
     """
@@ -252,7 +255,7 @@ def get_most_recent_result(user_id):
     """
     try:
         questionnaires_ref = db.collection('questionnaires')
-        query = questionnaires_ref.where('user_id', '==', user_id).order_by('created_at', direction=firestore.Query.DESCENDING).limit(1)
+        query = questionnaires_ref.where('user_id', '==', str(user_id)).order_by('created_at', direction=firestore.Query.DESCENDING).limit(1)
         questionnaires = query.stream()
         
         for questionnaire in questionnaires:
