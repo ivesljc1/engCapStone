@@ -8,7 +8,7 @@ from questionnaire.questionnaire import (
     get_most_recent_result,
     get_all_questions_in_questionnaire
 )
-from agents.gpt import call_gpt
+from agents.gpt import call_gpt, get_gpt_conclusion
 
 """
 # Blueprint for questionnaire route
@@ -145,6 +145,21 @@ def get_newest_question():
         else:
             return jsonify({"error": gpt_response["error"]}), 500
     return jsonify({"error": response["error"]}), 404
+
+@questionnaire_blueprint.route("/api/questionnaire/get-conclusion", methods=["GET"])
+def get_conclusion():
+    questionnaire_id = request.args.get('questionnaire_id')
+    user_id = request.args.get('user_id')
+    
+    if not all([questionnaire_id, user_id]):
+        return jsonify({"error": "Missing required fields"}), 400
+    
+    response = get_gpt_conclusion(questionnaire_id, user_id)
+    print("Response from get_gpt_conclusion: ", response, flush=True)
+    
+    if response:
+        return jsonify(response), 200
+    return jsonify({"error": "Failed to get conclusion"}), 404
 
 # # Call GPT-4o mini to generate the next question
 # @questionnaire_blueprint.route("/api/questionnaire/generate-question", methods=["POST"])
