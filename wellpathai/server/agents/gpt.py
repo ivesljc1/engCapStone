@@ -124,7 +124,7 @@ def get_gpt_conclusion(questionnaire_id, user_id):
     questionnaire_data = get_all_questions_in_questionnaire(questionnaire_id, user_id)
 
     # Craft the prompt
-    system_prompt = "You are an assistant guiding a medical questionnaire for a wellness app. Your goal is to ask short, specific questions to help the user determine which supplements or tests they might need."
+    system_prompt = "You are an assistant guiding a medical questionnaire for a wellness app. Your goal is to generate a conclusion based on the data gathered to help the user determine which supplements or tests they might need."
 
     user_prompt = f"""
     ### Instructions:

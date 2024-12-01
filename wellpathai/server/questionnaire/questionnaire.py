@@ -254,16 +254,35 @@ def get_most_recent_result(user_id):
     user_id: str, ID of the user
     """
     try:
+        # Reference to the 'questionnaires' collection in the database
         questionnaires_ref = db.collection('questionnaires')
+        
+        # Print debug information about the user ID and the reference
+        print(f"Searching for completed questionnaires for user: {user_id}", flush=True)
+        print("questionnaires_ref: ", questionnaires_ref, flush=True)
+        
+        # Query to find the most recent questionnaire for the user, ordered by creation date in descending order
         query = questionnaires_ref.where('user_id', '==', str(user_id)).order_by('created_at', direction=firestore.Query.DESCENDING).limit(1)
+        
+        # Execute the query and get the results
         questionnaires = query.stream()
         
+        # Iterate through the results
         for questionnaire in questionnaires:
+            # Print debug information about the found questionnaire
+            print(f"Found questionnaire: {questionnaire.id}", flush=True)
+            
+            # Convert the questionnaire document to a dictionary
             questionnaire_data = questionnaire.to_dict()
+            
+            # Check if the questionnaire is completed
             if questionnaire_data['status'] == 'completed':
+                # Return the analysis result if the questionnaire is completed
                 return True, questionnaire_data['result']['analysis']
         
+        # Return a message if no completed questionnaires are found
         return False, "No completed questionnaires found"
         
     except Exception as e:
+        # Return an error message if an exception occurs
         return False, str(e)

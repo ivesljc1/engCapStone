@@ -148,18 +148,27 @@ def get_newest_question():
 
 @questionnaire_blueprint.route("/api/questionnaire/get-conclusion", methods=["GET"])
 def get_conclusion():
+    # Get the questionnaire_id and user_id from the query parameters
     questionnaire_id = request.args.get('questionnaire_id')
     user_id = request.args.get('user_id')
     
+    # Check if both questionnaire_id and user_id are provided
     if not all([questionnaire_id, user_id]):
         return jsonify({"error": "Missing required fields"}), 400
     
+    # Call the function to get the GPT conclusion for the questionnaire
     response = get_gpt_conclusion(questionnaire_id, user_id)
+    
+    # Print the response for debugging purposes
     print("Response from get_gpt_conclusion: ", response, flush=True)
     
+    # If the response is successful, return the response data
     if response:
         return jsonify(response), 200
+    
+    # If the response is not successful, return an error message
     return jsonify({"error": "Failed to get conclusion"}), 404
+
 
 # # Call GPT-4o mini to generate the next question
 # @questionnaire_blueprint.route("/api/questionnaire/generate-question", methods=["POST"])
