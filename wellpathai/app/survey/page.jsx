@@ -65,12 +65,13 @@ export default function QuestionPage() {
       const data = await response.json();
       console.log("data received: ", data);
 
-      // Handle different responses
+      // If question limit is reached, get conclusion
       if (data) {
-        //id is in the format of qxx, where xx is the id, get the id in integer format
+        // Check if the numeric part of the data.id (after the first character) is greater than 15
         if (parseInt(data.id.substring(1)) > 15) {
+          // If the condition is true, make an asynchronous GET request to fetch the conclusion
           await fetch(
-            "/api/questionnaire/get-conclusion?questionnaire_id=${qId}&user_id=${userId}",
+            `/api/questionnaire/get-conclusion?questionnaire_id=${qId}&user_id=${userId}`,
             {
               method: "GET",
               headers: {
@@ -78,6 +79,10 @@ export default function QuestionPage() {
               },
             }
           );
+
+          setLoadingQuestion(true);
+          setCurrentQuestion({ question: "Loading question..." });
+
           window.location.href = "/report";
         }
         console.log("Setting current question: ", data);
