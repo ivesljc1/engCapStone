@@ -5,6 +5,43 @@ from flask import jsonify
 
 db = firestore.client()
 
+    # general_questions = [
+    #     {
+    #         "id": "q1",
+    #         "question": "How old are you?",
+    #         "type": "text",
+    #         "initialized": True
+    #     },
+    #     {
+    #         "id": "q2",
+    #         "question": "What is your gender?",
+    #         "type": "choice",
+    #         "options": ["Male", "Female", "Other", "Prefer not to say"],
+    #         "initialized": True
+    #     },
+    #     {
+    #         "id": "q3",
+    #         "question": "What is your height?",
+    #         "type": "text",
+    #         "placeholder": "ex. 6 feet",
+    #         "initialized": True
+    #     },
+    #     {
+    #         "id": "q4",
+    #         "question": "What is your weight?",
+    #         "type": "text",
+    #         "placeholder": "ex. 140 lbs",
+    #         "initialized": True
+    #     },
+    #     {
+    #         "id": "q5",
+    #         "question": "Do you have any chronic medical conditions?",
+    #         "type": "multiselect",
+    #         "options": ["Diabetes", "Hypertension", "Heart Disease", "Asthma", "None"],
+    #         "initialized": True
+    #     }
+    # ]
+
 def initialize_questionnaire_database(user_id):
 
     """
@@ -12,39 +49,72 @@ def initialize_questionnaire_database(user_id):
     """
 
     # Define initial questions
-    initial_questions = [
-        {
+
+    initial_question = [{
             "id": "q1",
+            "question": "What brought you here today?",
+            "type": "choice",
+            "options": ["General Health Advice", "Feeling Unwell"],
+            "initialized": True
+    }]
+    
+    general_health_questions = [
+        {
+            "id": "q2",
             "question": "How old are you?",
             "type": "text",
             "initialized": True
         },
         {
-            "id": "q2",
+            "id": "q3",
             "question": "What is your gender?",
             "type": "choice",
             "options": ["Male", "Female", "Other", "Prefer not to say"],
             "initialized": True
         },
         {
-            "id": "q3",
+            "id": "q4",
             "question": "What is your height?",
             "type": "text",
-            "placeholder": "ex. 6 feet",
+            "placeholder": "e.g. 6 feet",
+            "initialized": True
+        },
+        {
+            "id": "q5",
+            "question": "What is your weight?",
+            "type": "text",
+            "placeholder": "e.g. 140 lbs",
+            "initialized": True
+        }
+    ]
+
+    feeling_unwell_questions = [
+        {
+            "id": "q2",
+            "question": "What symptoms are you experiencing?",
+            "type": "text",
+            "placeholder": "e.g. headache, fever, cough",
+            "initialized": True
+        },
+        {
+            "id": "q3",
+            "question": "How long have you been experiencing these symptoms?",
+            "type": "choice",
+            "options": ["Less than 24 hours", "1-3 days", "4-7 days", "More than a week"],
             "initialized": True
         },
         {
             "id": "q4",
-            "question": "What is your weight?",
-            "type": "text",
-            "placeholder": "ex. 140 lbs",
+            "question": "Rate your discomfort level",
+            "type": "choice",
+            "options": ["1", "2", "3", "4", "5"],
             "initialized": True
         },
         {
             "id": "q5",
             "question": "Do you have any chronic medical conditions?",
             "type": "multiselect",
-            "options": ["Diabetes", "Hypertension", "Heart Disease", "Asthma", "None"],
+            "options": ["Diabetes", "Hypertension", "Heart Disease", "Asthma", "None of Above"],
             "initialized": True
         }
     ]
@@ -54,13 +124,17 @@ def initialize_questionnaire_database(user_id):
         questions_ref = db.collection('questionnaires').document()
         questions_ref.set({
             'user_id': user_id,
-            'questions': initial_questions,
+            'questions': initial_question,
+            'question_sets': {
+                'general': general_health_questions,
+                'unwell': feeling_unwell_questions
+            },
             'created_at': datetime.utcnow(),
             'last_updated': datetime.utcnow(),
             'status': 'in progress',
             'result': None
         })
-        print("Questionnaire database initialized successfully")
+        print("Questionnaire database initialized successfully", flush=True)
         return questions_ref.id
     except Exception as e:
         print(f"Error initializing questionnaire database: {str(e)}")
@@ -145,13 +219,18 @@ def record_answer_to_question(questionnaire_id, user_id, question_id, answer):
                 elif question['type'] == 'multiselect':
                     if not all(a in question.get('options', []) for a in answer):
                         return False, "Invalid options selected"
-                
                 # Add answer to the question
                 question['answer'] = answer
                 break
-        else:
-            return False, "Question not found"
         
+        # Check if the question was the first question
+        if question_id == 'q1':
+            question_sets = questionnaire_data.get('question_sets', {})
+            if answer == 'General Health Advice':
+                questions.extend(question_sets.get('general', []))
+            elif answer == 'Feeling Unwell':
+                questions.extend(question_sets.get('unwell', []))
+
         # Update the entire questions list
         questionnaire_ref.update({
             'questions': questions,
@@ -238,9 +317,11 @@ def get_most_recent_question(questionnaire_id, user_id):
             return { "success": False, "data": None, "error": "Unauthorized access" }
         
         questions = questionnaire_data.get('questions', [])
+        print("Questions: ", questions, flush=True)
         
         for question in questions:
             if 'answer' not in question:
+                print("Unanswered question found", question, flush=True)
                 return { "success": True, "data": question, "error": None }
         
         # No unanswered questions found - indicate need for GPT
