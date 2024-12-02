@@ -13,6 +13,7 @@ export default function QuestionPage() {
   const [questionnaireId, setQuestionnaireId] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadingQuestion, setLoadingQuestion] = useState(false);
 
   const initializeQuestionnaire = async () => {
     try {
@@ -41,6 +42,10 @@ export default function QuestionPage() {
   };
 
   const getNextQuestion = async (qId) => {
+    // return a loading question while waiting for the next question
+    setLoadingQuestion(true);
+    setCurrentQuestion({ question: "Loading question..." });
+
     try {
       // First try to get an initialized/unanswered question
       const response = await fetch(
@@ -60,9 +65,28 @@ export default function QuestionPage() {
       const data = await response.json();
       console.log("data received: ", data);
 
-      // Handle different responses
+      // If question limit is reached, get conclusion
       if (data) {
+        // Check if the numeric part of the data.id (after the first character) is greater than 15
+        if (parseInt(data.id.substring(1)) > 15) {
+          // If the condition is true, make an asynchronous GET request to fetch the conclusion
+          await fetch(
+            `/api/questionnaire/get-conclusion?questionnaire_id=${qId}&user_id=${userId}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          setLoadingQuestion(true);
+          setCurrentQuestion({ question: "Loading question..." });
+
+          window.location.href = "/report";
+        }
         console.log("Setting current question: ", data);
+        setLoadingQuestion(false);
         setCurrentQuestion(data);
       } else if ("conclusion" in data) {
         // Redirect to results page or show completion message
@@ -143,13 +167,17 @@ export default function QuestionPage() {
         </div>
 
         <div className="w-1/2 pl-6 flex items-center justify-center">
-          <SurveyAnswer
-            type={currentQuestion.type}
-            placeholder={currentQuestion.placeholder}
-            options={currentQuestion.options}
-            numOptions={currentQuestion.numOptions}
-            onSubmit={handleSubmit}
-          />
+          {loadingQuestion ? (
+            <div></div>
+          ) : (
+            <SurveyAnswer
+              type={currentQuestion.type}
+              placeholder={currentQuestion.placeholder}
+              options={currentQuestion.options}
+              numOptions={currentQuestion.numOptions}
+              onSubmit={handleSubmit}
+            />
+          )}
         </div>
       </div>
     </div>

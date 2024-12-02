@@ -7,21 +7,21 @@ from questionnaire.questionnaire import (
 )
 import json
 
-client = OpenAI(api_key="key")
+client = OpenAI(api_key="your-api-key")
 
 def call_gpt(questionnaire_id, user_id):
     # Get the questionnaire data
     questionnaire_data = get_all_questions_in_questionnaire(questionnaire_id, user_id)
     
-
     # Craft the prompt
-    system_prompt = "You are an assistant guiding a medical questionnaire for a wellness app. Your goal is to ask short, specific questions to help the user determine which supplements or tests they might need."
-
+    system_prompt = "You are an intelligent assistant for a wellness app, guiding users through dynamic, personalized questions to identify potential health needs."
     user_prompt = f"""
     ### Instructions:
-    1. Use the user's previous answers to decide the next most relevant question:
-        - Provide a conclusion only when confident there is enough information to make accurate and relevant suggestions.
-        - Otherwise, ask only the **most critical next question** to gather data.
+    1. Use the user's previous answers to decide the next step:
+        - Avoid redundant, similar or low-impact questions.
+        - Evaluate the user's condition using reasoning akin to Bayesian networks (i.e., leverage probabilities to infer the most likely issues affecting the patient).
+        - If a clear hypothesis emerges from the answers, solidify it by **asking deeper or related aspects of the symptoms** to confirm it.
+        - If the user's answers diverge from the model's prediction, switch to the new direction and ask questions to confirm or deepen understanding of the new path.
     2. For each question, specify:
         - **Type**: "text", "choice", or "multiselect".
         - **Options**: Include options only for "choice" or "multiselect".
@@ -34,8 +34,7 @@ def call_gpt(questionnaire_id, user_id):
     ### User's Previous Answers:
     {questionnaire_data}
 
-    ### Response Formats:
-    **For a question:**
+    ### Response Format:
     ```json
     {{
     "question": "Your next question here",
@@ -43,16 +42,7 @@ def call_gpt(questionnaire_id, user_id):
     "options": ["option1", "option2", ...]  // Required only for "choice" or "multiselect"
     }}
     ```
-    **For a conclusion:**
-    ```json
-    {{
-    "conclusion": "Your conclusion here",
-    "suggestions": ["suggestion1", "suggestion2", ...]
-    }}
-    ```
     """
-
-    
     # Make the API call
     response = client.chat.completions.create(
         model="gpt-4o-mini",
@@ -102,16 +92,73 @@ def call_gpt(questionnaire_id, user_id):
             else:
                 return {"status": "error", "error": message}
 
-        elif "conclusion" in response_data:
+        else:
+            return {"status": "error", "error": "Unknown response format"}
+
+    except json.JSONDecodeError:
+        return {"status": "error", "error": "Failed to parse JSON response"}
+
+def get_gpt_conclusion(questionnaire_id, user_id):
+    # Get the questionnaire data
+    questionnaire_data = get_all_questions_in_questionnaire(questionnaire_id, user_id)
+
+    # Craft the prompt
+    system_prompt = "You are a health assistant generating concise wellness report and personalized recommendations for supplements or tests based on users' questionnaire responses."
+    user_prompt = f"""
+    ### Instructions:
+    1. Based on the user's answers, generate a concise and actionable health report:
+        - Provide a **conclusion** that synthesizes the data and identifies key health recommendations.
+        - Include **suggestions** for supplements, tests, or lifestyle changes relevant to the user's responses.
+    2. Avoid making guessing recommendations. Base all suggestions on the provided answers.
+
+    ### User's Answers:
+    {questionnaire_data}
+
+    ### Response Formats:
+    ```json
+    {{
+    "conclusion": "Your conclusion here",
+    "suggestions": ["suggestion1", "suggestion2", ...]
+    }}
+    ```
+    """
+
+    # Make the API call
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        temperature=0.5,
+        messages=[
+            {
+                "role": "system", 
+                "content": system_prompt
+            },
+            {
+                "role": "user", 
+                "content": user_prompt
+            }
+        ]
+    )
+    
+    # Get the response content
+    advice = response.choices[0].message.content
+    
+    # Strip the code block markers and newlines
+    json_string = advice.strip("```json\n").strip("```")
+    
+    try:
+        # Parse the JSON string
+        response_data = json.loads(json_string)
+        print("Debugging output from response of gpt: ", response_data, flush=True)
+
+        # Check if the response is a conclusion
+        if "conclusion" in response_data:
             # Record the result in the questionnaire
             success, message = record_result_to_questionnaire(questionnaire_id, user_id, response_data)
             if success:
                 return response_data
             else:
                 return {"status": "error", "error": message}
-
         else:
             return {"status": "error", "error": "Unknown response format"}
-
     except json.JSONDecodeError:
         return {"status": "error", "error": "Failed to parse JSON response"}
