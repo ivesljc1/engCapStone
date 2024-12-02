@@ -25,7 +25,9 @@ export default function ResetPassword() {
         url: "http://localhost:3000/login",
       })
         .then(() => {
-          alert("Password reset email sent!");
+          window.location.href = `/checkemail?email=${encodeURIComponent(
+            email
+          )}`;
         })
         .catch((error) => {
           alert("Error during password reset:", error);
