@@ -7,7 +7,7 @@ from questionnaire.questionnaire import (
 )
 import json
 
-client = OpenAI(api_key="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")
+client = OpenAI(api_key="your-api-key")
 
 def call_gpt(questionnaire_id, user_id):
     # Get the questionnaire data
@@ -124,12 +124,13 @@ def get_gpt_conclusion(questionnaire_id, user_id):
     questionnaire_data = get_all_questions_in_questionnaire(questionnaire_id, user_id)
 
     # Craft the prompt
-    system_prompt = "You are an assistant guiding a medical questionnaire for a wellness app. Your goal is to generate a conclusion based on the data gathered to help the user determine which supplements or tests they might need."
+    system_prompt = "You are an assistant guiding a medical questionnaire for a wellness app. Your goal is to generate a conclusion based on the data gathered to help the user determine which supplements and tests they might need."
 
     user_prompt = f"""
     ### Instructions:
     1. Use the user's previous answers to generate a conclusion based on the data gathered.:
         - Provide a conclusion with the gata gathered to make accurate and relevant suggestions.
+        - The conclusion should include a summary of the user's health status and recommendations for supplements and tests, if applicable.
     2. Respond in JSON format as shown below.
 
     ### User's Previous Answers:
