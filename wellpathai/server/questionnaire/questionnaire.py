@@ -228,8 +228,11 @@ def record_answer_to_question(questionnaire_id, user_id, question_id, answer):
             question_sets = questionnaire_data.get('question_sets', {})
             if answer == 'General Health Advice':
                 questions.extend(question_sets.get('general', []))
+                questionnaire_data.pop('question_sets')
             elif answer == 'Feeling Unwell':
                 questions.extend(question_sets.get('unwell', []))
+                questionnaire_data.pop('question_sets')
+
 
         # Update the entire questions list
         questionnaire_ref.update({
