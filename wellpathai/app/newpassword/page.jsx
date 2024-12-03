@@ -48,7 +48,9 @@ export default function CreateNewPassword() {
           router.push("/login");
         })
         .catch((error) => {
-          alert("Error during password reset:", error);
+          alert(
+            "Error during password reset: Make sure your password is at least 8 characters long."
+          );
         });
     } catch (error) {
       console.error("Error during password reset:", error);
