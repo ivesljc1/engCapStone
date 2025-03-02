@@ -69,3 +69,44 @@ def create_timeslot():
     except Exception as e:
         print(f"Error creating timeslot: {e}")  # Add debug logging
         return jsonify({"error": str(e)}), 500
+    
+
+@create_timeslot_blueprint.route("/api/timeslots/delete/<timeslot_id>", methods=["DELETE"])
+def delete_timeslot(timeslot_id):
+    try:
+        # Get timeslot from Firestore
+        timeslot_ref = db.collection('timeslots').document(timeslot_id)
+        timeslot = timeslot_ref.get()
+        
+        # Check if timeslot exists
+        if not timeslot.exists:
+            return jsonify({"error": "Timeslot not found"}), 404
+            
+        timeslot_data = timeslot.to_dict()
+        
+        # Check if timeslot is still available
+        if not timeslot_data['isAvailable']:
+            return jsonify({"error": "Cannot delete a booked timeslot because it has been reserved already"}), 400
+            
+        # Delete event from Google Calendar
+        try:
+            calendar_service.events().delete(
+                calendarId=CALENDAR_ID,
+                eventId=timeslot_data['eventId']
+            ).execute()
+            print(f"Calendar event deleted: {timeslot_data['eventId']}")
+        except Exception as e:
+            print(f"Error deleting calendar event: {e}")
+            # Continue with Firestore deletion even if Calendar deletion fails
+        
+        # Delete timeslot from Firestore
+        timeslot_ref.delete()
+        
+        return jsonify({
+            "message": "Timeslot deleted successfully",
+            "timeslotId": timeslot_id
+        }), 200
+        
+    except Exception as e:
+        print(f"Error deleting timeslot: {e}")
+        return jsonify({"error": str(e)}), 500
