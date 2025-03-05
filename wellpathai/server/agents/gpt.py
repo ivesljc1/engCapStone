@@ -6,8 +6,12 @@ from questionnaire.questionnaire import (
     record_result_to_questionnaire
 )
 import json
+import os
+from dotenv import load_dotenv
 
-client = OpenAI(api_key="your-api-key")
+load_dotenv(".env.local")
+
+client = OpenAI(api_key = os.getenv("OPENAI_API_KEY"))
 
 def call_gpt(questionnaire_id, user_id):
     # Get the questionnaire data

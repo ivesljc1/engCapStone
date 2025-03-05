@@ -6,7 +6,8 @@ from questionnaire.questionnaire import (
     record_result_to_questionnaire,
     get_most_recent_question,
     get_most_recent_result,
-    get_all_questions_in_questionnaire
+    get_all_questions_in_questionnaire,
+    get_all_results
 )
 from agents.gpt import call_gpt, get_gpt_conclusion
 
@@ -201,3 +202,16 @@ def get_newest_result():
     if result:
         return jsonify(result), 200
     return jsonify({"error": "No result found"}), 404
+
+@questionnaire_blueprint.route("/api/questionnaire/get-all-results", methods=["GET"])
+def get_results():
+    user_id = request.args.get('user_id')
+    
+    if not user_id:
+        return jsonify({"error": "Missing required fields"}), 400
+    
+    results = get_all_results(user_id)
+    
+    if results:
+        return jsonify(results), 200
+    return jsonify({"error": "Failed to get results"}), 404
