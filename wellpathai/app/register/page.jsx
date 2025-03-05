@@ -7,17 +7,32 @@ import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+} from "firebase/auth";
+import { auth } from "../firebase";
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [birthday, setBirthday] = useState("");
-  const [password, setPassword] = useState("");
-  const [phone, setPhone] = useState("");
+  const [formData, setFormData] = useState({
+    uid: "",
+    email: "",
+    firstName: "",
+    lastName: "",
+    birthday: "",
+    password: "",
+    phone: "",
+  });
   const [isEmailValid, setIsEmailValid] = useState(true);
   const [isPasswordValid, setIsPasswordValid] = useState(true);
+  const auth = getAuth();
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
+  };
 
   const validateEmail = (email) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -32,26 +47,32 @@ export default function RegisterPage() {
     e.preventDefault();
 
     try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password
+      );
+
+      const user = userCredential.user;
+      await sendEmailVerification(user).then(() => {
+        alert("Verification email sent. Please verify your email address.");
+      });
+
+      const updatedFormData = { ...formData, uid: user.uid };
+
       const response = await fetch("/api/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          email,
-          firstName,
-          lastName,
-          birthday,
-          password,
-          phone,
-        }),
+        body: JSON.stringify(updatedFormData),
       });
 
       const data = await response.json();
       if (data.error) {
         alert(data.error);
       } else {
-        alert("Registration successful! Please login to continue.");
+        alert("Registration successful! Please vefiry your email address.");
         window.location.href = "/login";
       }
     } catch (error) {
@@ -78,8 +99,9 @@ export default function RegisterPage() {
                 </label>
                 <Input
                   id="firstName"
+                  name="firstName"
                   placeholder="John"
-                  onChange={(e) => setFirstName(e.target.value)}
+                  onChange={handleChange}
                 />
               </div>
               <div className="space-y-2">
@@ -88,8 +110,9 @@ export default function RegisterPage() {
                 </label>
                 <Input
                   id="lastName"
+                  name="lastName"
                   placeholder="Wick"
-                  onChange={(e) => setLastName(e.target.value)}
+                  onChange={handleChange}
                 />
               </div>
             </div>
@@ -100,14 +123,15 @@ export default function RegisterPage() {
               </label>
               <Input
                 id="email"
+                name="email"
                 type="email"
                 placeholder="john.dowry@example.com"
                 className={
                   !isEmailValid ? "border-red-500 focus:border-red-500" : ""
                 }
-                value={email}
+                value={formData.email}
                 onChange={(e) => {
-                  setEmail(e.target.value);
+                  handleChange(e);
                   validateEmail(e.target.value);
                 }}
               />
@@ -124,8 +148,9 @@ export default function RegisterPage() {
               </label>
               <Input
                 id="phone"
+                name="phone"
                 placeholder="(226) - 988 - 8888"
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={handleChange}
               />
             </div>
 
@@ -137,12 +162,13 @@ export default function RegisterPage() {
                 <Input
                   id="birthday"
                   type="date"
+                  name="birthday"
                   placeholder="mm/dd/yyyy"
                   className="date-input"
                   style={{
                     colorScheme: "light",
                   }}
-                  onChange={(e) => setBirthday(e.target.value)}
+                  onChange={handleChange}
                 />
                 <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
                   <svg
@@ -171,6 +197,7 @@ export default function RegisterPage() {
               <div className="relative">
                 <Input
                   id="password"
+                  name="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Create a password"
                   className={
@@ -178,9 +205,9 @@ export default function RegisterPage() {
                       ? "border-red-500 focus:border-red-500"
                       : ""
                   }
-                  value={password}
+                  value={formData.password}
                   onChange={(e) => {
-                    setPassword(e.target.value);
+                    handleChange(e);
                     validatePassword(e.target.value);
                   }}
                 />

@@ -9,7 +9,6 @@ import { auth } from "../firebase";
 
 export default function QuestionPage() {
   const [userId, setUserId] = useState(null);
-
   const [questionnaireId, setQuestionnaireId] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [loading, setLoading] = useState(true);

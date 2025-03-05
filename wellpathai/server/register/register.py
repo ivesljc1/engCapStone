@@ -19,6 +19,7 @@ def register_user():
     data = request.get_json()
 
     # Extract data from the request
+    uid = data.get("uid")
     email = data.get("email")
     password = data.get("password")
     first_name = data.get("firstName")
@@ -37,17 +38,17 @@ def register_user():
 
     try:
         # Create a new user in Firebase Authentication
-        user = auth.create_user(
-            email=email,
-            password=password,
-            display_name=f"{first_name} {last_name}"
+        user = auth.update_user(
+            uid,
+            display_name=f"{first_name} {last_name}",
+            email_verified=False
         )
         
         # Set custom claims to define the user's admin status
-        auth.set_custom_user_claims(user.uid, {"isAdmin": isAdmin})
+        auth.set_custom_user_claims(uid, {"isAdmin": isAdmin})
 
         # Store additional details in Firestore
-        db.collection("users").document(user.uid).set({
+        db.collection("users").document(uid).set({
             "firstName": first_name,
             "lastName": last_name,
             "birthday": birthday,
@@ -56,6 +57,6 @@ def register_user():
             "createdAt": datetime.utcnow(),
         })
 
-        return jsonify({"message": "User registered successfully. Please login."}), 200
+        return jsonify({"message": "User registered successfully. Please login.", "customToken": custom_token.decode("utf-8")}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500

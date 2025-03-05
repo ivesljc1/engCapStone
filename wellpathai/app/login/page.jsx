@@ -7,20 +7,21 @@ import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button.jsx";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  getAuth,
-  signInWithEmailAndPassword,
-  sendPasswordResetEmail,
-} from "firebase/auth";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
 
 export default function LoginPage() {
-  const [credential, setCredential] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({ credential: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
+    const { credential, password } = formData;
 
     if (!credential || !password) {
       alert("Please enter your email and password to login.");
@@ -34,6 +35,17 @@ export default function LoginPage() {
         credential,
         password
       );
+
+      console.log(userCredential);
+
+      if (!userCredential) {
+        throw new Error("Failed to authenticate.");
+      }
+
+      if (!userCredential.user.emailVerified) {
+        alert("Please verify your email before logging in.");
+        return;
+      }
 
       // Get the user token
       const idToken = await userCredential.user.getIdToken();
@@ -60,7 +72,7 @@ export default function LoginPage() {
         window.location.href = "/dashboard"; // Redirect to user dashboard
       }
     } catch (error) {
-      console.error("Login error:", error);
+      console.log("Login error:", error);
       alert("Invalid email or password, please try again.");
     }
   };
@@ -82,14 +94,16 @@ export default function LoginPage() {
               type="email"
               placeholder="Email"
               className="rounded-lg"
-              onChange={(e) => setCredential(e.target.value)}
+              name="credential"
+              onChange={handleChange}
             />
             <div className="relative">
               <Input
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
                 className="rounded-lg"
-                onChange={(e) => setPassword(e.target.value)}
+                name="password"
+                onChange={handleChange}
               />
               <button
                 type="button"
