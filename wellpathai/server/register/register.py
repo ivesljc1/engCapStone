@@ -57,6 +57,6 @@ def register_user():
             "createdAt": datetime.utcnow(),
         })
 
-        return jsonify({"message": "User registered successfully. Please login.", "customToken": custom_token.decode("utf-8")}), 200
+        return jsonify({"message": "User registered successfully. Please login."}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
