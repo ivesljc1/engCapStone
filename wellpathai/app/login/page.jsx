@@ -36,8 +36,6 @@ export default function LoginPage() {
         password
       );
 
-      console.log(userCredential);
-
       if (!userCredential) {
         throw new Error("Failed to authenticate.");
       }
