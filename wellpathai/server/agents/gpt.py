@@ -166,3 +166,71 @@ def get_gpt_conclusion(questionnaire_id, user_id):
             return {"status": "error", "error": "Unknown response format"}
     except json.JSONDecodeError:
         return {"status": "error", "error": "Failed to parse JSON response"}
+
+def generate_case_title(description):
+    """
+    Generate a concise title (max 2 words) for a case based on its description
+    
+    Args:
+        description (str): The description of the case
+        
+    Returns:
+        str: A generated title for the case
+    """
+    if not description:
+        return None
+    
+    # Craft the prompt
+    system_prompt = "You are a medical assistant tasked with creating concise, descriptive titles."
+    user_prompt = f"""
+    ### Instructions:
+    1. Based on the following description, generate a concise title with a maximum of 2 words.
+    2. The title should be descriptive of the health condition or main concern.
+    3. Use medical terminology when appropriate.
+
+    ### Description:
+    {description}
+
+    ### Response Format:
+    ```json
+    {{
+    "title": "Your Title Here"
+    }}
+    ```
+    """
+    
+    # Make the API call
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            temperature=0.7,
+            messages=[
+                {
+                    "role": "system", 
+                    "content": system_prompt
+                },
+                {
+                    "role": "user", 
+                    "content": user_prompt
+                }
+            ]
+        )
+        
+        # Get the response content
+        content = response.choices[0].message.content
+        
+        # Strip the code block markers and newlines
+        json_string = content.strip("```json\n").strip("```")
+        
+        # Parse the JSON string
+        response_data = json.loads(json_string)
+        
+        if "title" in response_data:
+            return response_data["title"]
+        else:
+            print("Error: No title in GPT response")
+            return None
+            
+    except Exception as e:
+        print(f"Error generating case title: {str(e)}")
+        return None
