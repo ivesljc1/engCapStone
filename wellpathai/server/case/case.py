@@ -1,6 +1,7 @@
 from firebase_admin import firestore
 from datetime import datetime
 import uuid
+from agents.gpt import generate_case_title
 
 # Initialize Firestore
 db = firestore.client()
@@ -20,7 +21,14 @@ def create_case(user_id, title=None, description=None):
     try:
         # Generate a default title if none provided
         if not title:
-            title = f"Case {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+            if description:
+                gpt_title = generate_case_title(description)
+                if gpt_title:
+                    title = gpt_title
+                else:
+                    title = f"Case {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+            else:
+                title = f"Case {datetime.now().strftime('%Y-%m-%d %H:%M')}"
             
         # Create case document
         case_data = {
