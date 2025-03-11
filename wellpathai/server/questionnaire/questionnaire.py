@@ -5,43 +5,6 @@ from flask import jsonify
 
 db = firestore.client()
 
-    # general_questions = [
-    #     {
-    #         "id": "q1",
-    #         "question": "How old are you?",
-    #         "type": "text",
-    #         "initialized": True
-    #     },
-    #     {
-    #         "id": "q2",
-    #         "question": "What is your gender?",
-    #         "type": "choice",
-    #         "options": ["Male", "Female", "Other", "Prefer not to say"],
-    #         "initialized": True
-    #     },
-    #     {
-    #         "id": "q3",
-    #         "question": "What is your height?",
-    #         "type": "text",
-    #         "placeholder": "ex. 6 feet",
-    #         "initialized": True
-    #     },
-    #     {
-    #         "id": "q4",
-    #         "question": "What is your weight?",
-    #         "type": "text",
-    #         "placeholder": "ex. 140 lbs",
-    #         "initialized": True
-    #     },
-    #     {
-    #         "id": "q5",
-    #         "question": "Do you have any chronic medical conditions?",
-    #         "type": "multiselect",
-    #         "options": ["Diabetes", "Hypertension", "Heart Disease", "Asthma", "None"],
-    #         "initialized": True
-    #     }
-    # ]
-
 def initialize_questionnaire_database(user_id):
 
     """

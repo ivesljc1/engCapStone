@@ -6,6 +6,7 @@ from login.login import login_blueprint
 from questionnaire.questionnaire_api import questionnaire_blueprint
 from appointment.create_timeslot import create_timeslot_blueprint
 from appointment.make_appointment import make_appointment_blueprint
+from case.case_api import case_blueprint
 # from recommendation.recommendation import recommendation_blueprint
 
 
@@ -17,6 +18,7 @@ app.register_blueprint(login_blueprint)
 app.register_blueprint(questionnaire_blueprint)
 app.register_blueprint(create_timeslot_blueprint)
 app.register_blueprint(make_appointment_blueprint)
+app.register_blueprint(case_blueprint)
 # app.register_blueprint(recommendation_blueprint)
 
 @app.route('/', methods=['GET'])
