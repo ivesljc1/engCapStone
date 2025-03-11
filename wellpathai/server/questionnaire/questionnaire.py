@@ -263,8 +263,6 @@ def record_result_to_questionnaire(questionnaire_id, user_id, result_text):
         if questionnaire_data['user_id'] != user_id:
             return False, "Unauthorized access"
         
-        result_ref = db.collection('results').document()
-        
         # Structure the result
         result = {
             'analysis': result_text,
@@ -275,14 +273,6 @@ def record_result_to_questionnaire(questionnaire_id, user_id, result_text):
             'result': result,
             'last_updated': datetime.utcnow(),
             'status': 'completed'
-        })
-        
-        # Add the result to the results collection
-        result_ref.set({
-            'user_id': user_id,
-            'questionnaire_id': questionnaire_id,
-            'result': result,
-            'created_at': datetime.utcnow()
         })
         
         return True, "Result added successfully"
@@ -381,20 +371,21 @@ def get_most_recent_result(user_id):
         # Return an error message if an exception occurs
         return False, str(e)
 
+# Get all questionnarie results of the user
 def get_all_results(user_id):
     """
     user_id: str, ID of the user
     """
     try:
         # Reference to the 'results' collection in the database
-        results_ref = db.collection('results')
+        questionnaires_ref = db.collection('questionnaires')
             
         # Print debug information about the user ID and the reference
         print(f"Searching for all results for user: {user_id}", flush=True)
-        print("results_ref: ", results_ref, flush=True)
+        print("results_ref: ", questionnaires_ref, flush=True)
             
         # Query to find all results for the user, ordered by creation date in descending order
-        query = results_ref.where('user_id', '==', str(user_id))
+        query = questionnaires_ref.where('user_id', '==', str(user_id))
             
         # Execute the query and get the results
         results = query.stream()
@@ -414,7 +405,7 @@ def get_all_results(user_id):
             results_list.append(result_data)
             
         # Return the list of results
-        return True, results_list
+        return results_list
             
     except Exception as e:
         # Return an error message if an exception occurs
