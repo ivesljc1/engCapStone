@@ -4,6 +4,7 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from datetime import datetime
 from .calendar_init import calendar_service, CALENDAR_ID
+from ..case.case import add_appointment_to_case
 
 
 
@@ -41,6 +42,7 @@ def book_appointment():
         # Extract data from request
         timeslot_id = data.get('timeslotId')
         user_id = data.get('userId')
+        case_id = data.get('caseId')  # Optional case ID
         
         # Validate input
         if not all([timeslot_id, user_id]):
@@ -55,8 +57,9 @@ def book_appointment():
             
         timeslot_data = timeslot.to_dict()
         
-        if not timeslot_data['isAvailable']:
-            return jsonify({"error": "Timeslot is no longer available"}), 400
+        # Check if timeslot is available
+        if not timeslot_data.get('isAvailable', False):
+            return jsonify({"error": "Timeslot is not available"}), 400
             
         # Parse datetime strings if they're in ISO format
         start_time = datetime.fromisoformat(timeslot_data['startTime']) if isinstance(timeslot_data['startTime'], str) else timeslot_data['startTime']
@@ -104,15 +107,27 @@ def book_appointment():
         })
         
         # Create appointment record
-        appointment_ref = db.collection('appointments').document()
-        appointment_ref.set({
+        appointment_data = {
             'timeslotId': timeslot_id,
             'userId': user_id,
             'startTime': start_time.isoformat(),  # Convert to ISO string
             'endTime': end_time.isoformat(),      # Convert to ISO string
             'status': 'confirmed',
             'createdAt': datetime.utcnow().isoformat()  # Convert to ISO string
-        })
+        }
+            
+        appointment_ref = db.collection('appointments').document()
+        appointment_ref.set(appointment_data)
+        
+        # If case_id is provided, update the case with the appointment ID
+        if case_id:
+            try:
+                success = add_appointment_to_case(case_id, appointment_ref.id)
+                if not success:
+                    print(f"Warning: Failed to add appointment {appointment_ref.id} to case {case_id}")
+            except Exception as e:
+                print(f"Error adding appointment to case: {str(e)}")
+                # Continue with the appointment creation even if adding to case fails
         
         return jsonify({
             "message": "Appointment booked successfully",
