@@ -4,7 +4,7 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from datetime import datetime
 from .calendar_init import calendar_service, CALENDAR_ID
-from ..case.case import add_appointment_to_case
+from case.case import add_appointment_to_case
 
 
 
