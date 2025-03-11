@@ -27,8 +27,10 @@ export default function ReportsPage() {
     } else {
       const results = await data.json();
       // Update the state with the fetched reports
-      setResults(results[1]);
-      console.log(results[1]);
+      setResults(results[0]["result"]["analysis"]);
+      console.log(results[0]);
+      console.log(results[0]["result"]["analysis"]["conclusion"]);
+      console.log(results[0]["result"]["analysis"]["suggestions"]);
     }
   };
 

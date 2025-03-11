@@ -41,7 +41,7 @@ def register_user():
         user = auth.update_user(
             uid,
             display_name=f"{first_name} {last_name}",
-            email_verified=False
+            email_verified=False,
         )
         
         # Set custom claims to define the user's admin status
