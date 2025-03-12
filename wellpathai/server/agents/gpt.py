@@ -167,33 +167,37 @@ def get_gpt_conclusion(questionnaire_id, user_id):
     except json.JSONDecodeError:
         return {"status": "error", "error": "Failed to parse JSON response"}
 
-def generate_case_title(description):
+def generate_case_title(questionnaire_id, user_id):
     """
-    Generate a concise title (max 2 words) for a case based on its description
+    Generate a concise title (max 2 words) for a case based on the answered questions in a questionnaire
     
     Args:
-        description (str): The description of the case
+        questionnaire_data (dict): The questionnaire data containing the user's answers
         
     Returns:
         str: A generated title for the case
     """
-    if not description:
+    
+    questionnaire_data = get_all_questions_in_questionnaire(questionnaire_id, user_id)
+
+    if not questionnaire_id:
         return None
     
     # Craft the prompt
     system_prompt = "You are a medical assistant tasked with creating concise, descriptive titles."
     user_prompt = f"""
     ### Instructions:
-    1. Based on the following description, generate a concise title with a maximum of 2 words.
+    1. Based on the user's answers, generate a short description and a concise title with a maximum of 2 words.
     2. The title should be descriptive of the health condition or main concern.
     3. Use medical terminology when appropriate.
 
-    ### Description:
-    {description}
+    ### User's Answers:
+    {questionnaire_data}
 
     ### Response Format:
     ```json
     {{
+    "description": "Your description here",
     "title": "Your Title Here"
     }}
     ```
@@ -225,8 +229,8 @@ def generate_case_title(description):
         # Parse the JSON string
         response_data = json.loads(json_string)
         
-        if "title" in response_data:
-            return response_data["title"]
+        if "title" and "description" in response_data:
+            return response_data["description"], response_data["title"]
         else:
             print("Error: No title in GPT response")
             return None

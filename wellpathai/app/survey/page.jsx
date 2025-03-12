@@ -14,8 +14,10 @@ export default function QuestionPage() {
   const [loading, setLoading] = useState(true);
   const [loadingQuestion, setLoadingQuestion] = useState(false);
   const [progress, setProgress] = useState({ current: 0, max: 10 });
+  const [questionIndex, setQuestionIndex] = useState("");
+  const [caseId, setCaseId] = useState("");
 
-
+  // Initialize questionnaire for the user
   const initializeQuestionnaire = async () => {
     setLoading(true);
     try {
@@ -35,7 +37,7 @@ export default function QuestionPage() {
 
       const data = await response.json();
       setQuestionnaireId(data.questionnaire_id);
-      setCurrentQuestion(data.first_question["data"])
+      setCurrentQuestion(data.first_question["data"]);
     } catch (error) {
       console.error("Error initializing questionnaire:", error);
     } finally {
@@ -43,12 +45,108 @@ export default function QuestionPage() {
     }
   };
 
+  // Get the next question in the questionnaire
+  const getNextQuestion = async (qId) => {
+    // return a loading question while waiting for the next question
+    setLoadingQuestion(true);
+    setCurrentQuestion({ question: "Loading question..." });
+
+    try {
+      // First try to get an initialized/unanswered question
+      const response = await fetch(
+        `/api/questionnaire/get-most-recent-question?questionnaire_id=${qId}&user_id=${userId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("data received: ", data);
+      setQuestionIndex(data.id);
+
+      // If question limit is reached or conclusion is present, redirect to report
+      if (
+        data &&
+        (parseInt(data.id.substring(1)) > 15 || "conclusion" in data)
+      ) {
+        // Make an asynchronous GET request to fetch the conclusion if needed
+        if (parseInt(data.id.substring(1)) > 15) {
+          await fetch(
+            `/api/questionnaire/get-conclusion?questionnaire_id=${qId}&user_id=${userId}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          // Add questionnaire to visit
+          const visitResponse = await fetch(`/api/visit/create`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              userId: userId,
+              caseId: caseId,
+              questionnaireId: questionnaireId,
+            }),
+          });
+
+          if (!visitResponse.ok) {
+            throw new Error(`HTTP error! status: ${visitResponse.status}`);
+          }
+
+          const visitData = await visitResponse.json();
+          console.log(visitData.message);
+          console.log(visitData.visitId);
+
+          // Add visit to case
+          const addVisitResponse = await fetch(`/api/cases/${caseId}/visit`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              visitId: visitData.visitId,
+            }),
+          });
+
+          if (!addVisitResponse.ok) {
+            throw new Error(`HTTP error! status: ${addVisitResponse.status}`);
+          }
+
+          const addVisitData = await addVisitResponse.json();
+          console.log(addVisitData.message);
+        }
+
+        setLoadingQuestion(true);
+        setCurrentQuestion({ question: "Loading question..." });
+        window.location.href = "/report";
+      } else {
+        console.log("Setting current question: ", data);
+        setLoadingQuestion(false);
+        setCurrentQuestion(data);
+      }
+    } catch (error) {
+      console.error("Error fetching/generating question:", error);
+    }
+  };
+
+  // Submit the user's answer to the current question
   const handleSubmit = async (answer) => {
-    if (!answer || (typeof answer === 'string' && answer.trim().length === 0)) {
-      console.error('Please provide a valid answer');
+    if (!answer || (typeof answer === "string" && answer.trim().length === 0)) {
+      console.error("Please provide a valid answer");
       return;
     }
-    
 
     setLoading(true);
 
@@ -80,15 +178,15 @@ export default function QuestionPage() {
       } else if (data.next_question) {
         // Set the next question from the bundled response
         setCurrentQuestion(data.next_question);
-        
+
         // Update progress if available
         if (data.question_count && data.max_questions) {
           setProgress({
             current: data.question_count,
-            max: data.max_questions
+            max: data.max_questions,
           });
         }
-      } 
+      }
     } catch (err) {
       throw new Error(`HTTP error! status: ${response.status}`);
     } finally {
@@ -97,10 +195,10 @@ export default function QuestionPage() {
   };
 
   const handleBack = () => {
-    // Implement back functionality if needed
-    console.log("Going back");
+    window.location.href = "/dashboard";
   };
 
+  // useEffect to check if the user is authenticated
   useEffect(() => {
     const auth = getAuth();
     setLoading(true);
@@ -129,6 +227,38 @@ export default function QuestionPage() {
       initializeQuestionnaire();
     }
   }, [userId]); // Run when userId changes
+
+  //After q5, send the questionnaire answers to create the case
+  useEffect(() => {
+    const createCase = async () => {
+      if (questionIndex === "q6") {
+        try {
+          const response = await fetch("/api/cases/create", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              userId: userId,
+              questionnaireId: questionnaireId,
+            }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            console.log(data.message);
+            setCaseId(data.caseId);
+          } else {
+            console.error("Error creating case");
+          }
+        } catch (error) {
+          console.error("Error creating case:", error);
+        }
+      }
+    };
+
+    createCase();
+  }, [questionIndex]);
 
   if (loading) return <LoadingPage />;
   if (!currentQuestion) return <div>No questions available</div>;
