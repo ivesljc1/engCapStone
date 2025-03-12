@@ -49,7 +49,7 @@ def call_gpt(questionnaire_id, user_id):
     """
     # Make the API call
     response = client.chat.completions.create(
-        model="4o-mini",
+        model="gpt-4o-mini",
         temperature=0.5,
         messages=[
             {
