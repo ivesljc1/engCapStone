@@ -21,7 +21,7 @@ def initialize_questionnaire_database(user_id):
             "initialized": True
     }]
     
-    general_health_questions = [
+    general_demographic_questions = [
         {
             "id": "q2",
             "question": "How old are you?",
@@ -51,30 +51,52 @@ def initialize_questionnaire_database(user_id):
         }
     ]
 
+    # General health advice specific questions
+    general_health_questions = [
+        {
+            "id": "q6",
+            "question": "Did you have any medical conditions before?",
+            "type": "text",
+            "initialized": True
+        },
+        {
+            "id": "q7",
+            "question": "Are you currently taking any medications?",
+            "type": "text",
+            "initialized": True
+        },
+        {
+            "id": "q8",
+            "question": "Do you have any allergies?",
+            "type": "text",
+            "initialized": True
+        }
+    ]
+
     feeling_unwell_questions = [
         {
-            "id": "q2",
+            "id": "q6",
             "question": "What symptoms are you experiencing?",
             "type": "text",
             "placeholder": "e.g. headache, fever, cough",
             "initialized": True
         },
         {
-            "id": "q3",
+            "id": "q7",
             "question": "How long have you been experiencing these symptoms?",
             "type": "choice",
             "options": ["Less than 24 hours", "1-3 days", "4-7 days", "More than a week"],
             "initialized": True
         },
         {
-            "id": "q4",
+            "id": "q8",
             "question": "Rate your discomfort level",
             "type": "choice",
             "options": ["1", "2", "3", "4", "5"],
             "initialized": True
         },
         {
-            "id": "q5",
+            "id": "q9",
             "question": "Do you have any chronic medical conditions?",
             "type": "multiselect",
             "options": ["Diabetes", "Hypertension", "Heart Disease", "Asthma", "None of Above"],
@@ -87,15 +109,14 @@ def initialize_questionnaire_database(user_id):
         questions_ref = db.collection('questionnaires').document()
         questions_ref.set({
             'user_id': user_id,
-            'questions': initial_question,
-            'question_sets': {
-                'general': general_health_questions,
-                'unwell': feeling_unwell_questions
-            },
-            'created_at': datetime.utcnow(),
-            'last_updated': datetime.utcnow(),
-            'status': 'in progress',
-            'result': None
+            'createdAt': datetime.now(),
+            'updatedAt': datetime.now(),
+            'status': 'active',
+            'questions': initial_question,  # Start with just the branching question
+            'generalDemographicQuestions': general_demographic_questions,  # Store these separately
+            'generalHealthQuestions': general_health_questions,  # Store these separately
+            'feelingUnwellQuestions': feeling_unwell_questions,  # Store these separately
+            'currentPath': None,  # Will be set after first answer
         })
         print("Questionnaire database initialized successfully", flush=True)
         return questions_ref.id
@@ -188,19 +209,48 @@ def record_answer_to_question(questionnaire_id, user_id, question_id, answer):
         
         # Check if the question was the first question
         if question_id == 'q1':
-            question_sets = questionnaire_data.get('question_sets', {})
+            # Get the demographic questions that should be added for both paths
+            demographic_questions = questionnaire_data.get('generalDemographicQuestions', [])
+            
+            # Add path-specific questions based on the answer
             if answer == 'General Health Advice':
-                questions.extend(question_sets.get('general', []))
-                questionnaire_data.pop('question_sets')
+                # Set the current path
+                questionnaire_ref.update({
+                    'currentPath': 'generalHealth'
+                })
+                
+                # Get the general health questions
+                health_questions = questionnaire_data.get('generalHealthQuestions', [])
+                
+                # Add demographic questions first, then health questions
+                questions.extend(demographic_questions)
+                questions.extend(health_questions)
+                
             elif answer == 'Feeling Unwell':
-                questions.extend(question_sets.get('unwell', []))
-                questionnaire_data.pop('question_sets')
-
+                # Set the current path
+                questionnaire_ref.update({
+                    'currentPath': 'feelingUnwell'
+                })
+                
+                # Get the feeling unwell questions
+                unwell_questions = questionnaire_data.get('feelingUnwellQuestions', [])
+                
+                # Add demographic questions first, then unwell questions
+                questions.extend(demographic_questions)
+                questions.extend(unwell_questions)
+            
+            # Remove the question sets from the document to save space
+            # since they're now added to the questions array
+            questionnaire_ref.update({
+                'generalDemographicQuestions': firestore.DELETE_FIELD,
+                'generalHealthQuestions': firestore.DELETE_FIELD,
+                'feelingUnwellQuestions': firestore.DELETE_FIELD
+            })
 
         # Update the entire questions list
         questionnaire_ref.update({
             'questions': questions,
-            'last_updated': datetime.utcnow()
+            'updatedAt': datetime.now()  # Use consistent field name
         })
         
         return True, "Answer recorded successfully"

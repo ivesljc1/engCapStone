@@ -13,8 +13,11 @@ export default function QuestionPage() {
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadingQuestion, setLoadingQuestion] = useState(false);
+  const [progress, setProgress] = useState({ current: 0, max: 10 });
+
 
   const initializeQuestionnaire = async () => {
+    setLoading(true);
     try {
       const response = await fetch("/api/questionnaire/initialize", {
         method: "POST",
@@ -32,7 +35,7 @@ export default function QuestionPage() {
 
       const data = await response.json();
       setQuestionnaireId(data.questionnaire_id);
-      await getNextQuestion(data.questionnaire_id);
+      setCurrentQuestion(data.first_question["data"])
     } catch (error) {
       console.error("Error initializing questionnaire:", error);
     } finally {
@@ -40,63 +43,15 @@ export default function QuestionPage() {
     }
   };
 
-  const getNextQuestion = async (qId) => {
-    // return a loading question while waiting for the next question
-    setLoadingQuestion(true);
-    setCurrentQuestion({ question: "Loading question..." });
-
-    try {
-      // First try to get an initialized/unanswered question
-      const response = await fetch(
-        `/api/questionnaire/get-most-recent-question?questionnaire_id=${qId}&user_id=${userId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log("data received: ", data);
-
-      // If question limit is reached, get conclusion
-      if (data) {
-        // Check if the numeric part of the data.id (after the first character) is greater than 15
-        if (parseInt(data.id.substring(1)) > 15) {
-          // If the condition is true, make an asynchronous GET request to fetch the conclusion
-          await fetch(
-            `/api/questionnaire/get-conclusion?questionnaire_id=${qId}&user_id=${userId}`,
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
-
-          setLoadingQuestion(true);
-          setCurrentQuestion({ question: "Loading question..." });
-
-          window.location.href = "/report";
-        }
-        console.log("Setting current question: ", data);
-        setLoadingQuestion(false);
-        setCurrentQuestion(data);
-      } else if ("conclusion" in data) {
-        // Redirect to results page or show completion message
-        window.location.href = "/report";
-      }
-    } catch (error) {
-      console.error("Error fetching/generating question:", error);
-    }
-  };
-
   const handleSubmit = async (answer) => {
+    if (!answer || (typeof answer === 'string' && answer.trim().length === 0)) {
+      console.error('Please provide a valid answer');
+      return;
+    }
+    
+
+    setLoading(true);
+
     try {
       const response = await fetch("/api/questionnaire/record-answer", {
         method: "POST",
@@ -108,6 +63,7 @@ export default function QuestionPage() {
           user_id: userId,
           question_id: currentQuestion.id,
           answer: answer,
+          // case_id: caseId
         }),
       });
 
@@ -115,9 +71,28 @@ export default function QuestionPage() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      await getNextQuestion(questionnaireId);
-    } catch (error) {
-      console.error("Error submitting answer:", error);
+      const data = await response.json();
+
+      if (data.is_complete) {
+        // Questionnaire is complete
+        setIsComplete(true);
+        setCurrentQuestion(null);
+      } else if (data.next_question) {
+        // Set the next question from the bundled response
+        setCurrentQuestion(data.next_question);
+        
+        // Update progress if available
+        if (data.question_count && data.max_questions) {
+          setProgress({
+            current: data.question_count,
+            max: data.max_questions
+          });
+        }
+      } 
+    } catch (err) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    } finally {
+      setLoading(false);
     }
   };
 
