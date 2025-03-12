@@ -9,7 +9,6 @@ from questionnaire.questionnaire import (
     get_all_questions_in_questionnaire,
     get_all_results
 )
-from case.case import add_questionnaire_to_case
 from agents.gpt import call_gpt, get_gpt_conclusion
 
 """
@@ -65,15 +64,15 @@ def record_answer():
     if not success:
         return jsonify({"error": "Failed to record answer"}), 500
     
-    # If this is the first answer and case_id is provided, associate the questionnaire with the case
-    if case_id and question_id == "q1":
-        try:
-            success = add_questionnaire_to_case(case_id, questionnaire_id)
-            if not success:
-                print(f"Warning: Failed to add questionnaire {questionnaire_id} to case {case_id}")
-        except Exception as e:
-            print(f"Error associating questionnaire with case: {str(e)}")
-            # Continue even if association fails
+    # # If this is the first answer and case_id is provided, associate the questionnaire with the case
+    # if case_id and question_id == "q1":
+    #     try:
+    #         success = add_questionnaire_to_case(case_id, questionnaire_id)
+    #         if not success:
+    #             print(f"Warning: Failed to add questionnaire {questionnaire_id} to case {case_id}")
+    #     except Exception as e:
+    #         print(f"Error associating questionnaire with case: {str(e)}")
+    #         # Continue even if association fails
     
     # Return success response
     return jsonify({

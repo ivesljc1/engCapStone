@@ -5,7 +5,7 @@ from case.case import (
     get_user_cases,
     update_case,
     add_appointment_to_case,
-    add_questionnaire_to_case,
+    add_visit_to_case,
     add_result_to_case,
     add_report_to_case,
     get_case_appointments,
@@ -26,13 +26,16 @@ def api_create_case():
         
     data = request.get_json()
     user_id = data.get("userId")
+    questionnair_id = data.get("questionnaireId")
     title = data.get("title")
     description = data.get("description")
     
     if not user_id:
         return jsonify({"error": "userId is required"}), 400
         
-    case_id = create_case(user_id, title, description)
+    case_id = create_case(user_id, questionnair_id, title, description)
+    
+    print(f"Case ID in api: {case_id}", flush=True)
     
     if case_id:
         return jsonify({
@@ -92,24 +95,24 @@ def api_add_appointment(case_id):
     else:
         return jsonify({"error": "Failed to add appointment to case"}), 500
 
-@case_blueprint.route("/api/cases/<case_id>/questionnaires", methods=["POST"])
-def api_add_questionnaire(case_id):
-    """Add a questionnaire to a case"""
+@case_blueprint.route("/api/cases/<case_id>/visit", methods=["POST"])
+def api_add_visit(case_id):
+    """Add a visit to a case"""
     if not request.is_json:
         return jsonify({"error": "Content-Type must be application/json"}), 415
         
     data = request.get_json()
-    questionnaire_id = data.get("questionnaireId")
+    visit_id = data.get("visitId")
     
-    if not questionnaire_id:
-        return jsonify({"error": "questionnaireId is required"}), 400
+    if not visit_id:
+        return jsonify({"error": "visitId is required"}), 400
         
-    success = add_questionnaire_to_case(case_id, questionnaire_id)
+    success = add_visit_to_case(case_id, visit_id)
     
     if success:
-        return jsonify({"message": "Questionnaire added to case successfully"}), 200
+        return jsonify({"message": "Visit added to case successfully"}), 200
     else:
-        return jsonify({"error": "Failed to add questionnaire to case"}), 500
+        return jsonify({"error": "Failed to add visit to case"}), 500
 
 @case_blueprint.route("/api/cases/<case_id>/results", methods=["POST"])
 def api_add_result(case_id):

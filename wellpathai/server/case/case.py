@@ -6,7 +6,7 @@ from agents.gpt import generate_case_title
 # Initialize Firestore
 db = firestore.client()
 
-def create_case(user_id, title=None, description=None):
+def create_case(user_id, questionnaire_id, title=None, description=None):
     """
     Create a new case for a user
     
@@ -21,12 +21,10 @@ def create_case(user_id, title=None, description=None):
     try:
         # Generate a default title if none provided
         if not title:
-            if description:
-                gpt_title = generate_case_title(description)
-                if gpt_title:
-                    title = gpt_title
-                else:
-                    title = f"Case {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+            gpt_description, gpt_title = generate_case_title(questionnaire_id, user_id)
+            if gpt_title and gpt_description:
+                title = gpt_title
+                description = gpt_description
             else:
                 title = f"Case {datetime.now().strftime('%Y-%m-%d %H:%M')}"
             
@@ -38,10 +36,7 @@ def create_case(user_id, title=None, description=None):
             'createdAt': datetime.now(),
             'updatedAt': datetime.now(),
             'status': 'active',  # active, closed
-            'appointments': [],
-            'questionnaires': [],
-            'results': [],
-            'reports': []
+            'visits': [],
         }
         
         # Add to Firestore
@@ -53,6 +48,8 @@ def create_case(user_id, title=None, description=None):
         user_ref.update({
             'cases': firestore.ArrayUnion([case_ref.id])
         })
+        
+        print(f"Case created successfully: {case_ref.id}", flush=True)
         
         return case_ref.id
     except Exception as e:
@@ -187,19 +184,19 @@ def add_appointment_to_case(case_id, appointment_id):
         print(f"Error adding appointment to case: {str(e)}")
         return False
 
-def add_questionnaire_to_case(case_id, questionnaire_id):
+def add_visit_to_case(case_id, visit_id):
     """
-    Add a questionnaire to a case
+    Add a visit to a case
     
     Args:
         case_id (str): The ID of the case
-        questionnaire_id (str): The ID of the questionnaire
+        visit_id (str): The ID of the visit
         
     Returns:
         bool: True if successful, False otherwise
     """
     try:
-        # Update case with questionnaire ID
+        # Update case with visit ID
         case_ref = db.collection('cases').document(case_id)
         case = case_ref.get()
         
@@ -208,33 +205,32 @@ def add_questionnaire_to_case(case_id, questionnaire_id):
             return False
             
         case_ref.update({
-            'questionnaires': firestore.ArrayUnion([questionnaire_id]),
+            'visits': firestore.ArrayUnion([visit_id]),
             'updatedAt': datetime.now()
         })
         
-        # Update questionnaire with case ID
-        questionnaire_ref = db.collection('questionnaires').document(questionnaire_id)
-        questionnaire = questionnaire_ref.get()
+        # Update visit with case ID
+        visit_ref = db.collection('visits').document(visit_id)
+        visit = visit_ref.get()
         
-        if not questionnaire.exists:
-            print(f"Questionnaire {questionnaire_id} does not exist")
+        if not visit.exists:
+            print(f"Visit {visit_id} does not exist")
             # Rollback the case update
             case_ref.update({
-                'questionnaires': firestore.ArrayRemove([questionnaire_id])
+                'visits': firestore.ArrayRemove([visit_id])
             })
             return False
             
-        questionnaire_ref.update({
+        visit_ref.update({
             'caseId': case_id,
             'updatedAt': datetime.now()
         })
         
-        print(f"Successfully linked questionnaire {questionnaire_id} to case {case_id}")
+        print(f"Successfully linked visit {visit_id} to case {case_id}")
         return True
     except Exception as e:
-        print(f"Error adding questionnaire to case: {str(e)}")
+        print(f"Error adding visit to case: {str(e)}")
         return False
-
 
 def add_result_to_case(case_id, result_id):
     """

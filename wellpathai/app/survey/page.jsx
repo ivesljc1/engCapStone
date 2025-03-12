@@ -13,7 +13,10 @@ export default function QuestionPage() {
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadingQuestion, setLoadingQuestion] = useState(false);
+  const [questionIndex, setQuestionIndex] = useState("");
+  const [caseId, setCaseId] = useState("");
 
+  // Initialize questionnaire for the user
   const initializeQuestionnaire = async () => {
     try {
       const response = await fetch("/api/questionnaire/initialize", {
@@ -40,6 +43,7 @@ export default function QuestionPage() {
     }
   };
 
+  // Get the next question in the questionnaire
   const getNextQuestion = async (qId) => {
     // return a loading question while waiting for the next question
     setLoadingQuestion(true);
@@ -63,12 +67,15 @@ export default function QuestionPage() {
 
       const data = await response.json();
       console.log("data received: ", data);
+      setQuestionIndex(data.id);
 
-      // If question limit is reached, get conclusion
-      if (data) {
-        // Check if the numeric part of the data.id (after the first character) is greater than 15
+      // If question limit is reached or conclusion is present, redirect to report
+      if (
+        data &&
+        (parseInt(data.id.substring(1)) > 15 || "conclusion" in data)
+      ) {
+        // Make an asynchronous GET request to fetch the conclusion if needed
         if (parseInt(data.id.substring(1)) > 15) {
-          // If the condition is true, make an asynchronous GET request to fetch the conclusion
           await fetch(
             `/api/questionnaire/get-conclusion?questionnaire_id=${qId}&user_id=${userId}`,
             {
@@ -79,23 +86,60 @@ export default function QuestionPage() {
             }
           );
 
-          setLoadingQuestion(true);
-          setCurrentQuestion({ question: "Loading question..." });
+          // Add questionnaire to visit
+          const visitResponse = await fetch(`/api/visit/create`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              userId: userId,
+              caseId: caseId,
+              questionnaireId: questionnaireId,
+            }),
+          });
 
-          window.location.href = "/report";
+          if (!visitResponse.ok) {
+            throw new Error(`HTTP error! status: ${visitResponse.status}`);
+          }
+
+          const visitData = await visitResponse.json();
+          console.log(visitData.message);
+          console.log(visitData.visitId);
+
+          // Add visit to case
+          const addVisitResponse = await fetch(`/api/cases/${caseId}/visit`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              visitId: visitData.visitId,
+            }),
+          });
+
+          if (!addVisitResponse.ok) {
+            throw new Error(`HTTP error! status: ${addVisitResponse.status}`);
+          }
+
+          const addVisitData = await addVisitResponse.json();
+          console.log(addVisitData.message);
         }
+
+        setLoadingQuestion(true);
+        setCurrentQuestion({ question: "Loading question..." });
+        window.location.href = "/report";
+      } else {
         console.log("Setting current question: ", data);
         setLoadingQuestion(false);
         setCurrentQuestion(data);
-      } else if ("conclusion" in data) {
-        // Redirect to results page or show completion message
-        window.location.href = "/report";
       }
     } catch (error) {
       console.error("Error fetching/generating question:", error);
     }
   };
 
+  // Submit the user's answer to the current question
   const handleSubmit = async (answer) => {
     try {
       const response = await fetch("/api/questionnaire/record-answer", {
@@ -122,10 +166,10 @@ export default function QuestionPage() {
   };
 
   const handleBack = () => {
-    // Implement back functionality if needed
-    console.log("Going back");
+    window.location.href = "/dashboard";
   };
 
+  // useEffect to check if the user is authenticated
   useEffect(() => {
     const auth = getAuth();
     setLoading(true);
@@ -154,6 +198,38 @@ export default function QuestionPage() {
       initializeQuestionnaire();
     }
   }, [userId]); // Run when userId changes
+
+  //After q5, send the questionnaire answers to create the case
+  useEffect(() => {
+    const createCase = async () => {
+      if (questionIndex === "q6") {
+        try {
+          const response = await fetch("/api/cases/create", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              userId: userId,
+              questionnaireId: questionnaireId,
+            }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            console.log(data.message);
+            setCaseId(data.caseId);
+          } else {
+            console.error("Error creating case");
+          }
+        } catch (error) {
+          console.error("Error creating case:", error);
+        }
+      }
+    };
+
+    createCase();
+  }, [questionIndex]);
 
   if (loading) return <LoadingPage />;
   if (!currentQuestion) return <div>No questions available</div>;
