@@ -13,11 +13,13 @@ export default function QuestionPage() {
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadingQuestion, setLoadingQuestion] = useState(false);
+  const [progress, setProgress] = useState({ current: 0, max: 10 });
   const [questionIndex, setQuestionIndex] = useState("");
   const [caseId, setCaseId] = useState("");
 
   // Initialize questionnaire for the user
   const initializeQuestionnaire = async () => {
+    setLoading(true);
     try {
       const response = await fetch("/api/questionnaire/initialize", {
         method: "POST",
@@ -35,7 +37,7 @@ export default function QuestionPage() {
 
       const data = await response.json();
       setQuestionnaireId(data.questionnaire_id);
-      await getNextQuestion(data.questionnaire_id);
+      setCurrentQuestion(data.first_question["data"]);
     } catch (error) {
       console.error("Error initializing questionnaire:", error);
     } finally {
@@ -141,6 +143,13 @@ export default function QuestionPage() {
 
   // Submit the user's answer to the current question
   const handleSubmit = async (answer) => {
+    if (!answer || (typeof answer === "string" && answer.trim().length === 0)) {
+      console.error("Please provide a valid answer");
+      return;
+    }
+
+    setLoading(true);
+
     try {
       const response = await fetch("/api/questionnaire/record-answer", {
         method: "POST",
@@ -152,6 +161,7 @@ export default function QuestionPage() {
           user_id: userId,
           question_id: currentQuestion.id,
           answer: answer,
+          // case_id: caseId
         }),
       });
 
@@ -159,9 +169,28 @@ export default function QuestionPage() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      await getNextQuestion(questionnaireId);
-    } catch (error) {
-      console.error("Error submitting answer:", error);
+      const data = await response.json();
+
+      if (data.is_complete) {
+        // Questionnaire is complete
+        setIsComplete(true);
+        setCurrentQuestion(null);
+      } else if (data.next_question) {
+        // Set the next question from the bundled response
+        setCurrentQuestion(data.next_question);
+
+        // Update progress if available
+        if (data.question_count && data.max_questions) {
+          setProgress({
+            current: data.question_count,
+            max: data.max_questions,
+          });
+        }
+      }
+    } catch (err) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    } finally {
+      setLoading(false);
     }
   };
 

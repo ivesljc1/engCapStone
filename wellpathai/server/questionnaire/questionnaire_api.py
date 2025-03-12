@@ -28,17 +28,21 @@ def init_questionnaire():
 
     data = request.get_json()
     user_id = data.get("user_id")
-    
+
     if not user_id:
         return jsonify({"error": "user_id is required"}), 400
     
     doc_id = initialize_questionnaire_database(user_id)
     
     if doc_id:
-        
+        # Get the first question to return with the response
+        firstQ = get_most_recent_question(doc_id, user_id)
+
+        print(firstQ, flush=True)
         return jsonify({
             "message": "Questionnaire initialized successfully",
-            "questionnaire_id": doc_id
+            "questionnaire_id": doc_id,
+            "first_question": firstQ
         }), 201
         
     return jsonify({"error": "Failed to initialize questionnaire"}), 500
@@ -74,10 +78,61 @@ def record_answer():
     #         print(f"Error associating questionnaire with case: {str(e)}")
     #         # Continue even if association fails
     
-    # Return success response
-    return jsonify({
-        "message": "Answer recorded successfully",
-    }), 200
+    # Get the next question (reusing logic from get_newest_question)
+    response = get_most_recent_question(questionnaire_id, user_id)
+    
+    if response["success"]:
+        # There's a predefined question available
+        return jsonify({
+            "message": "Answer recorded successfully",
+            "next_question": response["data"],
+            "is_predefined": True
+        }), 200
+    elif response["error"] == "NO_INITIALIZED_QUESTIONS":
+        # No predefined questions left, need to generate with GPT
+        print("Calling GPT to generate next question", flush=True)
+        
+        # Set a maximum number of questions (adjust as needed)
+        MAX_QUESTIONS = 20
+        
+        # Get all questions to check how many we've already asked
+        all_questions = get_all_questions_in_questionnaire(questionnaire_id, user_id)
+        question_count = len([q for q in all_questions if "question" in q])
+        
+        # Check if we've reached the maximum number of questions
+        if question_count >= MAX_QUESTIONS:
+            return jsonify({
+                "message": "Answer recorded successfully. Questionnaire complete.",
+                "next_question": None,
+                "is_complete": True
+            }), 200
+        
+        # Generate with GPT (reusing your existing GPT call logic)
+        gpt_response = call_gpt(questionnaire_id, user_id)
+        print("GPT response: ", gpt_response, flush=True)
+        
+        if gpt_response:
+            return jsonify({
+                "message": "Answer recorded and new question generated",
+                "next_question": gpt_response,
+                "is_predefined": False,
+                "question_count": question_count + 1,
+                "max_questions": MAX_QUESTIONS
+            }), 200
+        else:
+            # If GPT generation failed, mark as complete
+            return jsonify({
+                "message": "Answer recorded successfully. Questionnaire complete.",
+                "next_question": None,
+                "is_complete": True
+            }), 200
+    else:
+        # Some other error occurred
+        return jsonify({
+            "message": "Answer recorded but couldn't get next question",
+            "error": response["error"],
+            "next_question": None
+        }), 200
 
 #get questions in questionnaire
 @questionnaire_blueprint.route("/api/questionnaire/get-all-questions", methods=["GET"])
@@ -96,28 +151,28 @@ def get_questions():
     return jsonify({"error": "Failed to get questions"}), 500
 
 # Get the most recent question in a questionnaire
-@questionnaire_blueprint.route("/api/questionnaire/get-most-recent-question", methods=["GET"])
-def get_newest_question():
-    questionnaire_id = request.args.get("questionnaire_id")
-    user_id = request.args.get("user_id")
+# @questionnaire_blueprint.route("/api/questionnaire/get-most-recent-question", methods=["GET"])
+# def get_newest_question():
+#     questionnaire_id = request.args.get("questionnaire_id")
+#     user_id = request.args.get("user_id")
     
-    if not all([questionnaire_id, user_id]):
-        return jsonify({"error": "questionnaire_id and user_id are required"}), 400
+#     if not all([questionnaire_id, user_id]):
+#         return jsonify({"error": "questionnaire_id and user_id are required"}), 400
     
-    response = get_most_recent_question(questionnaire_id, user_id)
+#     response = get_most_recent_question(questionnaire_id, user_id)
     
-    if response["success"]:
-        return jsonify(response["data"]), 200
-    elif response["error"] == "NO_INITIALIZED_QUESTIONS":
-        # Call GPT to generate next question
-        print("Calling GPT to generate next question", flush=True)
-        gpt_response = call_gpt(questionnaire_id, user_id)
-        print("GPT response: ", gpt_response, flush=True)
-        if gpt_response:
-            return jsonify(gpt_response), 200
-        else:
-            return jsonify({"error": gpt_response["error"]}), 500
-    return jsonify({"error": response["error"]}), 404
+#     if response["success"]:
+#         return jsonify(response["data"]), 200
+#     elif response["error"] == "NO_INITIALIZED_QUESTIONS":
+#         # Call GPT to generate next question
+#         print("Calling GPT to generate next question", flush=True)
+#         gpt_response = call_gpt(questionnaire_id, user_id)
+#         print("GPT response: ", gpt_response, flush=True)
+#         if gpt_response:
+#             return jsonify(gpt_response), 200
+#         else:
+#             return jsonify({"error": gpt_response["error"]}), 500
+#     return jsonify({"error": response["error"]}), 404
 
 @questionnaire_blueprint.route("/api/questionnaire/get-conclusion", methods=["GET"])
 def get_conclusion():
