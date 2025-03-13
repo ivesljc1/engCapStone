@@ -38,7 +38,7 @@ def register_user():
 
     try:
         # Create a new user in Firebase Authentication
-        user = auth.update_user(
+        auth.update_user(
             uid,
             display_name=f"{first_name} {last_name}",
             email_verified=False,
