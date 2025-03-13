@@ -442,6 +442,77 @@ def get_most_recent_question(questionnaire_id, user_id):
     except Exception as e:
         return { "success": False, "data": None, "error": str(e) }
 
+def get_next_question(questionnaire_id, user_id):
+    """
+    Get the next question for the user, either from predefined questions or by generating with GPT.
+    
+    Args:
+        questionnaire_id (str): ID of the questionnaire
+        user_id (str): ID of the user
+        
+    Returns:
+        dict: Response with next question information
+    """
+    # First try to get a predefined question
+    response = get_most_recent_question(questionnaire_id, user_id)
+    
+    if response["success"]:
+        # There's a predefined question available
+        return {
+            "message": "Answer recorded successfully",
+            "next_question": response["data"],
+            "is_predefined": True
+        }
+    elif response["error"] == "NO_INITIALIZED_QUESTIONS":
+        # No predefined questions left, check max questions and possibly generate with GPT
+        print("Calling GPT to generate next question", flush=True)
+        
+        # Set a maximum number of questions (adjust as needed)
+        MAX_QUESTIONS = 20
+        
+        # Get all questions to check how many we've already asked
+        all_questions = get_all_questions_in_questionnaire(questionnaire_id, user_id)
+        question_count = len([q for q in all_questions if "question" in q])
+        
+        # Check if we've reached the maximum number of questions
+        if question_count >= MAX_QUESTIONS:
+            return {
+                "message": "Answer recorded successfully. Questionnaire complete.",
+                "next_question": None,
+                "is_complete": True,
+                "question_count": question_count,
+                "max_questions": MAX_QUESTIONS
+            }
+        
+        # Generate with GPT 
+        gpt_response = call_gpt(questionnaire_id, user_id)
+        print("GPT response: ", gpt_response, flush=True)
+        
+        if gpt_response and "question" in gpt_response:
+            return {
+                "message": "Answer recorded and new question generated",
+                "next_question": gpt_response,
+                "is_predefined": False,
+                "question_count": question_count + 1,
+                "max_questions": MAX_QUESTIONS
+            }
+        else:
+            # If GPT generation failed, mark as complete
+            return {
+                "message": "Answer recorded successfully. Questionnaire complete.",
+                "next_question": None,
+                "is_complete": True,
+                "question_count": question_count,
+                "max_questions": MAX_QUESTIONS
+            }
+    else:
+        # Some other error occurred
+        return {
+            "message": "Answer recorded but couldn't get next question",
+            "error": response["error"],
+            "next_question": None
+        }
+
 def get_most_recent_result(user_id):
     """
     user_id: str, ID of the user

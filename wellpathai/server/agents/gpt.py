@@ -79,19 +79,6 @@ def generate_next_question(questionnaire_data):
 
         print("Debugging output from response of gpt: ", response_data, flush=True)
         return response_data
-        # response_data = {'question': 'How would you rate your overall energy levels on a scale of 1-5?', 'type': 'choice', 'options': ['1', '2', '3', '4', '5']}
-        # Check if the response is a question or a conclusion
-        # if "question" in response_data:
-        #     # Add the question to the questionnaire            
-        #     success, message = add_question_to_questionnaire(questionnaire_id, user_id, response_data)
-        #     if success:
-        #         return response_data
-        #     else:
-        #         return {"status": "error", "error": message}
-
-        # else:
-        #     return {"status": "error", "error": "Unknown response format"}
-
     except json.JSONDecodeError:
         return {"status": "error", "error": "Failed to parse JSON response"}
 
@@ -157,7 +144,7 @@ def generate_conclusion(questionnaire_data):
     except json.JSONDecodeError:
         return {"status": "error", "error": "Failed to parse JSON response"}
 
-def generate_case_title(questionnaire_id, user_id):
+def generate_case_title(questionnaire_data):
     """
     Generate a concise title (max 2 words) for a case based on the answered questions in a questionnaire
     
@@ -167,11 +154,6 @@ def generate_case_title(questionnaire_id, user_id):
     Returns:
         str: A generated title for the case
     """
-    
-    questionnaire_data = get_all_questions_in_questionnaire(questionnaire_id, user_id)
-
-    if not questionnaire_id:
-        return None
     
     # Craft the prompt
     system_prompt = "You are a medical assistant tasked with creating concise, descriptive titles."
