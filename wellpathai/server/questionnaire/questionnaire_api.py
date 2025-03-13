@@ -1,15 +1,18 @@
 from flask import Blueprint, request, jsonify
 from questionnaire.questionnaire import (
     initialize_questionnaire_database, 
-    add_question_to_questionnaire, 
+    call_gpt, get_gpt_conclusion,
     record_answer_to_question, 
-    record_result_to_questionnaire,
     get_most_recent_question,
     get_most_recent_result,
     get_all_questions_in_questionnaire,
-    get_all_results
+    get_all_results,
+    handle_case_selection,
+    handle_user_pick_previous_case,
+    CASE_SELECTION_QUESTION
 )
-from agents.gpt import call_gpt, get_gpt_conclusion
+from case.case import add_questionnaire_to_case
+
 
 """
 # Blueprint for questionnaire route
@@ -19,6 +22,52 @@ from agents.gpt import call_gpt, get_gpt_conclusion
 questionnaire_blueprint = Blueprint("questionnaire", __name__)
 
 # Add route to blueprint
+@questionnaire_blueprint.route("/api/questionnaire/case-selection", methods=["GET"])
+def get_case_selection():
+    """Get the user's case selection question"""
+    return jsonify(CASE_SELECTION_QUESTION), 200
+
+
+@questionnaire_blueprint.route("/api/questionnaire/case-selection", methods=["POST"])
+def case_selection():
+    """Handle the user's case selection"""
+    if not request.is_json:
+        return jsonify({"error": "Content-Type must be application/json"}), 415
+        
+    data = request.get_json()
+    user_id = data.get("user_id")
+    selection = data.get("selection")
+    
+    if not all([user_id, selection]):
+        return jsonify({"error": "user_id and selection are required"}), 400
+        
+    response = handle_case_selection(user_id, selection)
+    
+    if response.get("success"):
+        return jsonify(response), 200
+    else:
+        return jsonify({"error": response.get("error")}), 500
+
+@questionnaire_blueprint.route("/api/questionnaire/select-previsoucase", methods=["POST"])
+def select_case():
+    """Handle the user selecting a previous case"""
+    if not request.is_json:
+        return jsonify({"error": "Content-Type must be application/json"}), 415
+        
+    data = request.get_json()
+    user_id = data.get("user_id")
+    case_id = data.get("case_id")
+    
+    if not all([user_id, case_id]):
+        return jsonify({"error": "user_id and case_id are required"}), 400
+        
+    response = handle_user_pick_previous_case(user_id, case_id)
+    
+    if response.get("success"):
+        return jsonify(response), 200
+    else:
+        return jsonify({"error": response.get("error")}), 500
+
 # Initialize the questionnaire database for a user
 @questionnaire_blueprint.route("/api/questionnaire/initialize", methods=["POST"])
 def init_questionnaire():
@@ -38,7 +87,6 @@ def init_questionnaire():
         # Get the first question to return with the response
         firstQ = get_most_recent_question(doc_id, user_id)
 
-        print(firstQ, flush=True)
         return jsonify({
             "message": "Questionnaire initialized successfully",
             "questionnaire_id": doc_id,

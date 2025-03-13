@@ -1,10 +1,5 @@
 from flask import jsonify
 from openai import OpenAI
-from questionnaire.questionnaire import (
-    get_all_questions_in_questionnaire, 
-    add_question_to_questionnaire,
-    record_result_to_questionnaire
-)
 import json
 import os
 from dotenv import load_dotenv
@@ -13,10 +8,7 @@ load_dotenv(".env.local")
 
 client = OpenAI(api_key = os.getenv("OPENAI_API_KEY"))
 
-def call_gpt(questionnaire_id, user_id):
-    # Get the questionnaire data
-    questionnaire_data = get_all_questions_in_questionnaire(questionnaire_id, user_id)
-    
+def generate_next_question(questionnaire_data):
     # Craft the prompt
     system_prompt = "You are an intelligent assistant for a wellness app, guiding users through dynamic, personalized questions to identify potential health needs."
     user_prompt = f"""
@@ -86,26 +78,24 @@ def call_gpt(questionnaire_id, user_id):
         '''
 
         print("Debugging output from response of gpt: ", response_data, flush=True)
+        return response_data
         # response_data = {'question': 'How would you rate your overall energy levels on a scale of 1-5?', 'type': 'choice', 'options': ['1', '2', '3', '4', '5']}
         # Check if the response is a question or a conclusion
-        if "question" in response_data:
-            # Add the question to the questionnaire            
-            success, message = add_question_to_questionnaire(questionnaire_id, user_id, response_data)
-            if success:
-                return response_data
-            else:
-                return {"status": "error", "error": message}
+        # if "question" in response_data:
+        #     # Add the question to the questionnaire            
+        #     success, message = add_question_to_questionnaire(questionnaire_id, user_id, response_data)
+        #     if success:
+        #         return response_data
+        #     else:
+        #         return {"status": "error", "error": message}
 
-        else:
-            return {"status": "error", "error": "Unknown response format"}
+        # else:
+        #     return {"status": "error", "error": "Unknown response format"}
 
     except json.JSONDecodeError:
         return {"status": "error", "error": "Failed to parse JSON response"}
 
-def get_gpt_conclusion(questionnaire_id, user_id):
-    # Get the questionnaire data
-    questionnaire_data = get_all_questions_in_questionnaire(questionnaire_id, user_id)
-
+def generate_conclusion(questionnaire_data):
     # Craft the prompt
     system_prompt = "You are a health assistant generating concise wellness report and personalized recommendations for supplements or tests based on users' questionnaire responses."
     user_prompt = f"""
@@ -153,17 +143,17 @@ def get_gpt_conclusion(questionnaire_id, user_id):
         # Parse the JSON string
         response_data = json.loads(json_string)
         print("Debugging output from response of gpt: ", response_data, flush=True)
-
+        return response_data
         # Check if the response is a conclusion
-        if "conclusion" in response_data:
-            # Record the result in the questionnaire
-            success, message = record_result_to_questionnaire(questionnaire_id, user_id, response_data)
-            if success:
-                return response_data
-            else:
-                return {"status": "error", "error": message}
-        else:
-            return {"status": "error", "error": "Unknown response format"}
+        # if "conclusion" in response_data:
+        #     # Record the result in the questionnaire
+        #     success, message = record_result_to_questionnaire(questionnaire_id, user_id, response_data)
+        #     if success:
+        #         return response_data
+        #     else:
+        #         return {"status": "error", "error": message}
+        # else:
+        #     return {"status": "error", "error": "Unknown response format"}
     except json.JSONDecodeError:
         return {"status": "error", "error": "Failed to parse JSON response"}
 

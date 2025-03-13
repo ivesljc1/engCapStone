@@ -1,14 +1,113 @@
 from firebase_admin import firestore
 from datetime import datetime
-
+from case.case import get_user_cases
 from flask import jsonify
 
 db = firestore.client()
+
+CASE_SELECTION_QUESTION = { #Get the initial question for case selection.
+    "id": "q0",
+    "question": "Do you want to create a new case or select an existing case?",
+    "type": "choice",
+    "options": ["Create New Case", "Select Existing Case"],
+    "initialized": True
+}
+    
+
+def handle_case_selection(user_id, selection):
+    """
+    Handle user's case selection choice without creating a questionnaire.
+    
+    Args:
+        user_id (str): ID of the user
+        selection (str): User's selection ('Create New Case' or 'Select Existing Case')
+        
+    Returns:
+        dict: Response with next steps based on selection
+    """
+    try:
+        if selection == "Create New Case":
+            # Initialize a new questionnaire for the user
+            questionnaire_id = initialize_questionnaire_database(user_id)
+            if not questionnaire_id:
+                return {"success": False, "error": "Failed to initialize questionnaire"}
+            
+            # Get the first question
+            first_question = get_most_recent_question(questionnaire_id, user_id)
+            
+            return {
+                "success": True,
+                "message": "create new case selected and first question passed",
+                "action": "create_new_case",
+                "questionnaire_id": questionnaire_id,
+                "first_question": first_question if first_question["success"] else None
+            }
+        elif selection == "Select Existing Case":
+            # Get user's existing cases
+            existing_cases = get_user_cases(user_id)
+            
+            return {
+                "success": True,
+                "message": "select existing case selected",
+                "action": "select_existing_case",
+                "cases": existing_cases
+            }
+        else:
+            return {"success": False, "error": "Invalid selection"}
+    except Exception as e:
+        print(f"Error handling case selection: {str(e)}")
+        return {"success": False, "error": str(e)}
+    
+def handle_user_pick_previous_case(user_id, case_id):
+    """
+    If user picks a previous case, create a new questionnaire linked to that case.
+    Bind the questionnaire to the new visit.
+    Add the new visit into the selected case.
+    
+    Args:
+        user_id (str): ID of the user
+        case_id (str): ID of the selected case
+        
+    Returns:
+        dict: Response with questionnaire ID and first question
+    """
+    try:
+        # Verify the case exists and belongs to the user
+        case_ref = db.collection('cases').document(case_id)
+        case_doc = case_ref.get()
+        
+        if not case_doc.exists:
+            return {"success": False, "error": "Case not found"}
+        
+        case_data = case_doc.to_dict()
+        if case_data.get('userId') != user_id:
+            return {"success": False, "error": "Unauthorized access to case"}
+        
+        # Initialize a new questionnaire
+        questionnaire_id = initialize_questionnaire_database(user_id)
+        if not questionnaire_id:
+            return {"success": False, "error": "Failed to initialize questionnaire"}
+        
+        # Get the first question
+        first_question = get_most_recent_question(questionnaire_id, user_id)
+        
+        return {
+            "success": True,
+            "message": "first question passed for previous case",
+            "questionnaire_id": questionnaire_id,
+            "first_question": first_question if first_question["success"] else None,
+            "case_id": case_id,
+        }
+        
+    except Exception as e:
+        print(f"Error handling previous case selection: {str(e)}")
+        return {"success": False, "error": str(e)}
 
 def initialize_questionnaire_database(user_id):
 
     """
     user_id: str, ID of the user
+    Return the ID of the newly created questionnaire
     """
 
     # Define initial questions
@@ -124,7 +223,6 @@ def initialize_questionnaire_database(user_id):
         print(f"Error initializing questionnaire database: {str(e)}")
         return False
 
-
 def add_question_to_questionnaire(questionnaire_id, user_id, new_question): 
 
     """
@@ -170,7 +268,6 @@ def add_question_to_questionnaire(questionnaire_id, user_id, new_question):
         
     except Exception as e:
         return False, str(e)
-    
 
 def record_answer_to_question(questionnaire_id, user_id, question_id, answer):
     """
@@ -257,7 +354,6 @@ def record_answer_to_question(questionnaire_id, user_id, question_id, answer):
         
     except Exception as e:
         return False, str(e)
-
 
 def record_result_to_questionnaire(questionnaire_id, user_id, result_text):
     """
@@ -386,6 +482,7 @@ def get_most_recent_result(user_id):
 
 # Get all questionnarie results of the user
 def get_all_results(user_id):
+    
     """
     user_id: str, ID of the user
     """
@@ -423,3 +520,67 @@ def get_all_results(user_id):
     except Exception as e:
         # Return an error message if an exception occurs
         return False, str(e)
+    
+def call_gpt(questionnaire_id, user_id):
+    """
+    Call GPT to generate the next question, handle recording in database
+    
+    Args:
+        questionnaire_id (str): ID of the questionnaire
+        user_id (str): ID of the user
+        
+    Returns:
+        dict: Next question data or error information
+    """
+    from agents.gpt import generate_next_question  # Import here to avoid circular imports
+    
+    # Get the questionnaire data
+    questionnaire_data = get_all_questions_in_questionnaire(questionnaire_id, user_id)
+    
+    if not questionnaire_data:
+        return {"status": "error", "error": "Failed to retrieve questionnaire data"}
+    
+    # Call GPT to generate the next question
+    response_data = generate_next_question(questionnaire_data)
+    
+    if "question" in response_data:
+        # Add the question to the questionnaire            
+        success, message = add_question_to_questionnaire(questionnaire_id, user_id, response_data)
+        if success:
+            return response_data
+        else:
+            return {"status": "error", "error": message}
+    else:
+        return {"status": "error", "error": "Unknown response format"}
+
+def get_gpt_conclusion(questionnaire_id, user_id):
+    """
+    Call GPT to generate a conclusion, handle recording in database
+    
+    Args:
+        questionnaire_id (str): ID of the questionnaire
+        user_id (str): ID of the user
+        
+    Returns:
+        dict: Conclusion data or error information
+    """
+    from agents.gpt import generate_conclusion  # Import here to avoid circular imports
+    
+    # Get the questionnaire data
+    questionnaire_data = get_all_questions_in_questionnaire(questionnaire_id, user_id)
+    
+    if not questionnaire_data:
+        return {"status": "error", "error": "Failed to retrieve questionnaire data"}
+    
+    # Call GPT to generate the conclusion
+    response_data = generate_conclusion(questionnaire_data)
+    
+    if "conclusion" in response_data:
+        # Record the result in the questionnaire
+        success, message = record_result_to_questionnaire(questionnaire_id, user_id, response_data)
+        if success:
+            return response_data
+        else:
+            return {"status": "error", "error": message}
+    else:
+        return {"status": "error", "error": "Unknown response format"}
