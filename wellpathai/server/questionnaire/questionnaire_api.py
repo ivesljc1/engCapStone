@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from questionnaire.questionnaire import (
     initialize_questionnaire_database, 
+    call_gpt, get_gpt_conclusion,
     record_answer_to_question, 
     get_most_recent_question,
     get_most_recent_result,
@@ -11,7 +12,6 @@ from questionnaire.questionnaire import (
     CASE_SELECTION_QUESTION
 )
 from case.case import add_questionnaire_to_case
-from agents.gpt import call_gpt, get_gpt_conclusion
 
 """
 # Blueprint for questionnaire route
@@ -68,31 +68,31 @@ def select_case():
         return jsonify({"error": response.get("error")}), 500
 
 # Initialize the questionnaire database for a user
-# @questionnaire_blueprint.route("/api/questionnaire/initialize", methods=["POST"])
-# def init_questionnaire():
-#     # Validate content type
-#     if not request.is_json:
-#         return jsonify({"error": "Content-Type must be application/json"}), 415
+@questionnaire_blueprint.route("/api/questionnaire/initialize", methods=["POST"])
+def init_questionnaire():
+    # Validate content type
+    if not request.is_json:
+        return jsonify({"error": "Content-Type must be application/json"}), 415
 
-#     data = request.get_json()
-#     user_id = data.get("user_id")
+    data = request.get_json()
+    user_id = data.get("user_id")
 
-#     if not user_id:
-#         return jsonify({"error": "user_id is required"}), 400
+    if not user_id:
+        return jsonify({"error": "user_id is required"}), 400
     
-#     doc_id = initialize_questionnaire_database(user_id)
+    doc_id = initialize_questionnaire_database(user_id)
     
-#     if doc_id:
-#         # Get the first question to return with the response
-#         firstQ = get_most_recent_question(doc_id, user_id)
+    if doc_id:
+        # Get the first question to return with the response
+        firstQ = get_most_recent_question(doc_id, user_id)
 
-#         return jsonify({
-#             "message": "Questionnaire initialized successfully",
-#             "questionnaire_id": doc_id,
-#             "first_question": firstQ
-#         }), 201
+        return jsonify({
+            "message": "Questionnaire initialized successfully",
+            "questionnaire_id": doc_id,
+            "first_question": firstQ
+        }), 201
         
-#     return jsonify({"error": "Failed to initialize questionnaire"}), 500
+    return jsonify({"error": "Failed to initialize questionnaire"}), 500
 
 # Records an answer to a specific question in the questionnaire
 @questionnaire_blueprint.route("/api/questionnaire/record-answer", methods=["POST"])

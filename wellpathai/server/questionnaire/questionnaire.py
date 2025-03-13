@@ -1,7 +1,6 @@
 from firebase_admin import firestore
 from datetime import datetime
 from case.case import get_user_cases
-
 from flask import jsonify
 
 db = firestore.client()
@@ -521,3 +520,67 @@ def get_all_results(user_id):
     except Exception as e:
         # Return an error message if an exception occurs
         return False, str(e)
+    
+def call_gpt(questionnaire_id, user_id):
+    """
+    Call GPT to generate the next question, handle recording in database
+    
+    Args:
+        questionnaire_id (str): ID of the questionnaire
+        user_id (str): ID of the user
+        
+    Returns:
+        dict: Next question data or error information
+    """
+    from agents.gpt import generate_next_question  # Import here to avoid circular imports
+    
+    # Get the questionnaire data
+    questionnaire_data = get_all_questions_in_questionnaire(questionnaire_id, user_id)
+    
+    if not questionnaire_data:
+        return {"status": "error", "error": "Failed to retrieve questionnaire data"}
+    
+    # Call GPT to generate the next question
+    response_data = generate_next_question(questionnaire_data)
+    
+    if "question" in response_data:
+        # Add the question to the questionnaire            
+        success, message = add_question_to_questionnaire(questionnaire_id, user_id, response_data)
+        if success:
+            return response_data
+        else:
+            return {"status": "error", "error": message}
+    else:
+        return {"status": "error", "error": "Unknown response format"}
+
+def get_gpt_conclusion(questionnaire_id, user_id):
+    """
+    Call GPT to generate a conclusion, handle recording in database
+    
+    Args:
+        questionnaire_id (str): ID of the questionnaire
+        user_id (str): ID of the user
+        
+    Returns:
+        dict: Conclusion data or error information
+    """
+    from agents.gpt import generate_conclusion  # Import here to avoid circular imports
+    
+    # Get the questionnaire data
+    questionnaire_data = get_all_questions_in_questionnaire(questionnaire_id, user_id)
+    
+    if not questionnaire_data:
+        return {"status": "error", "error": "Failed to retrieve questionnaire data"}
+    
+    # Call GPT to generate the conclusion
+    response_data = generate_conclusion(questionnaire_data)
+    
+    if "conclusion" in response_data:
+        # Record the result in the questionnaire
+        success, message = record_result_to_questionnaire(questionnaire_id, user_id, response_data)
+        if success:
+            return response_data
+        else:
+            return {"status": "error", "error": message}
+    else:
+        return {"status": "error", "error": "Unknown response format"}
