@@ -1,6 +1,6 @@
 from firebase_admin import firestore
 from datetime import datetime
-
+from case.case import add_visit_to_case
 from flask import jsonify
 
 db = firestore.client()
@@ -8,9 +8,7 @@ db = firestore.client()
 def create_visit(user_id, case_id, questionnaire_id):
     
     visit_ref = db.collection("visits").document()
-    
     try:
-        
         visit_ref.set({
             "userId": user_id,
             "caseId": case_id,
@@ -20,7 +18,11 @@ def create_visit(user_id, case_id, questionnaire_id):
             "results": [],
         })
         print(f"Visit created successfully: {visit_ref.id}", flush=True)
-        return visit_ref.id
+
+        # Add visit to the case
+        success = add_visit_to_case(case_id, visit_ref.id)
+
+        return {"visit_id": visit_ref.id, "add_to_case": success}
     
     except Exception as e:
         print(f"Error creating visit: {str(e)}", flush=True)
