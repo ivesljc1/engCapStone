@@ -655,3 +655,33 @@ def get_gpt_conclusion(questionnaire_id, user_id):
             return {"status": "error", "error": message}
     else:
         return {"status": "error", "error": "Unknown response format"}
+    
+# Get a questionnaire result by ID
+def get_result_by_id(questionnaire_id):
+    """
+    result_id: str, ID of the result
+    """
+    try:
+        # Reference to the 'questionnaires' collection in the database
+        questionnaires_ref = db.collection('questionnaires').document(questionnaire_id)
+        
+        # Get the result document
+        result = questionnaires_ref.get()
+        
+        # Check if the result exists
+        if result.exists:
+            # Print debug information about the found result
+            print(f"Found result: {result.id}", flush=True)
+            
+            # Convert the result document to a dictionary
+            result_data = result.to_dict()
+            
+            # Return the result data
+            return result_data
+        
+        # Return a message if the result is not found
+        return "Result not found"
+        
+    except Exception as e:
+        # Return an error message if an exception occurs
+        return str(e)
