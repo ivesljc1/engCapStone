@@ -18,12 +18,13 @@ def api_create_visit():
     if not all([user_id, case_id, questionnaire_id]):
         return jsonify({"error": "Missing required fields"}), 400
         
-    visit_id = create_visit(user_id, case_id, questionnaire_id)
+    responde = create_visit(user_id, case_id, questionnaire_id)
     
-    if visit_id:
+    if responde:
         return jsonify({
             "message": "Visit created successfully",
-            "visitId": visit_id
+            "visitId": responde.get("visit_id"),
+            "addToCase": responde.get("add_to_case")
         }), 201
     else:
         return jsonify({"error": "Failed to create visit"}), 500
