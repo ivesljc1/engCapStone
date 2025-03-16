@@ -11,6 +11,7 @@ from newsletter.routes import newsletter_bp
 from case.case_api import case_blueprint
 from visit.visit_api import visit_blueprint
 from appointment.webhooks import webhook_bp
+from userDashboard.dashboard import dashboard_bp
 # from recommendation.recommendation import recommendation_blueprint
 import os
 
@@ -28,6 +29,7 @@ app.register_blueprint(newsletter_bp)
 app.register_blueprint(case_blueprint)
 app.register_blueprint(visit_blueprint)
 app.register_blueprint(webhook_bp)
+app.register_blueprint(dashboard_bp)
 # app.register_blueprint(recommendation_blueprint)
 
 PORT = int(os.getenv("PORT", 5002))
