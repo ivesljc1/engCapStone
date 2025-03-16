@@ -2,9 +2,11 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from .firebase_init import db, bucket
+from firebase_admin import firestore
+from google.cloud.firestore import SERVER_TIMESTAMP
+
 
 def upload_pdf(file, user_email):
-    """上传 PDF 到 Firebase Storage 并返回下载 URL"""
     if not file or file.filename == "":
         return None
 
@@ -15,13 +17,14 @@ def upload_pdf(file, user_email):
     blob.make_public()
     pdf_url = blob.public_url
 
-    user_query = db.collection("users").where("email", "==", user_email).stream()
-    user_doc = next(user_query, None)
+    report_ref = db.collection("report").document(user_email)
+    report_ref.set({
+        "email": user_email,
+        "pdfUrl": pdf_url,
+        "uploadedAt": SERVER_TIMESTAMP
+    })
     
-    if user_doc:
-        db.collection("users").document(user_doc.id).update({"pdfUrl": pdf_url})
-
-        send_email_notification(user_email, pdf_url)
+    send_email_notification(user_email, pdf_url)
 
     return pdf_url
 

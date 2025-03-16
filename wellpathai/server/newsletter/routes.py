@@ -19,3 +19,11 @@ def upload_user_pdf():
 
     return jsonify({"message": "PDF uploaded successfully!", "pdfUrl": pdf_url}), 200
 
+@newsletter_bp.route("/api/get_user_report/<user_email>", methods=["GET"])
+def get_user_report(user_email):
+    """获取 `report` collection 里的 PDF URL"""
+    report_doc = db.collection("report").document(user_email).get()
+
+    if report_doc.exists:
+        return jsonify(report_doc.to_dict()), 200
+    return jsonify({"error": "No report found"}), 404
