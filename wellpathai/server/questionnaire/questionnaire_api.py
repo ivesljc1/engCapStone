@@ -1,16 +1,20 @@
 from flask import Blueprint, request, jsonify
 from questionnaire.questionnaire import (
     initialize_questionnaire_database, 
-    add_question_to_questionnaire, 
-    record_answer_to_question, 
-    record_result_to_questionnaire,
+    get_gpt_conclusion,
+    record_answer_to_question,
+    get_next_question, 
     get_most_recent_question,
     get_most_recent_result,
     get_all_questions_in_questionnaire,
     get_all_results,
     get_result_by_id,
+    handle_case_selection,
+    handle_user_pick_previous_case,
+    get_next_question,
+    CASE_SELECTION_QUESTION
 )
-from agents.gpt import call_gpt, get_gpt_conclusion
+
 
 """
 # Blueprint for questionnaire route
@@ -20,6 +24,52 @@ from agents.gpt import call_gpt, get_gpt_conclusion
 questionnaire_blueprint = Blueprint("questionnaire", __name__)
 
 # Add route to blueprint
+@questionnaire_blueprint.route("/api/questionnaire/case-selection", methods=["GET"])
+def get_case_selection():
+    """Get the user's case selection question"""
+    return jsonify(CASE_SELECTION_QUESTION), 200
+
+
+@questionnaire_blueprint.route("/api/questionnaire/case-selection", methods=["POST"])
+def case_selection():
+    """Handle the user's case selection"""
+    if not request.is_json:
+        return jsonify({"error": "Content-Type must be application/json"}), 415
+        
+    data = request.get_json()
+    user_id = data.get("user_id")
+    selection = data.get("selection")
+    
+    if not all([user_id, selection]):
+        return jsonify({"error": "user_id and selection are required"}), 400
+        
+    response = handle_case_selection(user_id, selection)
+    
+    if response.get("success"):
+        return jsonify(response), 200
+    else:
+        return jsonify({"error": response.get("error")}), 500
+
+@questionnaire_blueprint.route("/api/questionnaire/select-previsoucase", methods=["POST"])
+def select_case():
+    """Handle the user selecting a previous case"""
+    if not request.is_json:
+        return jsonify({"error": "Content-Type must be application/json"}), 415
+        
+    data = request.get_json()
+    user_id = data.get("user_id")
+    case_id = data.get("case_id")
+    
+    if not all([user_id, case_id]):
+        return jsonify({"error": "user_id and case_id are required"}), 400
+        
+    response = handle_user_pick_previous_case(user_id, case_id)
+    
+    if response.get("success"):
+        return jsonify(response), 200
+    else:
+        return jsonify({"error": response.get("error")}), 500
+
 # Initialize the questionnaire database for a user
 @questionnaire_blueprint.route("/api/questionnaire/initialize", methods=["POST"])
 def init_questionnaire():
@@ -39,7 +89,6 @@ def init_questionnaire():
         # Get the first question to return with the response
         firstQ = get_most_recent_question(doc_id, user_id)
 
-        print(firstQ, flush=True)
         return jsonify({
             "message": "Questionnaire initialized successfully",
             "questionnaire_id": doc_id,
@@ -69,71 +118,11 @@ def record_answer():
     if not success:
         return jsonify({"error": "Failed to record answer"}), 500
     
-    # # If this is the first answer and case_id is provided, associate the questionnaire with the case
-    # if case_id and question_id == "q1":
-    #     try:
-    #         success = add_questionnaire_to_case(case_id, questionnaire_id)
-    #         if not success:
-    #             print(f"Warning: Failed to add questionnaire {questionnaire_id} to case {case_id}")
-    #     except Exception as e:
-    #         print(f"Error associating questionnaire with case: {str(e)}")
-    #         # Continue even if association fails
-    
     # Get the next question (reusing logic from get_newest_question)
-    response = get_most_recent_question(questionnaire_id, user_id)
+    response = get_next_question(questionnaire_id, user_id)
     
-    if response["success"]:
-        # There's a predefined question available
-        return jsonify({
-            "message": "Answer recorded successfully",
-            "next_question": response["data"],
-            "is_predefined": True
-        }), 200
-    elif response["error"] == "NO_INITIALIZED_QUESTIONS":
-        # No predefined questions left, need to generate with GPT
-        print("Calling GPT to generate next question", flush=True)
-        
-        # Set a maximum number of questions (adjust as needed)
-        MAX_QUESTIONS = 20
-        
-        # Get all questions to check how many we've already asked
-        all_questions = get_all_questions_in_questionnaire(questionnaire_id, user_id)
-        question_count = len([q for q in all_questions if "question" in q])
-        
-        # Check if we've reached the maximum number of questions
-        if question_count >= MAX_QUESTIONS:
-            return jsonify({
-                "message": "Answer recorded successfully. Questionnaire complete.",
-                "next_question": None,
-                "is_complete": True
-            }), 200
-        
-        # Generate with GPT (reusing your existing GPT call logic)
-        gpt_response = call_gpt(questionnaire_id, user_id)
-        print("GPT response: ", gpt_response, flush=True)
-        
-        if gpt_response:
-            return jsonify({
-                "message": "Answer recorded and new question generated",
-                "next_question": gpt_response,
-                "is_predefined": False,
-                "question_count": question_count + 1,
-                "max_questions": MAX_QUESTIONS
-            }), 200
-        else:
-            # If GPT generation failed, mark as complete
-            return jsonify({
-                "message": "Answer recorded successfully. Questionnaire complete.",
-                "next_question": None,
-                "is_complete": True
-            }), 200
-    else:
-        # Some other error occurred
-        return jsonify({
-            "message": "Answer recorded but couldn't get next question",
-            "error": response["error"],
-            "next_question": None
-        }), 200
+    # 4. Return the appropriate response based on the result
+    return jsonify(response), 200
 
 #get questions in questionnaire
 @questionnaire_blueprint.route("/api/questionnaire/get-all-questions", methods=["GET"])
@@ -150,30 +139,6 @@ def get_questions():
         return jsonify(questions), 200
     
     return jsonify({"error": "Failed to get questions"}), 500
-
-# Get the most recent question in a questionnaire
-# @questionnaire_blueprint.route("/api/questionnaire/get-most-recent-question", methods=["GET"])
-# def get_newest_question():
-#     questionnaire_id = request.args.get("questionnaire_id")
-#     user_id = request.args.get("user_id")
-    
-#     if not all([questionnaire_id, user_id]):
-#         return jsonify({"error": "questionnaire_id and user_id are required"}), 400
-    
-#     response = get_most_recent_question(questionnaire_id, user_id)
-    
-#     if response["success"]:
-#         return jsonify(response["data"]), 200
-#     elif response["error"] == "NO_INITIALIZED_QUESTIONS":
-#         # Call GPT to generate next question
-#         print("Calling GPT to generate next question", flush=True)
-#         gpt_response = call_gpt(questionnaire_id, user_id)
-#         print("GPT response: ", gpt_response, flush=True)
-#         if gpt_response:
-#             return jsonify(gpt_response), 200
-#         else:
-#             return jsonify({"error": gpt_response["error"]}), 500
-#     return jsonify({"error": response["error"]}), 404
 
 @questionnaire_blueprint.route("/api/questionnaire/get-conclusion", methods=["GET"])
 def get_conclusion():

@@ -5,37 +5,40 @@ from googleapiclient.discovery import build
 from datetime import datetime
 from .calendar_init import calendar_service, CALENDAR_ID
 from case.case import add_appointment_to_case
+from dotenv import load_dotenv
+import os
 
-
-
-# Initialize Firestore
+# # Initialize Firestore
 db = firestore.client()
 
-# Blueprint for making appointments
+load_dotenv(".env.local")
+
+# # Blueprint for making appointments
 make_appointment_blueprint = Blueprint("make_appointment", __name__)
 
-@make_appointment_blueprint.route("/api/appointments/available", methods=["GET"])
-def get_available_timeslots():
-    try:
-        # Query Firestore for available timeslots
-        timeslots = db.collection('timeslots').where('isAvailable', '==', True).stream()
+# @make_appointment_blueprint.route("/api/appointments/available", methods=["GET"])
+# def get_available_timeslots():
+#     try:
+#         # Query Firestore for available timeslots
+#         timeslots = db.collection('timeslots').where('isAvailable', '==', True).stream()
         
-        available_slots = []
-        for slot in timeslots:
-            slot_data = slot.to_dict()
-            available_slots.append({
-                'id': slot.id,
-                'startTime': slot_data['startTime'].isoformat(),
-                'endTime': slot_data['endTime'].isoformat()
-            })
+#         available_slots = []
+#         for slot in timeslots:
+#             slot_data = slot.to_dict()
+#             available_slots.append({
+#                 'id': slot.id,
+#                 'startTime': slot_data['startTime'].isoformat(),
+#                 'endTime': slot_data['endTime'].isoformat()
+#             })
             
-        return jsonify(available_slots), 200
+#         return jsonify(available_slots), 200
         
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
 
 @make_appointment_blueprint.route("/api/appointments/book", methods=["POST"])
 def book_appointment():
+
     try:
         data = request.get_json()
         
@@ -137,3 +140,5 @@ def book_appointment():
     except Exception as e:
         print(f"Error in book_appointment: {str(e)}")
         return jsonify({"error": str(e)}), 500
+
+

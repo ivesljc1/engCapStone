@@ -12,8 +12,7 @@ export default function QuestionPage() {
   const [questionnaireId, setQuestionnaireId] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [loadingQuestion, setLoadingQuestion] = useState(false);
-  const [progress, setProgress] = useState({ current: 0, max: 10 });
+  const [progress, setProgress] = useState({ current: 0, max: 20 });
   const [questionIndex, setQuestionIndex] = useState("");
   const [caseId, setCaseId] = useState("");
 
@@ -146,7 +145,8 @@ export default function QuestionPage() {
     if (!answer || (typeof answer === "string" && answer.trim().length === 0)) {
       console.error("Please provide a valid answer");
       return;
-    }
+    }    
+
 
     setLoading(true);
 
@@ -271,17 +271,13 @@ export default function QuestionPage() {
         </div>
 
         <div className="w-1/2 pl-6 flex items-center justify-center">
-          {loadingQuestion ? (
-            <div></div>
-          ) : (
-            <SurveyAnswer
-              type={currentQuestion.type}
-              placeholder={currentQuestion.placeholder}
-              options={currentQuestion.options}
-              numOptions={currentQuestion.numOptions}
-              onSubmit={handleSubmit}
-            />
-          )}
+          <SurveyAnswer
+            type={currentQuestion.type}
+            placeholder={currentQuestion.placeholder}
+            options={currentQuestion.options}
+            numOptions={currentQuestion.numOptions}
+            onSubmit={handleSubmit}
+          />        
         </div>
       </div>
     </div>

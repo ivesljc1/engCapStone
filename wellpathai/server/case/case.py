@@ -102,7 +102,7 @@ def get_user_cases(user_id):
         # Sort by updated time (newest first)
         case_list.sort(key=lambda x: x.get('updatedAt', datetime.min), reverse=True)
         
-        return case_list
+        return case_list if case_list else []
     except Exception as e:
         print(f"Error getting user cases: {str(e)}")
         return []
