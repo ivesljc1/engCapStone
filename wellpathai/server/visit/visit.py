@@ -27,6 +27,7 @@ def create_visit(user_id, case_id, questionnaire_id):
         return None
 
 def get_visit(case_id):
+    # Get all visits for a case for a user
     visits = db.collection("visits").where("caseId", "==", case_id).stream()
     visit_list = []
     

@@ -7,7 +7,8 @@ from questionnaire.questionnaire import (
     get_most_recent_question,
     get_most_recent_result,
     get_all_questions_in_questionnaire,
-    get_all_results
+    get_all_results,
+    get_result_by_id,
 )
 from agents.gpt import call_gpt, get_gpt_conclusion
 
@@ -228,3 +229,19 @@ def get_results():
         return jsonify(results), 200
     
     return jsonify({"error": "Failed to get results"}), 500
+
+# Get a questionnaire result by ID
+@questionnaire_blueprint.route("/api/questionnaire/get-questionnaire", methods=["GET"])
+def get_result():
+    # Get the result_id from the query parameters
+    questionnaire_id = request.args.get("questionnaire_id")
+    
+    if not questionnaire_id:
+        return jsonify({"error": "questionnaire_id is required"}), 400
+    
+    result = get_result_by_id(questionnaire_id)
+    
+    if result is not None:
+        return jsonify(result), 200
+    
+    return jsonify({"error": "Failed to get result"}), 500
