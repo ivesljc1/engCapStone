@@ -43,8 +43,37 @@ export default function Dashboard() {
     fetchVisits();
   }, []);
 
-  const handleView = (questionnairesID) => {
+  const updateNewReport = async (visitId) => {
+    try {
+      const response = await fetch(`/api/visit/updateStatus`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          visitId: visitId,
+          status: false,
+        }),
+      });
+
+      if (!response.ok) throw new Error(`Error: ${response.status}`);
+      const updatedVisit = await response.json();
+
+      // Update the newReport status in the state to false
+      setVisits((prevVisits) =>
+        prevVisits.map((visit) =>
+          visit.id === updatedVisit.id ? { ...visit, newReport: false } : visit
+        )
+      );
+    } catch (error) {
+      console.error("Error updating visit status:", error);
+    }
+  };
+
+  const handleView = (questionnairesID, visitID) => {
+    console.log("Visit ID:", visitID);
     // Redirect to the questionnaire results page, open a new tab
+    updateNewReport(visitID);
     window.open(
       `/questionnaireView?questionnaireID=${questionnairesID}`,
       "_blank"
@@ -73,6 +102,8 @@ export default function Dashboard() {
 
     return () => unsubscribe();
   }, []); // Auth listener setup only runs once
+
+  console.log(visits);
 
   if (loading) return <LoadingPage />;
 

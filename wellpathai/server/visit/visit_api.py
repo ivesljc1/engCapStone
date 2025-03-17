@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from visit.visit import ( create_visit, get_visit, update_visit_date )
+from visit.visit import ( create_visit, get_visit, update_visit_date, update_new_report_status )
 from datetime import datetime
 
 visit_blueprint = Blueprint("visit", __name__)
@@ -58,3 +58,24 @@ def api_update_visit_date():
         return jsonify({"message": "Visit date updated successfully"}), 200
     else:
         return jsonify({"error": "Failed to update visit date"}), 500
+    
+# update hasNewReport status
+@visit_blueprint.route("/api/visit/updateStatus", methods=["POST"])
+def api_update_new_report():
+    """Update the newReport status"""
+    if not request.is_json:
+        return jsonify({"error": "Content-Type must be application/json"}), 415
+        
+    data = request.get_json()
+    visit_id = data.get("visitId")
+    status = data.get("status")
+    
+    if not visit_id or status is None:
+        return jsonify({"error": "Missing required fields"}), 400
+        
+    success = update_new_report_status(visit_id, status)
+    
+    if success:
+        return jsonify({"message": "Visit status updated successfully"}), 200
+    else:
+        return jsonify({"error": "Failed to update new report status"}), 500

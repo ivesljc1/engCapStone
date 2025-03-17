@@ -18,6 +18,7 @@ def create_visit(user_id, case_id, questionnaire_id):
             "questionnairesID": questionnaire_id,
             "consultationID": "",
             "results": [],
+            "hasNewReport": True
         })
         print(f"Visit created successfully: {visit_ref.id}", flush=True)
         return visit_ref.id
@@ -51,4 +52,37 @@ def update_visit_date(visit_id, visit_date):
     
     except Exception as e:
         print(f"Error updating visit date: {str(e)}", flush=True)
+        return False
+    
+# update consultationID
+def update_consultation_id(visit_id, consultation_id):
+    
+    visit_ref = db.collection("visits").document(visit_id)
+    
+    try:
+        visit_ref.update({
+            "consultationID": consultation_id,
+            "hasNewReport": True
+        })
+        
+        return True
+    
+    except Exception as e:
+        print(f"Error updating consultation ID: {str(e)}", flush=True)
+        return False
+    
+# update hasNewReport status
+def update_new_report_status(visit_id, status):
+    
+    visit_ref = db.collection("visits").document(visit_id)
+    
+    try:
+        visit_ref.update({
+            "hasNewReport": status
+        })
+        
+        return True
+    
+    except Exception as e:
+        print(f"Error updating new report status: {str(e)}", flush=True)
         return False
