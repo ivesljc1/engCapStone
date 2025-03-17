@@ -1,19 +1,21 @@
 /**
- * AppointmentStatusBadge Component
+ * VisitStatusBadge Component
  * 
- * This component displays a colored badge indicating the appointment status.
+ * This component displays a colored badge indicating the visit status.
  * Different statuses have different colors:
+ * - unscheduled: gray
  * - scheduled: blue
  * - completed: green
  * - cancelled: red
  * 
  * @param {Object} props - Component props
- * @param {string} props.appointmentStatus - The appointment status
+ * @param {string} props.appointmentStatus - The visit appointment status
  * @returns {JSX.Element} The rendered status badge
  */
-export default function AppointmentStatusBadge({ appointmentStatus }) {
+export default function VisitStatusBadge({ appointmentStatus }) {
   // Define color schemes for different statuses
   const statusStyles = {
+    unscheduled: "bg-gray-100 text-gray-800",
     scheduled: "bg-blue-100 text-blue-800",
     completed: "bg-green-100 text-green-800",
     cancelled: "bg-red-200 text-red-900",
