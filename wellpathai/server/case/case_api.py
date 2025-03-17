@@ -12,7 +12,8 @@ from case.case import (
     get_case_questionnaires,
     close_case,
     reopen_case,
-    delete_case
+    delete_case,
+    get_case_summary
 )
 
 # Blueprint for case routes
@@ -201,3 +202,19 @@ def api_get_case_appointments(case_id):
         return jsonify({"error": "Failed to get appointments or case not found"}), 404
         
     return jsonify(appointments), 200
+
+# Get All Case title, case description, number of hasNewReport in the visit belong to the case, the last visit date, total number of visits and case id
+@case_blueprint.route("/api/cases/summary", methods=["GET"])
+def api_get_case_summary():
+    data = request.get_json()
+    user_id = data.get("userId")
+    
+    """Get all case summary"""
+    cases = get_case_summary(user_id)
+    
+    print(f"Cases: {cases}", flush=True)
+    
+    if cases is None:
+        return jsonify({"error": "Failed to get case summary"}), 404
+        
+    return jsonify(cases), 200
