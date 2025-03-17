@@ -204,7 +204,7 @@ def api_get_case_appointments(case_id):
     return jsonify(appointments), 200
 
 # Get All Case title, case description, number of hasNewReport in the visit belong to the case, the last visit date, total number of visits and case id
-@case_blueprint.route("/api/cases/summary", methods=["GET"])
+@case_blueprint.route("/api/cases/summary", methods=["POST"])
 def api_get_case_summary():
     data = request.get_json()
     user_id = data.get("userId")
