@@ -484,3 +484,55 @@ def delete_case(case_id):
     except Exception as e:
         print(f"Error deleting case: {str(e)}")
         return False
+
+# Get All Case title, case description, number of hasNewReport in the visit belong to the case, the last visit date, total number of visits and case id
+def get_case_summary(user_id):
+    """
+    Get all case summary
+    
+    Args:
+        user_id (str): The ID of the user
+        
+    Returns:
+        list: List of case summary data
+    """
+    try:
+        # Query Firestore for cases with this user ID
+        cases = db.collection('cases').where('userId', '==', user_id).stream()
+        
+        case_list = []
+        for case in cases:
+            case_data = case.to_dict()
+            case_data['id'] = case.id
+            
+            # Get all visits for this case
+            visits = db.collection('visits').where('caseId', '==', case.id).stream()
+            visit_count = 0
+            new_report_count = 0
+            last_visit_date = None
+            
+            for visit in visits:
+                visit_data = visit.to_dict()
+                visit_count += 1
+                
+                if visit_data.get('hasNewReport'):
+                    new_report_count += 1
+                    
+                visit_date = visit_data.get('visitDate')  # visitDate is already a string
+                
+                # Update last visit date only if it's more recent
+                if visit_date and (not last_visit_date or visit_date > last_visit_date):
+                    last_visit_date = visit_date  # Store it as a string without isoformat()
+
+            case_data['visitCount'] = visit_count
+            case_data['newReportCount'] = new_report_count
+            case_data['lastVisitDate'] = last_visit_date  # No need to convert to ISO format
+            
+            print(f"Case data: {case_data}", flush=True)
+            
+            case_list.append(case_data)
+            
+        return case_list
+    except Exception as e:
+        print(f"Error getting case summary: {str(e)}")
+        return None
