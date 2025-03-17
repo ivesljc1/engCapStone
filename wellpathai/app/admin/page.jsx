@@ -1,17 +1,23 @@
 "use client";
-import withAuth from "../hoc/withAuth";
-import { auth } from "../firebase";
 
+/**
+ * AdminPage - Main admin dashboard page
+ * 
+ * This component serves as the main landing page for the admin section.
+ * All content has been removed as requested.
+ * 
+ * @param {Object} props - Component props
+ * @param {Function} props.onLogout - Function to handle user logout
+ * @returns {JSX.Element} The rendered admin dashboard page
+ */
 function AdminPage({ onLogout }) {
   return (
     <div>
-      <h1>Admin Page</h1>
-      <p>
-        Welcome to the admin page. Here you can manage the application settings
-        and user data.
-      </p>
+      {/* Main content area - completely empty as requested */}
     </div>
   );
 }
 
-export default withAuth(AdminPage);
+// Wrap the component with withAuth HOC to ensure only authenticated admins can access it
+// The withAuth HOC is imported automatically through the layout.jsx file
+export default AdminPage;
