@@ -7,7 +7,7 @@
     "time": "09:00 AM - 09:30 AM",
     "case": "Chronic Back Pain",
     "caseDetails": "Patient has been experiencing lower back pain for 6 months, especially after sitting for extended periods. Previous MRI shows mild disc bulging at L4-L5.",
-    "status": "completed",
+    "status": "cancelled",
     "notes": "Patient reported chronic back pain for the past 3 months."
   },
   {
@@ -73,7 +73,7 @@
     "time": "03:30 PM - 04:00 PM",
     "case": "Knee Rehabilitation",
     "caseDetails": "ACL reconstruction surgery 12 weeks ago. Progressing through rehabilitation protocol. Currently working on strength training and proprioception exercises.",
-    "status": "completed",
+    "status": "cancelled",
     "notes": "Completed third session of knee rehabilitation therapy."
   },
   {
@@ -161,7 +161,7 @@
     "time": "10:00 AM - 10:30 AM",
     "case": "Annual Physical",
     "caseDetails": "Routine annual physical exam. No significant health concerns. Last physical was 14 months ago with normal findings. Family history of hypertension and diabetes.",
-    "status": "completed",
+    "status": "cancelled",
     "notes": "Annual physical examination completed."
   },
   {
@@ -216,7 +216,7 @@
     "time": "10:00 AM - 10:30 AM",
     "case": "Gynecological Exam",
     "caseDetails": "Annual gynecological exam. Last Pap smear was 13 months ago (normal). History of ovarian cysts. Currently using combined oral contraceptive pills.",
-    "status": "completed",
+    "status": "cancelled",
     "notes": "Annual gynecological examination completed."
   },
   {
@@ -282,7 +282,7 @@
     "time": "10:30 AM - 11:00 AM",
     "case": "Rheumatology Follow-up",
     "caseDetails": "Rheumatoid arthritis diagnosed 3 years ago. Currently on Methotrexate 15mg weekly and Prednisone 5mg daily. Reports morning stiffness lasting 1-2 hours and increased joint pain in fingers.",
-    "status": "completed",
+    "status": "cancelled",
     "notes": "Quarterly follow-up for rheumatoid arthritis management."
   },
   {

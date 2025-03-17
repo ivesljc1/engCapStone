@@ -154,12 +154,12 @@ export default function AppointmentList({ appointments }) {
             Scheduled
           </Button>
           <Button 
-            variant={selectedStatus === "completed" ? "default" : "outline"} 
+            variant={selectedStatus === "cancelled" ? "default" : "outline"} 
             size="sm"
-            onClick={() => handleStatusChange("completed")}
-            className={`rounded-xl ${selectedStatus === "completed" ? "text-white" : ""}`}
+            onClick={() => handleStatusChange("cancelled")}
+            className={`rounded-xl ${selectedStatus === "cancelled" ? "text-white" : ""}`}
           >
-            Completed
+            Cancelled
           </Button>
         </div>
 
