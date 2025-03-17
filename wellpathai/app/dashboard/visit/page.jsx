@@ -3,44 +3,45 @@
 import { useState, useEffect } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { auth } from "../../firebase";
-import VisitList from "@/components/ui/visitList"; // Import VisitList component
+import VisitList from "@/components/ui/visitList";
 import LoadingPage from "@/components/ui/loadingPage";
 
 export default function Dashboard() {
   const [userId, setUserId] = useState(null);
-  const [visits, setVisits] = useState([]);
-  const [caseName, setCaseName] = useState("");
-  const [caseDescription, setCaseDescription] = useState("");
+  const [visits, setVisits] = useState(null);
+  const [caseName, setCaseName] = useState(null);
+  const [caseDescription, setCaseDescription] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const caseId = "P2JB9hcENJNSTaL4lhYA"; // Example case ID
+  const caseId = "P2JB9hcENJNSTaL4lhYA";
 
   useEffect(() => {
-    const fetchCaseData = async () => {
+    const fetchData = async () => {
+      setLoading(true);
       try {
-        const response = await fetch(`/api/cases/${caseId}`);
-        if (!response.ok) throw new Error(`Error: ${response.status}`);
-        const caseData = await response.json();
+        const [caseResponse, visitsResponse] = await Promise.all([
+          fetch(`/api/cases/${caseId}`),
+          fetch(`/api/visit/getVisits?caseId=${caseId}`),
+        ]);
+
+        if (!caseResponse.ok || !visitsResponse.ok) {
+          throw new Error("Failed to fetch data");
+        }
+
+        const caseData = await caseResponse.json();
+        const visitData = await visitsResponse.json();
+
         setCaseName(caseData.title);
         setCaseDescription(caseData.description);
-      } catch (error) {
-        console.error("Error fetching case:", error);
-      }
-    };
-
-    const fetchVisits = async () => {
-      try {
-        const response = await fetch(`/api/visit/getVisits?caseId=${caseId}`);
-        if (!response.ok) throw new Error(`Error: ${response.status}`);
-        const visitData = await response.json();
         setVisits(visitData);
       } catch (error) {
-        console.error("Error fetching visits:", error);
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchCaseData();
-    fetchVisits();
+    fetchData();
   }, []);
 
   const updateNewReport = async (visitId) => {
@@ -59,7 +60,6 @@ export default function Dashboard() {
       if (!response.ok) throw new Error(`Error: ${response.status}`);
       const updatedVisit = await response.json();
 
-      // Update the newReport status in the state to false
       setVisits((prevVisits) =>
         prevVisits.map((visit) =>
           visit.id === updatedVisit.id ? { ...visit, newReport: false } : visit
@@ -72,7 +72,6 @@ export default function Dashboard() {
 
   const handleView = (questionnairesID, visitID) => {
     console.log("Visit ID:", visitID);
-    // Redirect to the questionnaire results page, open a new tab
     updateNewReport(visitID);
     window.open(
       `/questionnaireView?questionnaireID=${questionnairesID}`,
@@ -84,12 +83,11 @@ export default function Dashboard() {
     const auth = getAuth();
     setLoading(true);
 
-    // Check initial auth state
     if (auth.currentUser) {
       setUserId(auth.currentUser.uid);
+      setLoading(false);
     }
 
-    // Listen for auth changes
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUserId(user.uid);
@@ -101,52 +99,48 @@ export default function Dashboard() {
     });
 
     return () => unsubscribe();
-  }, []); // Auth listener setup only runs once
+  }, []);
 
   const handleDownload = async (consultationID, visitID) => {
     updateNewReport(visitID);
-    // First fetch the PDF URL
-    await fetch("/api/get_pdf", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ consultationID }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.pdfUrl) {
-          // Create a temporary anchor element
-          const link = document.createElement("a");
-          link.href = data.pdfUrl;
-          link.setAttribute("download", "report.pdf"); // Suggested filename
-          link.setAttribute("target", "_blank");
 
-          // Append to the document, click it, and remove it
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        } else {
-          console.error("No PDF URL found");
-        }
-      })
-      .catch((error) => {
-        console.error("Error downloading PDF:", error);
+    try {
+      const response = await fetch("/api/get_pdf", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ consultationID }),
       });
+
+      const data = await response.json();
+      if (data.pdfUrl) {
+        const link = document.createElement("a");
+        link.href = data.pdfUrl;
+        link.setAttribute("download", "report.pdf");
+        link.setAttribute("target", "_blank");
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        console.error("No PDF URL found");
+      }
+    } catch (error) {
+      console.error("Error downloading PDF:", error);
+    }
   };
 
   if (loading) return <LoadingPage />;
 
   return (
     <div className="flex h-screen bg-gray-100">
-      {/* Main Content */}
       <main className="flex-1 p-8 bg-white">
         <h1 className="text-2xl font-bold">{caseName}</h1>
         <p className="text-gray-600 mt-2">{caseDescription}</p>
 
-        {/* Pass visits to VisitList Component */}
         <VisitList
-          visits={visits}
+          visits={visits || []}
           onView={handleView}
           onDownload={handleDownload}
         />

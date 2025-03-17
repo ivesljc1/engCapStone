@@ -18,7 +18,7 @@ const VisitList = ({ visits, onView, onDownload }) => {
               </tr>
             </thead>
             <tbody>
-              {visits.map((visit, index) => (
+              {(visits || []).map((visit, index) => (
                 <tr key={index} className="border-b">
                   <td className="py-2 w-1/3">
                     {visit.visitDate}{" "}
