@@ -11,15 +11,14 @@ import {
   BreadcrumbPage,
   BreadcrumbHome
 } from "@/components/ui/breadcrumb";
-import { MagnifyingGlassIcon, CalendarIcon, ChevronDownIcon, EyeIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
-import AppointmentStatusBadge from "./AppointmentStatusBadge";
-import { formatDateShort, formatTime } from "@/lib/formatDate";
+import { MagnifyingGlassIcon, CalendarIcon, PlusIcon } from "@heroicons/react/24/outline";
+import AppointmentCard from "./AppointmentCard";
 
 /**
  * AppointmentList Component
  * 
- * This component displays a list of appointments with filtering, search,
- * and action functionality for administrators.
+ * This component displays a list of appointments with filtering and search
+ * functionality for administrators, using a card-based layout based on the Figma design.
  * 
  * @param {Object} props - Component props
  * @param {Array} props.appointments - List of appointment data
@@ -43,6 +42,7 @@ export default function AppointmentList({ appointments }) {
       filtered = filtered.filter(appointment => 
         appointment.patientName.toLowerCase().includes(query) || 
         appointment.patientEmail.toLowerCase().includes(query) ||
+        appointment.type.toLowerCase().includes(query) ||
         appointment.id.toLowerCase().includes(query)
       );
     }
@@ -102,6 +102,7 @@ export default function AppointmentList({ appointments }) {
             <span>Schedule</span>
           </Button>
           <Button className="flex items-center gap-2">
+            <PlusIcon className="h-4 w-4" />
             <span>New Appointment</span>
           </Button>
         </div>
@@ -154,90 +155,17 @@ export default function AppointmentList({ appointments }) {
         </div>
       </div>
 
-      {/* Appointments table */}
-      <div className="overflow-x-auto rounded-lg border border-gray-200">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                ID
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Patient
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Date
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Time
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Type
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Doctor
-              </th>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {filteredAppointments.length === 0 ? (
-              <tr>
-                <td colSpan="8" className="px-6 py-4 text-center text-sm text-gray-500">
-                  No appointments found.
-                </td>
-              </tr>
-            ) : (
-              filteredAppointments.map((appointment) => (
-                <tr key={appointment.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {appointment.id}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{appointment.patientName}</div>
-                    <div className="text-sm text-gray-500">{appointment.patientEmail}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatDateShort(appointment.date)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatTime(appointment.time)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {appointment.type}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <AppointmentStatusBadge status={appointment.status} />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {appointment.doctor}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex justify-end items-center space-x-2">
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <EyeIcon className="h-4 w-4" />
-                        <span className="sr-only">View</span>
-                      </Button>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <PencilIcon className="h-4 w-4" />
-                        <span className="sr-only">Edit</span>
-                      </Button>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50">
-                        <TrashIcon className="h-4 w-4" />
-                        <span className="sr-only">Delete</span>
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+      {/* Appointments cards grid */}
+      <div className="space-y-4">
+        {filteredAppointments.length === 0 ? (
+          <div className="text-center py-10 bg-white rounded-lg border border-gray-200">
+            <p className="text-gray-500">No appointments found.</p>
+          </div>
+        ) : (
+          filteredAppointments.map((appointment) => (
+            <AppointmentCard key={appointment.id} appointment={appointment} />
+          ))
+        )}
       </div>
     </div>
   );
