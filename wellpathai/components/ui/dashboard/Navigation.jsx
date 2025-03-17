@@ -27,7 +27,16 @@ function Navigation() {
   return (
     <ul role="list" className="-mx-2 space-y-1">
       {navigation.map((item) => {
-        const isActive = pathname === item.href;
+        // Check if this is the Home link and if we're on a cases page
+        const isHomeLinkAndOnCasePage = 
+          item.href === "/dashboard" && 
+          (pathname.startsWith("/dashboard/cases/") || pathname === "/dashboard");
+        
+        // For other items, check exact match as before
+        const isExactMatch = pathname === item.href;
+        
+        // Combine both conditions
+        const isActive = item.href === "/dashboard" ? isHomeLinkAndOnCasePage : isExactMatch;
 
         return (
           <li key={item.name}>

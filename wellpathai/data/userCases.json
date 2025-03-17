@@ -1,0 +1,84 @@
+[
+  {
+    "createdAt": "Sun, 16 Mar 2025 23:52:11 GMT",
+    "description": "The patient is a 21-year-old male experiencing persistent sleep disturbances, particularly difficulty falling asleep and frequent awakenings at night, lasting more than a week, with a discomfort rating of 5. No chronic medical conditions reported.",
+    "id": "P2JB9hcENJNSTaL4lhYA",
+    "lastVisitDate": "2025-03-16",
+    "newReportCount": 0,
+    "status": "active",
+    "title": "Sleep Disturbance",
+    "updatedAt": "Sun, 16 Mar 2025 23:52:21 GMT",
+    "userId": "3xxBZNcdNYMdK8WW9coz8nbvX3n1",
+    "visitCount": 1,
+    "visits": [
+      "UEUzCFu4UoRyWSMIVdJt"
+    ]
+  },
+  {
+    "createdAt": "Fri, 14 Mar 2025 10:15:33 GMT",
+    "description": "The patient is a 35-year-old female experiencing recurring migraine headaches with visual aura. Pain primarily on the right side, lasting 4-6 hours with occasional nausea, with a discomfort rating of 8.",
+    "id": "K7mD3hcLMJPQRaB2yhXC",
+    "lastVisitDate": "2025-03-14",
+    "newReportCount": 2,
+    "status": "active",
+    "title": "Migraine Headaches",
+    "updatedAt": "Sat, 15 Mar 2025 08:30:14 GMT",
+    "userId": "3xxBZNcdNYMdK8WW9coz8nbvX3n1",
+    "visitCount": 3,
+    "visits": [
+      "FRTzABc2VpSdEQHJMnKl",
+      "GHXyWDe5TqRzOPLkVnBm",
+      "IKLzMNa8SbQcXYZdVfGh"
+    ]
+  },
+  {
+    "createdAt": "Mon, 10 Feb 2025 14:22:45 GMT",
+    "description": "The patient is a 42-year-old male with chronic lower back pain following a workplace injury. Pain increases with extended sitting and improves with light activity, with a discomfort rating of 6.",
+    "id": "L9nE5hfGPKQSTcM6zhYD",
+    "lastVisitDate": "2025-02-28",
+    "newReportCount": 1,
+    "status": "active",
+    "title": "Lower Back Pain",
+    "updatedAt": "Thu, 28 Feb 2025 16:45:12 GMT",
+    "userId": "3xxBZNcdNYMdK8WW9coz8nbvX3n1",
+    "visitCount": 2,
+    "visits": [
+      "JLMzPQb1TcRdXYZfVhGj",
+      "KNPzQRd3VeRfYZAhWiJk"
+    ]
+  },
+  {
+    "createdAt": "Wed, 22 Jan 2025 09:10:37 GMT",
+    "description": "The patient is a 29-year-old female with generalized anxiety disorder. Symptoms include persistent worry, restlessness, and difficulty concentrating, exacerbated by work-related stress.",
+    "id": "N3qF7hiJRLMTUeO8zjYE",
+    "lastVisitDate": "2025-02-10",
+    "newReportCount": 0,
+    "status": "active",
+    "title": "Anxiety Disorder",
+    "updatedAt": "Mon, 10 Feb 2025 11:20:33 GMT",
+    "userId": "3xxBZNcdNYMdK8WW9coz8nbvX3n1",
+    "visitCount": 4,
+    "visits": [
+      "LPQzRSe5WfRgZABiXjKl",
+      "MQRzSTf7XgRhACDjYkLm",
+      "NRSzTUg9YhSiCDEkZlMn",
+      "PSUzVWi1ZjTkDEFlAmNp"
+    ]
+  },
+  {
+    "createdAt": "Thu, 05 Dec 2024 15:30:22 GMT",
+    "description": "The patient is a 38-year-old male with seasonal allergic rhinitis. Symptoms include nasal congestion, sneezing, and itchy eyes, triggered by pollen and pet dander.",
+    "id": "P5sG9hjKSNMUVfQ0zkZF",
+    "lastVisitDate": "2025-01-15",
+    "newReportCount": 0,
+    "status": "inactive",
+    "title": "Seasonal Allergies",
+    "updatedAt": "Wed, 15 Jan 2025 13:40:55 GMT",
+    "userId": "3xxBZNcdNYMdK8WW9coz8nbvX3n1",
+    "visitCount": 2,
+    "visits": [
+      "QTVzWXj3AkUlEFGmBnOq",
+      "RUWzXYk5BlVmFGHnCoPr"
+    ]
+  }
+] 

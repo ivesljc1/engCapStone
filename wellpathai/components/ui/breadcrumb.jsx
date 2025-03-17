@@ -1,167 +1,117 @@
-import * as React from "react";
-import { ChevronRightIcon, HomeIcon } from "@heroicons/react/24/outline";
-import { cn } from "@/lib/utils";
-import Link from "next/link";
+import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
+import { ChevronRight, MoreHorizontal } from "lucide-react"
+import Link from "next/link"
+import { HomeIcon } from "@heroicons/react/24/outline"
 
-/**
- * Breadcrumb Container Component
- * 
- * This component serves as the container for breadcrumb items,
- * organizing them in a horizontal list with appropriate spacing.
- * 
- * @param {Object} props - Component props
- * @param {React.ReactNode} props.children - The breadcrumb items
- * @param {string} props.className - Additional CSS classes
- * @returns {JSX.Element} The rendered breadcrumb container
- */
+import { cn } from "@/lib/utils"
+
 const Breadcrumb = React.forwardRef(
-  ({ className, ...props }, ref) => (
-    <nav 
-      ref={ref} 
-      aria-label="Breadcrumb" 
-      className={cn("flex items-center", className)} 
-      {...props} 
-    />
-  )
-);
-Breadcrumb.displayName = "Breadcrumb";
+  ({ ...props }, ref) => <nav ref={ref} aria-label="breadcrumb" {...props} />
+)
+Breadcrumb.displayName = "Breadcrumb"
 
-/**
- * Breadcrumb List Component
- * 
- * This component renders a list of breadcrumb items.
- * 
- * @param {Object} props - Component props
- * @param {React.ReactNode} props.children - The breadcrumb items
- * @param {string} props.className - Additional CSS classes
- * @returns {JSX.Element} The rendered breadcrumb list
- */
-const BreadcrumbList = React.forwardRef(
-  ({ className, ...props }, ref) => (
-    <ol 
-      ref={ref} 
-      className={cn("flex flex-wrap items-center gap-1.5 break-words text-sm text-gray-500", className)} 
-      {...props} 
-    />
-  )
-);
-BreadcrumbList.displayName = "BreadcrumbList";
+const BreadcrumbList = React.forwardRef(({ className, ...props }, ref) => (
+  <ol
+    ref={ref}
+    className={cn(
+      "flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5",
+      className
+    )}
+    {...props} />
+))
+BreadcrumbList.displayName = "BreadcrumbList"
 
-/**
- * Breadcrumb Item Component
- * 
- * This component renders an individual breadcrumb item.
- * 
- * @param {Object} props - Component props
- * @param {React.ReactNode} props.children - The content of the breadcrumb item
- * @param {string} props.className - Additional CSS classes
- * @returns {JSX.Element} The rendered breadcrumb item
- */
-const BreadcrumbItem = React.forwardRef(
-  ({ className, ...props }, ref) => (
-    <li 
-      ref={ref} 
-      className={cn("inline-flex items-center gap-1.5", className)} 
-      {...props} 
-    />
-  )
-);
-BreadcrumbItem.displayName = "BreadcrumbItem";
+const BreadcrumbItem = React.forwardRef(({ className, ...props }, ref) => (
+  <li
+    ref={ref}
+    className={cn("inline-flex items-center gap-1.5", className)}
+    {...props} />
+))
+BreadcrumbItem.displayName = "BreadcrumbItem"
 
-/**
- * Breadcrumb Separator Component
- * 
- * This component renders a separator between breadcrumb items.
- * 
- * @param {Object} props - Component props
- * @param {React.ReactNode} props.children - The separator content (defaults to ChevronRight icon)
- * @param {string} props.className - Additional CSS classes
- * @returns {JSX.Element} The rendered breadcrumb separator
- */
-const BreadcrumbSeparator = React.forwardRef(
-  ({ className, children = <ChevronRightIcon className="h-4 w-4" />, ...props }, ref) => (
-    <li 
-      ref={ref} 
-      aria-hidden="true" 
-      className={cn("text-gray-400", className)} 
-      {...props}
-    >
-      {children}
-    </li>
-  )
-);
-BreadcrumbSeparator.displayName = "BreadcrumbSeparator";
+const BreadcrumbLink = React.forwardRef(({ asChild, href, className, ...props }, ref) => {
+  // If asChild is true, use Slot, otherwise use Link from next/link
+  const Comp = asChild ? Slot : Link
 
-/**
- * Breadcrumb Link Component
- * 
- * This component renders a link within a breadcrumb item.
- * 
- * @param {Object} props - Component props
- * @param {string} props.href - The URL the link points to
- * @param {string} props.className - Additional CSS classes
- * @param {React.ReactNode} props.children - The content of the link
- * @param {boolean} props.asChild - Whether to render the child as the root element
- * @returns {JSX.Element} The rendered breadcrumb link
- */
-const BreadcrumbLink = React.forwardRef(
-  ({ className, href, ...props }, ref) => {
-    return (
-      <Link
-        ref={ref}
-        href={href}
-        className={cn("transition-colors hover:text-gray-900", className)}
-        {...props}
-      />
-    );
-  }
-);
-BreadcrumbLink.displayName = "BreadcrumbLink";
+  // If we're using Link, include the href in the props for Link
+  const linkProps = !asChild && href ? { href } : {}
 
-/**
- * Breadcrumb Page Component
- * 
- * This component renders the current page in the breadcrumb,
- * typically the last item that is not a link but just text.
- * 
- * @param {Object} props - Component props
- * @param {React.ReactNode} props.children - The content of the current page
- * @param {string} props.className - Additional CSS classes
- * @returns {JSX.Element} The rendered breadcrumb page
- */
-const BreadcrumbPage = React.forwardRef(
-  ({ className, ...props }, ref) => (
-    <span
+  return (
+    <Comp
       ref={ref}
-      aria-current="page"
-      className={cn("font-normal text-gray-900", className)}
-      {...props}
+      className={cn("transition-colors hover:text-foreground", className)}
+      {...linkProps}
+      {...props} 
     />
-  )
-);
-BreadcrumbPage.displayName = "BreadcrumbPage";
+  );
+})
+BreadcrumbLink.displayName = "BreadcrumbLink"
+
+const BreadcrumbPage = React.forwardRef(({ className, ...props }, ref) => (
+  <span
+    ref={ref}
+    role="link"
+    aria-disabled="true"
+    aria-current="page"
+    className={cn("font-normal text-foreground", className)}
+    {...props} />
+))
+BreadcrumbPage.displayName = "BreadcrumbPage"
+
+const BreadcrumbSeparator = ({
+  children,
+  className,
+  ...props
+}) => (
+  <li
+    role="presentation"
+    aria-hidden="true"
+    className={cn("[&>svg]:w-3.5 [&>svg]:h-3.5", className)}
+    {...props}>
+    {children ?? <ChevronRight />}
+  </li>
+)
+BreadcrumbSeparator.displayName = "BreadcrumbSeparator"
+
+const BreadcrumbEllipsis = ({
+  className,
+  ...props
+}) => (
+  <span
+    role="presentation"
+    aria-hidden="true"
+    className={cn("flex h-9 w-9 items-center justify-center", className)}
+    {...props}>
+    <MoreHorizontal className="h-4 w-4" />
+    <span className="sr-only">More</span>
+  </span>
+)
+BreadcrumbEllipsis.displayName = "BreadcrumbElipssis"
 
 /**
  * Breadcrumb Home Component
  * 
  * This component renders a home icon link as the first item in the breadcrumb.
+ * Uses the same HomeIcon as the sidebar navigation to maintain consistency.
  * 
  * @param {Object} props - Component props
- * @param {string} props.href - The URL the home link points to (defaults to "/")
+ * @param {string} props.href - The URL the home link points to (defaults to "/dashboard")
  * @param {string} props.className - Additional CSS classes
  * @returns {JSX.Element} The rendered home breadcrumb item
  */
 const BreadcrumbHome = React.forwardRef(
-  ({ className, href = "/", ...props }, ref) => (
-    <BreadcrumbLink 
-      ref={ref} 
-      href={href} 
-      className={cn("text-gray-500 hover:text-gray-900", className)}
-      {...props}
-    >
-      <HomeIcon className="h-4 w-4" />
-      <span className="sr-only">Home</span>
-    </BreadcrumbLink>
+  ({ className, href = "/dashboard", ...props }, ref) => (
+    <Link href={href} passHref legacyBehavior>
+      <BreadcrumbLink 
+        ref={ref}
+        className={cn("text-muted-foreground hover:text-foreground", className)}
+        {...props}
+      >
+        <HomeIcon className="h-5 w-5" />
+        <span className="sr-only">Home</span>
+      </BreadcrumbLink>
+    </Link>
   )
 );
 BreadcrumbHome.displayName = "BreadcrumbHome";
@@ -170,8 +120,9 @@ export {
   Breadcrumb,
   BreadcrumbList,
   BreadcrumbItem,
-  BreadcrumbSeparator,
   BreadcrumbLink,
   BreadcrumbPage,
+  BreadcrumbSeparator,
+  BreadcrumbEllipsis,
   BreadcrumbHome,
-}; 
+}
