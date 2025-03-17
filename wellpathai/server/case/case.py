@@ -2,7 +2,7 @@ from firebase_admin import firestore
 from datetime import datetime
 import uuid
 from agents.gpt import generate_case_title
-
+from utils.data_utils import get_questionnaire_data
 # Initialize Firestore
 db = firestore.client()
 
@@ -21,7 +21,8 @@ def create_case(user_id, questionnaire_id, title=None, description=None):
     try:
         # Generate a default title if none provided
         if not title:
-            gpt_description, gpt_title = generate_case_title(questionnaire_id, user_id)
+            questionnaire_data = get_questionnaire_data(questionnaire_id, user_id)
+            gpt_description, gpt_title = generate_case_title(questionnaire_data)
             if gpt_title and gpt_description:
                 title = gpt_title
                 description = gpt_description

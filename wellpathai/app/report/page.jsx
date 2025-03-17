@@ -16,7 +16,6 @@ export default function ReportPage() {
   const [conclusion, setConclusion] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [date, setDate] = useState(null);
-  const [caseId, setCaseId] = useState(null);
   /* For a conclution
   '''json
   {{
