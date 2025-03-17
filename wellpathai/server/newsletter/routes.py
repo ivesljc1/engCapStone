@@ -11,8 +11,9 @@ def upload_user_pdf():
 
     file = request.files["newsletter"]
     user_email = request.form["userEmail"]
+    user_id = request.form["userId"]
 
-    pdf_url = upload_pdf(file, user_email)
+    pdf_url = upload_pdf(file, user_email, user_id)
 
     if not pdf_url:
         return jsonify({"error": "Invalid file type or user not found"}), 400

@@ -3,7 +3,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from .firebase_init import db, bucket
 
-def upload_pdf(file, user_email):
+def upload_pdf(file, user_email, user_id):
     """上传 PDF 到 Firebase Storage 并返回下载 URL"""
     if not file or file.filename == "":
         return None
