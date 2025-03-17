@@ -197,44 +197,6 @@ export default function CaseDetailPage() {
     );
   }
   
-  // Format date for display
-  const formatVisitDate = (date) => {
-    const options = { month: 'short', day: 'numeric', year: 'numeric' };
-    return new Date(date).toLocaleDateString('en-US', options);
-  };
-  
-  // Simulate visit data since we only have IDs in our JSON
-  const visitDates = [
-    "2025-03-16",
-    "2025-02-28",
-    "2025-02-10",
-    "2025-01-15",
-    "2024-12-20"
-  ];
-  
-  // Generate fake visits if needed
-  const simulateVisits = () => {
-    // In a real app, these would be fetched from an API
-    // Here we're generating data based on the visit IDs
-    if (!caseData.visits || caseData.visits.length === 0) return [];
-    
-    return caseData.visits;
-  };
-  
-  const visits = simulateVisits();
-  
-  // Handle view questionnaire
-  const handleViewQuestionnaire = (visitId) => {
-    console.log(`Viewing questionnaire for visit ${visitId}`);
-    // In a real app, this would navigate to the questionnaire view
-  };
-  
-  // Handle download report
-  const handleDownloadReport = (visitId) => {
-    console.log(`Downloading report for visit ${visitId}`);
-    // In a real app, this would trigger a file download
-  };
-  
   // Handle book appointment
   const handleBookAppointment = (visitId) => {
     console.log(`Booking appointment for visit ${visitId}`);
