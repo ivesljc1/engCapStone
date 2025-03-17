@@ -47,6 +47,9 @@ const VisitList = ({ visits, onView, onDownload }) => {
                     {visit.consultationID && (
                       <div className="flex justify-center">
                         <Button
+                          onClick={() =>
+                            onDownload(visit.consultationID, visit.visitId)
+                          }
                           variant="link"
                           className="text-blue-600 hover:underline"
                         >

@@ -1,47 +1,69 @@
 import smtplib
+import uuid
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from .firebase_init import db, bucket
 from datetime import datetime
+import os
+
+def generate_unique_pdf_id():
+    """Generate a unique PDF ID and ensure it's not already in the consultation collection."""
+    while True:
+        pdf_id = str(uuid.uuid4())  # Generate a unique ID
+        doc_ref = db.collection("consultation").document(pdf_id).get()
+        if not doc_ref.exists:
+            return pdf_id
 
 def upload_pdf(file, user_email, user_id, visit_id):
-    """上传 PDF 到 Firebase Storage 并返回下载 URL"""
+    """Upload PDF to Firebase Storage and return the download URL."""
     if not file or file.filename == "":
         return None
 
-    blob = bucket.blob(f"user_pdfs/{user_email}.pdf")
+    # Generate a unique ID for the PDF
+    pdf_id = generate_unique_pdf_id()
 
+    # Set up the blob path using the unique ID
+    blob_path = f"user_pdfs/{user_id}/{pdf_id}.pdf"
+    blob = bucket.blob(blob_path)
+
+    # Upload file to Firebase Storage
     blob.upload_from_file(file, content_type="application/pdf")
-
     blob.make_public()
     pdf_url = blob.public_url
 
-    user_query = db.collection("users").document(user_id).get()
-    user_doc = next(user_query, None)
-    
-    consultation = db.collection("conslutation").add({
+    # Add consultation document and get its reference
+    consultation_ref = db.collection("consultation").document(pdf_id)
+    consultation_ref.set({
+        "consultationId": pdf_id,
         "userId": user_id,
         "visitId": visit_id,
         "pdfUrl": pdf_url,
         "email": user_email,
         "uploadedAt": datetime.now().isoformat()
     })
-    
+
+    # Update visit document with consultation ID
     db.collection("visits").document(visit_id).update({
-        "consultationID": consultation.id,
+        "consultationID": pdf_id,
         "hasNewReport": True
     })
-    
-    if user_doc:
-        db.collection("users").document(user_doc.id).update({"pdfUrl": pdf_url})
 
+    # Update user document if it exists
+    user_ref = db.collection("users").document(user_id)
+    user_doc = user_ref.get()
+    if user_doc.exists:
+        user_ref.update({"pdfUrl": pdf_url})
         send_email_notification(user_email, pdf_url)
 
     return pdf_url
 
 def send_email_notification(user_email, pdf_url):
-    sender_email = "wellpathai@gmail.com"  
-    sender_password = "xwbs znkw zjcg xxcd" 
+    sender_email = os.getenv("EMAIL_USER")  # Use environment variable
+    sender_password = os.getenv("EMAIL_PASSWORD")  # Use environment variable
+
+    if not sender_email or not sender_password:
+        print("Error: Email credentials are not set in environment variables.")
+        return
 
     subject = "Your Report is Ready!"
     body = f"""
@@ -73,4 +95,11 @@ def send_email_notification(user_email, pdf_url):
     except Exception as e:
         print(f"Failed to send email: {e}")
 
-
+def get_pdf(consultation_id):
+    """Get PDF URL for a consultation"""
+    consultation = db.collection("consultation").document(consultation_id).get()
+    
+    if consultation.exists:
+        return consultation.to_dict().get("pdfUrl")
+    
+    return None
