@@ -41,6 +41,7 @@ export default function DashboardPage() {
           }),
         });
         const data = await response.json();
+        console.log(data); 
         setCases(data);
       } catch (error) {
         console.error("Failed to load cases:", error);
