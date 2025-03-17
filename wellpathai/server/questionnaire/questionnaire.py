@@ -275,7 +275,7 @@ def record_answer_to_question(questionnaire_id, user_id, question_id, answer):
                     for i, case in enumerate(user_cases):
                         # Add index number to make options visually distinct
                         title = case.get('title', f"Case {case.get('id', 'Unknown')}")
-                        case_option = f"{title} (#{i+1})"
+                        case_option = f"{i+1}. {title}"
                         
                         case_options.append(case_option)
                         case_ids.append(case.get('id'))
