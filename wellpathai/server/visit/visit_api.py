@@ -14,6 +14,8 @@ def api_create_visit():
     user_id = data.get("userId")
     case_id = data.get("caseId")
     questionnaire_id = data.get("questionnaireId")
+
+    print("Data: ", data, flush=True)
     
     if not all([user_id, case_id, questionnaire_id]):
         return jsonify({"error": "Missing required fields"}), 400

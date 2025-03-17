@@ -8,9 +8,7 @@ from questionnaire.questionnaire import (
     get_most_recent_result,
     get_all_questions_in_questionnaire,
     get_all_results,
-    get_result_by_id,
-    handle_case_selection,
-    handle_user_pick_previous_case,
+    get_result_by_id
 )
 
 """

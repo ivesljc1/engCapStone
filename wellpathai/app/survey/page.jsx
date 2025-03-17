@@ -81,15 +81,16 @@ export default function QuestionPage() {
       }
 
       // Check if this was the existing case selection (q2b)
-      if (currentQuestion.id === "q2b" && data.selectedCaseId) {
-        setCaseId(data.selectedCaseId);
+      if (data.selected_case_id) {
+        console.log("Storing selected_case_id:", data.selected_case_id);
+        setCaseId(data.selected_case_id);
       }
 
       if (data.is_complete) {
         // Questionnaire is complete
         setCurrentQuestion(null);
         await generateVisit();
-        await generateConclusion();
+        // await generateConclusion();
       } else if (data.next_question) {
         // Set the next question from the bundled response
         setCurrentQuestion(data.next_question);
@@ -121,6 +122,7 @@ export default function QuestionPage() {
     setLoading(true);
     try {
       // Call the generate-visit endpoint with POST method and required parameters
+      console.log("Generating visit...");
       const response = await fetch("/api/visit/create", {
         method: "POST",
         headers: {

@@ -269,15 +269,23 @@ def record_answer_to_question(questionnaire_id, user_id, question_id, answer):
                 else:
                     # Add a new question for case selection
                     case_options = []
-                    for case in user_cases:
-                        case_options.append(case.get('title', f"Case {case.get('id', 'Unknown')}"))
+                    case_ids = []  # Store IDs separately for index-based lookup
+                    
+                    # Create options and collect case IDs in parallel
+                    for i, case in enumerate(user_cases):
+                        # Add index number to make options visually distinct
+                        title = case.get('title', f"Case {case.get('id', 'Unknown')}")
+                        case_option = f"{title} (#{i+1})"
+                        
+                        case_options.append(case_option)
+                        case_ids.append(case.get('id'))
                     
                     case_selection_q = {
                         "id": "q2b",
                         "question": "We have these cases on file, what's the reason for your visit?",
                         "type": "choice",
                         "options": case_options,
-                        "caseMappings": {case_options[i]: user_cases[i].get('id') for i in range(len(user_cases))},
+                        "case_ids": case_ids,  # Store the IDs list rather than a mapping
                         "initialized": True
                     }
                     
@@ -296,15 +304,41 @@ def record_answer_to_question(questionnaire_id, user_id, question_id, answer):
         
         # Handle case selection from list
         elif question_id == 'q2b':
-            # Get the case ID mapping from the answer
+            # Get the case question with its options and IDs
             case_question = next((q for q in questions if q['id'] == 'q2b'), None)
-            if case_question and 'caseMappings' in case_question:
-                case_id = case_question['caseMappings'].get(answer)
-                if case_id:
-                    questionnaire_ref.update({
-                        'caseSelectionMade': True,
-                        'selectedCaseId': case_id
-                    })
+            
+            if case_question and 'options' in case_question:
+                try:
+                    # Find the selected option's index
+                    option_index = case_question['options'].index(answer)
+                    print(f"Selected option '{answer}' at index {option_index}", flush=True)
+                    
+                    # Use the index to get the corresponding case ID
+                    if 'case_ids' in case_question and option_index < len(case_question['case_ids']):
+                        case_id = case_question['case_ids'][option_index]
+                        print(f"Selected case ID: {case_id} from index {option_index}", flush=True)
+                        
+                        questionnaire_ref.update({
+                            'caseSelectionMade': True,
+                            'selectedCaseId': case_id
+                        })
+                    else:
+                        print(f"Error: No case ID found at index {option_index}", flush=True)
+                        
+                except ValueError as e:
+                    print(f"Error: Option '{answer}' not found in available options", flush=True)
+                    
+                    # Add fallback for backward compatibility (for existing data)
+                    if 'caseMappings' in case_question:
+                        case_id = case_question['caseMappings'].get(answer)
+                        if case_id:
+                            print(f"Fallback: Found case ID using string mapping", flush=True)
+                            questionnaire_ref.update({
+                                'caseSelectionMade': True,
+                                'selectedCaseId': case_id
+                            })
+                        else:
+                            print(f"Fallback failed: No matching case found", flush=True)
                     
         # Update the questions
         questionnaire_ref.update({
@@ -460,7 +494,7 @@ def get_most_recent_question(questionnaire_id, user_id):
                 if questionnaire_data.get('selectedAction') == 'create_new':
                     return { "success": True, "data": question, "new_case_flag":True ,"error": None }
                 else:
-                    return { "success": True, "data": question, "new_case_flag":False ,"error": None }
+                    return { "success": True, "data": question, "new_case_flag":False ,"error": None, "selectedCaseId": questionnaire_data.get('selectedCaseId') }
         # No unanswered questions found - indicate need for GPT
         return { "success": False, "data": None, "error": "NO_INITIALIZED_QUESTIONS" }
         
@@ -483,11 +517,16 @@ def get_next_question(questionnaire_id, user_id):
     
     if response["success"]:
         # There's a predefined question available
-        return {
+        result = {
             "message": "Answer recorded successfully",
             "next_question": response["data"],
-            "new_case_flag": response["new_case_flag"]
+            "new_case_flag": response.get("new_case_flag", False)
         }
+        # Only include selectedCaseId if it exists in the response
+        if "selectedCaseId" in response:
+            result["selected_case_id"] = response["selectedCaseId"]
+        return result   
+    
     elif response["error"] == "NO_INITIALIZED_QUESTIONS":
         # No predefined questions left, check max questions and possibly generate with GPT
         print("Calling GPT to generate next question", flush=True)
