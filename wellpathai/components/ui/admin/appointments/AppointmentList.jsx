@@ -7,18 +7,19 @@ import {
   BreadcrumbList, 
   BreadcrumbItem, 
   BreadcrumbSeparator, 
-  BreadcrumbLink, 
   BreadcrumbPage,
   BreadcrumbHome
 } from "@/components/ui/breadcrumb";
-import { MagnifyingGlassIcon, CalendarIcon, PlusIcon } from "@heroicons/react/24/outline";
-import AppointmentCard from "./AppointmentCard";
+import { MagnifyingGlassIcon, CalendarIcon, DocumentTextIcon, ClipboardDocumentListIcon } from "@heroicons/react/24/outline";
+import AppointmentStatusBadge from "./AppointmentStatusBadge";
+import FileUploadModal from "./FileUploadModal";
+import { formatDateShort, formatTime } from "@/lib/formatDate";
 
 /**
  * AppointmentList Component
  * 
- * This component displays a list of appointments with filtering and search
- * functionality for administrators, using a card-based layout based on the Figma design.
+ * This component displays a list of appointments with filtering, search,
+ * and action functionality for administrators.
  * 
  * @param {Object} props - Component props
  * @param {Array} props.appointments - List of appointment data
@@ -30,7 +31,11 @@ export default function AppointmentList({ appointments }) {
   const [filteredAppointments, setFilteredAppointments] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState("all");
   
-  // Filter appointments based on search query and status
+  // State for file upload modal
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  
+  // Filter and sort appointments based on search query and status
   useEffect(() => {
     if (!appointments) return;
     
@@ -42,7 +47,6 @@ export default function AppointmentList({ appointments }) {
       filtered = filtered.filter(appointment => 
         appointment.patientName.toLowerCase().includes(query) || 
         appointment.patientEmail.toLowerCase().includes(query) ||
-        appointment.type.toLowerCase().includes(query) ||
         appointment.id.toLowerCase().includes(query)
       );
     }
@@ -52,6 +56,15 @@ export default function AppointmentList({ appointments }) {
       filtered = filtered.filter(appointment => 
         appointment.status === selectedStatus
       );
+    }
+    
+    // Sort by date based on selected tab
+    if (selectedStatus === "scheduled") {
+      // For scheduled tab: sort from oldest to latest (ascending)
+      filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
+    } else {
+      // For all other tabs: sort from latest to oldest (descending)
+      filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
     }
     
     setFilteredAppointments(filtered);
@@ -73,6 +86,24 @@ export default function AppointmentList({ appointments }) {
     setSelectedStatus(status);
   };
 
+  /**
+   * Open the file upload modal for a specific patient
+   * @param {Object} patient - The patient data
+   */
+  const handleOpenUploadModal = (patient) => {
+    setSelectedPatient(patient);
+    setIsUploadModalOpen(true);
+  };
+
+  /**
+   * Handle file upload
+   * @param {File} file - The uploaded file
+   */
+  const handleFileUpload = (file) => {
+    // In a real app, this would send the file to the server
+    console.log(`File uploaded for patient ${selectedPatient?.patientName}:`, file);
+  };
+
   // If appointments data isn't loaded yet, show loading state
   if (!appointments) {
     return <div className="text-center py-10">Loading appointments...</div>;
@@ -88,24 +119,18 @@ export default function AppointmentList({ appointments }) {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage>Appointments</BreadcrumbPage>
+            <BreadcrumbPage>Home</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
 
-      {/* Header with title and buttons */}
+      {/* Header with title and button */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl font-semibold text-gray-900">Appointments</h1>
-        <div className="flex gap-3">
-          <Button variant="outline" className="flex items-center gap-2">
-            <CalendarIcon className="h-4 w-4" />
-            <span>Schedule</span>
-          </Button>
-          <Button className="flex items-center gap-2">
-            <PlusIcon className="h-4 w-4" />
-            <span>New Appointment</span>
-          </Button>
-        </div>
+        <Button className="flex items-center gap-2 text-white rounded-xl">
+          <CalendarIcon className="h-4 w-4" />
+          <span>Manage Availability</span>
+        </Button>
       </div>
 
       {/* Filters and search */}
@@ -116,6 +141,7 @@ export default function AppointmentList({ appointments }) {
             variant={selectedStatus === "all" ? "default" : "outline"} 
             size="sm"
             onClick={() => handleStatusChange("all")}
+            className={`rounded-xl ${selectedStatus === "all" ? "text-white" : ""}`}
           >
             All
           </Button>
@@ -123,6 +149,7 @@ export default function AppointmentList({ appointments }) {
             variant={selectedStatus === "scheduled" ? "default" : "outline"} 
             size="sm"
             onClick={() => handleStatusChange("scheduled")}
+            className={`rounded-xl ${selectedStatus === "scheduled" ? "text-white" : ""}`}
           >
             Scheduled
           </Button>
@@ -130,15 +157,9 @@ export default function AppointmentList({ appointments }) {
             variant={selectedStatus === "completed" ? "default" : "outline"} 
             size="sm"
             onClick={() => handleStatusChange("completed")}
+            className={`rounded-xl ${selectedStatus === "completed" ? "text-white" : ""}`}
           >
             Completed
-          </Button>
-          <Button 
-            variant={selectedStatus === "cancelled" ? "default" : "outline"} 
-            size="sm"
-            onClick={() => handleStatusChange("cancelled")}
-          >
-            Cancelled
           </Button>
         </div>
 
@@ -148,25 +169,109 @@ export default function AppointmentList({ appointments }) {
           <input
             type="text"
             placeholder="Search appointments..."
-            className="pl-10 pr-4 py-2 w-full sm:w-64 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="pl-10 pr-4 py-2 w-full sm:w-64 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
             value={searchQuery}
             onChange={handleSearchChange}
           />
         </div>
       </div>
 
-      {/* Appointments cards grid */}
-      <div className="space-y-4">
-        {filteredAppointments.length === 0 ? (
-          <div className="text-center py-10 bg-white rounded-lg border border-gray-200">
-            <p className="text-gray-500">No appointments found.</p>
+      {/* Appointments table */}
+      <div className="overflow-x-auto rounded-lg border border-gray-200">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Patient
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Date
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Duration
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Case
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Status
+              </th>
+              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {filteredAppointments.length === 0 ? (
+              <tr>
+                <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-500">
+                  No appointments found.
+                </td>
+              </tr>
+            ) : (
+              filteredAppointments.map((appointment) => (
+                <tr 
+                  key={appointment.id} 
+                  className="hover:bg-gray-50"
+                >
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">{appointment.patientName}</div>
+                    <div className="text-sm text-gray-500">{appointment.patientEmail}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {formatDateShort(appointment.date)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {formatTime(appointment.time)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {appointment.case}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <AppointmentStatusBadge status={appointment.status} />
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div className="flex justify-end items-center space-x-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="text-xs px-2 py-1 h-auto rounded-xl"
+                        onClick={() => handleOpenUploadModal(appointment)}
+                      >
+                        <DocumentTextIcon className="h-3 w-3 mr-1" />
+                        Upload Report
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="text-xs px-2 py-1 h-auto rounded-xl"
+                      >
+                        <ClipboardDocumentListIcon className="h-3 w-3 mr-1" />
+                        View Questionnaire
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+        
+        {/* Results summary */}
+        {filteredAppointments.length > 0 && (
+          <div className="border-t border-gray-200 px-6 py-3 text-sm text-gray-500 bg-gray-50 text-center">
+            Showing all {filteredAppointments.length} {filteredAppointments.length === 1 ? 'appointment' : 'appointments'}
           </div>
-        ) : (
-          filteredAppointments.map((appointment) => (
-            <AppointmentCard key={appointment.id} appointment={appointment} />
-          ))
         )}
       </div>
+
+      {/* File Upload Modal */}
+      <FileUploadModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onUpload={handleFileUpload}
+        patientName={selectedPatient?.patientName || ""}
+      />
     </div>
   );
 } 
