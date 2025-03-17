@@ -38,6 +38,7 @@ export default function ReportPage() {
     } else {
       // Parse the JSON response from the server
       const result = await data.json();
+      console.log(result);
       // Update the state with the fetched conclusion and suggestions
       setConclusion(result.result.analysis.conclusion);
       setSuggestions(result.result.analysis.suggestions);

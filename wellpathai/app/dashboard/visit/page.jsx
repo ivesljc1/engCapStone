@@ -13,7 +13,7 @@ export default function Dashboard() {
   const [caseDescription, setCaseDescription] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const caseId = "udDZX4TmzIQLU2o0OclO"; // Example case ID
+  const caseId = "P2JB9hcENJNSTaL4lhYA"; // Example case ID
 
   useEffect(() => {
     const fetchCaseData = async () => {
@@ -103,7 +103,37 @@ export default function Dashboard() {
     return () => unsubscribe();
   }, []); // Auth listener setup only runs once
 
-  console.log(visits);
+  const handleDownload = async (consultationID, visitID) => {
+    updateNewReport(visitID);
+    // First fetch the PDF URL
+    await fetch("/api/get_pdf", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ consultationID }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.pdfUrl) {
+          // Create a temporary anchor element
+          const link = document.createElement("a");
+          link.href = data.pdfUrl;
+          link.setAttribute("download", "report.pdf"); // Suggested filename
+          link.setAttribute("target", "_blank");
+
+          // Append to the document, click it, and remove it
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        } else {
+          console.error("No PDF URL found");
+        }
+      })
+      .catch((error) => {
+        console.error("Error downloading PDF:", error);
+      });
+  };
 
   if (loading) return <LoadingPage />;
 
@@ -115,7 +145,11 @@ export default function Dashboard() {
         <p className="text-gray-600 mt-2">{caseDescription}</p>
 
         {/* Pass visits to VisitList Component */}
-        <VisitList visits={visits} onView={handleView} onDownload={null} />
+        <VisitList
+          visits={visits}
+          onView={handleView}
+          onDownload={handleDownload}
+        />
       </main>
     </div>
   );
