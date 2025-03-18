@@ -72,7 +72,7 @@ export default function FileUploadModal({ isOpen, onClose, onUpload, patientName
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+      <div className="w-full max-w-md rounded-[1.5rem] bg-white p-6 shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-gray-900">Upload Report</h2>
@@ -91,10 +91,10 @@ export default function FileUploadModal({ isOpen, onClose, onUpload, patientName
         </p>
         
         {/* Upload area */}
-        <div className="mb-4 rounded-lg border-2 border-dashed border-gray-300 p-6 text-center">
+        <div className="mb-4 rounded-[1.5rem] border-2 border-dashed border-gray-300 p-6 text-center">
           {selectedFile ? (
             <div className="flex flex-col items-center">
-              <DocumentArrowUpIcon className="h-10 w-10 text-primary mb-2" />
+              <DocumentArrowUpIcon className="h-10 w-10 text-[#D7A8A0] mb-2" />
               <p className="text-sm font-medium text-gray-900">{selectedFile.name}</p>
               <p className="text-xs text-gray-500">
                 {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
@@ -104,7 +104,7 @@ export default function FileUploadModal({ isOpen, onClose, onUpload, patientName
             <div className="flex flex-col items-center">
               <DocumentArrowUpIcon className="h-10 w-10 text-gray-400 mb-2" />
               <p className="text-sm text-gray-500">
-                Drag and drop a file, or <button onClick={handleBrowseClick} className="text-primary hover:underline">browse</button>
+                Drag and drop a file, or <button onClick={handleBrowseClick} className="text-[#D7A8A0] hover:underline">browse</button>
               </p>
               <p className="text-xs text-gray-400 mt-1">
                 Supported formats: PDF, DOC, DOCX, JPG, PNG
@@ -139,12 +139,14 @@ export default function FileUploadModal({ isOpen, onClose, onUpload, patientName
             variant="outline"
             onClick={onClose}
             disabled={uploadStatus === "uploading"}
+            className="rounded-full"
           >
             Cancel
           </Button>
           <Button
             onClick={handleUpload}
             disabled={!selectedFile || uploadStatus === "uploading" || uploadStatus === "success"}
+            className="rounded-full bg-[#D7A8A0] hover:bg-[#c49991] text-white"
           >
             {uploadStatus === "uploading" ? "Uploading..." : "Upload"}
           </Button>

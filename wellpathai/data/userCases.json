@@ -4,14 +4,45 @@
     "description": "The patient is a 21-year-old male experiencing persistent sleep disturbances, particularly difficulty falling asleep and frequent awakenings at night, lasting more than a week, with a discomfort rating of 5. No chronic medical conditions reported.",
     "id": "P2JB9hcENJNSTaL4lhYA",
     "lastVisitDate": "2025-03-16",
-    "newReportCount": 0,
+    "newReportCount": 1,
     "status": "active",
     "title": "Sleep Disturbance",
     "updatedAt": "Sun, 16 Mar 2025 23:52:21 GMT",
     "userId": "3xxBZNcdNYMdK8WW9coz8nbvX3n1",
-    "visitCount": 1,
+    "visitCount": 4,
     "visits": [
-      "UEUzCFu4UoRyWSMIVdJt"
+      {
+        "id": "UEUzCFu4UoRyWSMIVdJt",
+        "date": "2025-03-16",
+        "appointmentStatus": "completed",
+        "hasQuestionnaire": true,
+        "hasReport": true,
+        "hasNewReport": true
+      },
+      {
+        "id": "VFU5DF7uU0R3XZM1WvJt",
+        "date": "2025-02-28",
+        "appointmentStatus": "unscheduled",
+        "hasQuestionnaire": true,
+        "hasReport": false,
+        "hasNewReport": false
+      },
+      {
+        "id": "WGV6EG8vV1S4YAN2XwKu",
+        "date": "2025-02-10",
+        "appointmentStatus": "cancelled",
+        "hasQuestionnaire": true,
+        "hasReport": false,
+        "hasNewReport": false
+      },
+      {
+        "id": "XHW7FH9wW2T5ZBO3XyLv",
+        "date": "2025-01-25",
+        "appointmentStatus": "cancelled",
+        "hasQuestionnaire": true,
+        "hasReport": false,
+        "hasNewReport": false
+      }
     ]
   },
   {
@@ -24,11 +55,48 @@
     "title": "Migraine Headaches",
     "updatedAt": "Sat, 15 Mar 2025 08:30:14 GMT",
     "userId": "3xxBZNcdNYMdK8WW9coz8nbvX3n1",
-    "visitCount": 3,
+    "visitCount": 5,
     "visits": [
-      "FRTzABc2VpSdEQHJMnKl",
-      "GHXyWDe5TqRzOPLkVnBm",
-      "IKLzMNa8SbQcXYZdVfGh"
+      {
+        "id": "FRTzABc2VpSdEQHJMnKl",
+        "date": "2025-03-14",
+        "appointmentStatus": "completed",
+        "hasQuestionnaire": true,
+        "hasReport": true,
+        "hasNewReport": true
+      },
+      {
+        "id": "GHXyWDe5TqRzOPLkVnBm",
+        "date": "2025-02-15",
+        "appointmentStatus": "scheduled",
+        "hasQuestionnaire": true,
+        "hasReport": false,
+        "hasNewReport": false
+      },
+      {
+        "id": "IKLzMNa8SbQcXYZdVfGh",
+        "date": "2025-01-10",
+        "appointmentStatus": "completed",
+        "hasQuestionnaire": true,
+        "hasReport": true,
+        "hasNewReport": false
+      },
+      {
+        "id": "JLMzAOa9TcRdYZXeWgFi",
+        "date": "2024-12-05",
+        "appointmentStatus": "cancelled",
+        "hasQuestionnaire": true,
+        "hasReport": false,
+        "hasNewReport": false
+      },
+      {
+        "id": "KMNzBPb0UdSdZAYfXhGj",
+        "date": "2024-11-10",
+        "appointmentStatus": "completed",
+        "hasQuestionnaire": true,
+        "hasReport": true,
+        "hasNewReport": false
+      }
     ]
   },
   {
@@ -36,15 +104,45 @@
     "description": "The patient is a 42-year-old male with chronic lower back pain following a workplace injury. Pain increases with extended sitting and improves with light activity, with a discomfort rating of 6.",
     "id": "L9nE5hfGPKQSTcM6zhYD",
     "lastVisitDate": "2025-02-28",
-    "newReportCount": 1,
+    "newReportCount": 0,
     "status": "active",
     "title": "Lower Back Pain",
     "updatedAt": "Thu, 28 Feb 2025 16:45:12 GMT",
     "userId": "3xxBZNcdNYMdK8WW9coz8nbvX3n1",
-    "visitCount": 2,
+    "visitCount": 4,
     "visits": [
-      "JLMzPQb1TcRdXYZfVhGj",
-      "KNPzQRd3VeRfYZAhWiJk"
+      {
+        "id": "JLMzPQb1TcRdXYZfVhGj",
+        "date": "2025-02-28",
+        "appointmentStatus": "scheduled",
+        "hasQuestionnaire": true,
+        "hasReport": false,
+        "hasNewReport": false
+      },
+      {
+        "id": "KNPzQRd3VeRfYZAhWiJk",
+        "date": "2025-02-01",
+        "appointmentStatus": "completed",
+        "hasQuestionnaire": true,
+        "hasReport": true,
+        "hasNewReport": false
+      },
+      {
+        "id": "LOQzRSe4WfRgZABiXjJk",
+        "date": "2025-01-15",
+        "appointmentStatus": "cancelled",
+        "hasQuestionnaire": true,
+        "hasReport": false,
+        "hasNewReport": false
+      },
+      {
+        "id": "MPRzSTf6XgRhACDjYkKl",
+        "date": "2024-12-20",
+        "appointmentStatus": "cancelled",
+        "hasQuestionnaire": true,
+        "hasReport": false,
+        "hasNewReport": false
+      }
     ]
   },
   {
@@ -59,10 +157,38 @@
     "userId": "3xxBZNcdNYMdK8WW9coz8nbvX3n1",
     "visitCount": 4,
     "visits": [
-      "LPQzRSe5WfRgZABiXjKl",
-      "MQRzSTf7XgRhACDjYkLm",
-      "NRSzTUg9YhSiCDEkZlMn",
-      "PSUzVWi1ZjTkDEFlAmNp"
+      {
+        "id": "LPQzRSe5WfRgZABiXjKl",
+        "date": "2025-02-10",
+        "appointmentStatus": "unscheduled",
+        "hasQuestionnaire": true,
+        "hasReport": false,
+        "hasNewReport": false
+      },
+      {
+        "id": "MQRzSTf7XgRhACDjYkLm",
+        "date": "2025-01-20",
+        "appointmentStatus": "cancelled",
+        "hasQuestionnaire": true,
+        "hasReport": false,
+        "hasNewReport": false
+      },
+      {
+        "id": "NRSzTUg9YhSiCDEkZlMn",
+        "date": "2025-01-05",
+        "appointmentStatus": "completed",
+        "hasQuestionnaire": true,
+        "hasReport": true,
+        "hasNewReport": false
+      },
+      {
+        "id": "PSUzVWi1ZjTkDEFlAmNp",
+        "date": "2024-12-15",
+        "appointmentStatus": "completed",
+        "hasQuestionnaire": true,
+        "hasReport": true,
+        "hasNewReport": false
+      }
     ]
   },
   {
@@ -75,10 +201,162 @@
     "title": "Seasonal Allergies",
     "updatedAt": "Wed, 15 Jan 2025 13:40:55 GMT",
     "userId": "3xxBZNcdNYMdK8WW9coz8nbvX3n1",
-    "visitCount": 2,
+    "visitCount": 4,
     "visits": [
-      "QTVzWXj3AkUlEFGmBnOq",
-      "RUWzXYk5BlVmFGHnCoPr"
+      {
+        "id": "QTVzWXj3AkUlEFGmBnOq",
+        "date": "2025-01-15",
+        "appointmentStatus": "completed",
+        "hasQuestionnaire": true,
+        "hasReport": true,
+        "hasNewReport": false
+      },
+      {
+        "id": "RUWzXYk5BlVmFGHnCoPr",
+        "date": "2024-12-20",
+        "appointmentStatus": "cancelled",
+        "hasQuestionnaire": true,
+        "hasReport": false,
+        "hasNewReport": false
+      },
+      {
+        "id": "STXzYZl7CmWnHGIoDoQs",
+        "date": "2024-11-05",
+        "appointmentStatus": "cancelled",
+        "hasQuestionnaire": true,
+        "hasReport": false,
+        "hasNewReport": false
+      },
+      {
+        "id": "TUYzZAm8DnXoIHJpEpRt",
+        "date": "2024-10-10",
+        "appointmentStatus": "completed",
+        "hasQuestionnaire": true,
+        "hasReport": true,
+        "hasNewReport": false
+      }
+    ]
+  },
+  {
+    "createdAt": "Mon, 03 Mar 2025 08:45:15 GMT",
+    "description": "The patient is a 45-year-old female with type 2 diabetes diagnosed 3 years ago. Currently managed with Metformin 1000mg twice daily. Reports good compliance with medication but struggles with dietary restrictions.",
+    "id": "Q6tH0ijLTONVWgR1zlAG",
+    "lastVisitDate": "2025-03-03",
+    "newReportCount": 0,
+    "status": "active",
+    "title": "Type 2 Diabetes",
+    "updatedAt": "Mon, 03 Mar 2025 14:20:30 GMT",
+    "userId": "3xxBZNcdNYMdK8WW9coz8nbvX3n1",
+    "visitCount": 3,
+    "visits": [
+      {
+        "id": "UVZzABn9EoYpJIKqFqSu",
+        "date": "2025-03-03",
+        "appointmentStatus": "scheduled",
+        "hasQuestionnaire": true,
+        "hasReport": false,
+        "hasNewReport": false
+      },
+      {
+        "id": "VWAzBCo0FpZqKJLrGrTv",
+        "date": "2025-02-05",
+        "appointmentStatus": "cancelled",
+        "hasQuestionnaire": true,
+        "hasReport": false,
+        "hasNewReport": false
+      },
+      {
+        "id": "WXBzCDp1GqArLKMsHsUw",
+        "date": "2025-01-10",
+        "appointmentStatus": "completed",
+        "hasQuestionnaire": true,
+        "hasReport": true,
+        "hasNewReport": false
+      }
+    ]
+  },
+  {
+    "createdAt": "Fri, 28 Feb 2025 13:20:10 GMT",
+    "description": "The patient is a 52-year-old male with hypertension diagnosed 5 years ago. Blood pressure consistently above 140/90 despite medication. Reports occasional headaches and dizziness. Family history of cardiovascular disease.",
+    "id": "R7uI1jkMUPOWXhS2amBH",
+    "lastVisitDate": "2025-02-28",
+    "newReportCount": 0,
+    "status": "active",
+    "title": "Hypertension",
+    "updatedAt": "Fri, 28 Feb 2025 13:20:10 GMT",
+    "userId": "3xxBZNcdNYMdK8WW9coz8nbvX3n1",
+    "visitCount": 4,
+    "visits": [
+      {
+        "id": "XYCzDEq2HrBsMNTtItVx",
+        "date": "2025-02-28",
+        "appointmentStatus": "scheduled",
+        "hasQuestionnaire": true,
+        "hasReport": false,
+        "hasNewReport": false
+      },
+      {
+        "id": "YZDzEFr3IsCdNOUuJuWy",
+        "date": "2025-01-20",
+        "appointmentStatus": "completed",
+        "hasQuestionnaire": true,
+        "hasReport": true,
+        "hasNewReport": false
+      },
+      {
+        "id": "ZAEzFGs4JtDePPVvKvXz",
+        "date": "2024-12-15",
+        "appointmentStatus": "unscheduled",
+        "hasQuestionnaire": true,
+        "hasReport": false,
+        "hasNewReport": false
+      },
+      {
+        "id": "ABFzGHt5KuEfQQWwLwYA",
+        "date": "2024-11-10",
+        "appointmentStatus": "completed",
+        "hasQuestionnaire": true,
+        "hasReport": true,
+        "hasNewReport": false
+      }
+    ]
+  },
+  {
+    "createdAt": "Thu, 20 Feb 2025 09:30:45 GMT",
+    "description": "The patient is a 33-year-old female with asthma exacerbated by exercise and cold weather. Currently using albuterol inhaler as needed. Reports increasing frequency of symptoms over the past month.",
+    "id": "S8vJ2klNVQPXYiT3bnCI",
+    "lastVisitDate": "2025-02-20",
+    "newReportCount": 0,
+    "status": "active",
+    "title": "Exercise-Induced Asthma",
+    "updatedAt": "Thu, 20 Feb 2025 09:30:45 GMT",
+    "userId": "3xxBZNcdNYMdK8WW9coz8nbvX3n1",
+    "visitCount": 3,
+    "visits": [
+      {
+        "id": "BCGzHIu6LvFgRRXxMxZB",
+        "date": "2025-02-20",
+        "appointmentStatus": "unscheduled",
+        "hasQuestionnaire": true,
+        "hasReport": false,
+        "hasNewReport": false
+      },
+      {
+        "id": "CDHzIJv7MwGhSSYyNyAC",
+        "date": "2025-01-15",
+        "appointmentStatus": "scheduled",
+        "hasQuestionnaire": true,
+        "hasReport": false,
+        "hasNewReport": false
+      },
+      {
+        "id": "DEIzJKw8NxHiTTZzOzBD",
+        "date": "2024-12-10",
+        "appointmentStatus": "completed",
+        "hasQuestionnaire": true,
+        "hasReport": true,
+        "hasNewReport": false
+      }
     ]
   }
 ] 

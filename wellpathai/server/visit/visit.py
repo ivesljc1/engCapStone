@@ -15,7 +15,8 @@ def create_visit(user_id, case_id, questionnaire_id):
             "visitDate": datetime.now().date().isoformat(),
             "questionnairesID": questionnaire_id,
             "consultationID": "",
-            "hasNewReport": True
+            "hasNewReport": True,
+            "appointmentStatus": "unScheduled"
         })
         print(f"Visit created successfully: {visit_ref.id}", flush=True)
 

@@ -18,7 +18,7 @@ def get_all_appointments():
             appointment_data['id'] = appointment.id
             
             # Format datetime objects for JSON serialization
-            for field in ['startTime', 'endTime', 'createdAt', 'bookedAt']:
+            for field in ['start_time', 'end_time']:
                 if field in appointment_data and hasattr(appointment_data[field], 'isoformat'):
                     appointment_data[field] = appointment_data[field].isoformat()
                     
