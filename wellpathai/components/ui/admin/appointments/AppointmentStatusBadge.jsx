@@ -8,10 +8,10 @@
  * - cancelled: red
  * 
  * @param {Object} props - Component props
- * @param {string} props.appointmentStatus - The appointment status
+ * @param {string} [props.appointmentStatus="unknown"] - The appointment status
  * @returns {JSX.Element} The rendered status badge
  */
-export default function AppointmentStatusBadge({ appointmentStatus }) {
+export default function AppointmentStatusBadge({ appointmentStatus = "unknown" }) {
   // Define color schemes for different statuses
   const statusStyles = {
     scheduled: "bg-blue-100 text-blue-800",
@@ -23,11 +23,13 @@ export default function AppointmentStatusBadge({ appointmentStatus }) {
   const style = statusStyles[appointmentStatus] || "bg-gray-100 text-gray-800";
 
   // Capitalize the first letter of the status for display
-  const displayStatus = appointmentStatus.charAt(0).toUpperCase() + appointmentStatus.slice(1);
+  const displayStatus = appointmentStatus
+    ? appointmentStatus.charAt(0).toUpperCase() + appointmentStatus.slice(1)
+    : "Unknown";
 
   return (
     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${style}`}>
       {displayStatus}
     </span>
   );
-} 
+}
