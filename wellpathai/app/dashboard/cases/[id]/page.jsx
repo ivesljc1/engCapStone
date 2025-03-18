@@ -8,11 +8,11 @@ import { Button } from "@/components/ui/button";
 import { formatDateShort } from "@/lib/formatDate";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { auth } from "../../../firebase";
-import VisitStatusBadge from '@/components/ui/VisitStatusBadge';
-import { 
-  CalendarIcon, 
-  ArrowDownTrayIcon, 
-  XMarkIcon 
+import VisitStatusBadge from "@/components/ui/VisitStatusBadge";
+import {
+  CalendarIcon,
+  ArrowDownTrayIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 
 /**
@@ -196,19 +196,31 @@ export default function CaseDetailPage() {
       </div>
     );
   }
-  
+
   // Handle book appointment
   const handleBookAppointment = (visitId) => {
-    console.log(`Booking appointment for visit ${visitId}`);
-    // In a real app, this would navigate to the appointment booking page
+    // Find the visit in the visits array
+    const selectedVisit = visits.find((visit) => visit.visitId === visitId);
+
+    if (selectedVisit) {
+      // Create the URL with query parameters
+      const calUrl = `https://cal.com/wellpathai?case=${encodeURIComponent(
+        caseName
+      )}&visit=${encodeURIComponent(selectedVisit.visitDate)}`;
+
+      // Open the URL in a new window
+      window.open(calUrl, "_blank");
+    } else {
+      console.error(`Visit with ID ${visitId} not found`);
+    }
   };
-  
+
   // Handle cancel appointment
   const handleCancelAppointment = (visitId) => {
     console.log(`Cancelling appointment for visit ${visitId}`);
     // In a real app, this would trigger an API call to cancel the appointment
   };
-  
+
   return (
     <div className="px-6 py-8">
       <CaseBreadcrumb caseName={caseName} />
@@ -232,13 +244,22 @@ export default function CaseDetailPage() {
                 >
                   Date
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Status
                 </th>
-                <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Questionnaire Report
                 </th>
-                <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Action
                 </th>
               </tr>
@@ -246,7 +267,10 @@ export default function CaseDetailPage() {
             <tbody className="bg-white divide-y divide-gray-200">
               {visits.length === 0 ? (
                 <tr>
-                  <td colSpan="4" className="px-6 py-4 text-center text-sm text-gray-500">
+                  <td
+                    colSpan="4"
+                    className="px-6 py-4 text-center text-sm text-gray-500"
+                  >
                     No visits recorded for this case yet.
                   </td>
                 </tr>
@@ -254,7 +278,7 @@ export default function CaseDetailPage() {
                 visits.map((visit) => (
                   <tr key={visit.visitId} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {visit.visitDate}{" "}
+                      {visit.visitDate}{" "}
                       {visit.hasNewReport && (
                         <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                           New Report
@@ -262,12 +286,16 @@ export default function CaseDetailPage() {
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <VisitStatusBadge appointmentStatus={visit.appointmentStatus} />
+                      <VisitStatusBadge
+                        appointmentStatus={visit.appointmentStatus}
+                      />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
                       {visit.questionnairesID ? (
-                        <button 
-                          onClick={() => handleView(visit.questionnairesID, visit.visitId)}
+                        <button
+                          onClick={() =>
+                            handleView(visit.questionnairesID, visit.visitId)
+                          }
                           className="text-[#D7A8A0] hover:text-[#c49991] hover:underline"
                         >
                           View
@@ -281,7 +309,7 @@ export default function CaseDetailPage() {
                         <Button
                           onClick={() => handleBookAppointment(visit.visitId)}
                           variant="outline"
-                          size="sm" 
+                          size="sm"
                           className="text-xs px-3 py-1 h-auto rounded-full hover:border-gray-500 hover:text-gray-500"
                         >
                           <CalendarIcon className="h-3 w-3" />
@@ -299,20 +327,23 @@ export default function CaseDetailPage() {
                           Cancel
                         </Button>
                       )}
-                      {visit.appointmentStatus === "completed" && visit.consultationID && (
-                        <Button
-                          onClick={() => handleDownload(
-                            visit.consultationID,
-                            visit.visitId
-                          )}
-                          variant="outline"
-                          size="sm"
-                          className="text-xs px-3 py-1 h-auto rounded-full hover:border-green-600 hover:text-green-600"
-                        >
-                          <ArrowDownTrayIcon className="h-3 w-3" />
-                          Download Report
-                        </Button>
-                      )}
+                      {visit.appointmentStatus === "completed" &&
+                        visit.consultationID && (
+                          <Button
+                            onClick={() =>
+                              handleDownload(
+                                visit.consultationID,
+                                visit.visitId
+                              )
+                            }
+                            variant="outline"
+                            size="sm"
+                            className="text-xs px-3 py-1 h-auto rounded-full hover:border-green-600 hover:text-green-600"
+                          >
+                            <ArrowDownTrayIcon className="h-3 w-3" />
+                            Download Report
+                          </Button>
+                        )}
                     </td>
                   </tr>
                 ))
