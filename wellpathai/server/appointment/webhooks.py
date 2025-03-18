@@ -109,7 +109,7 @@ def cal_webhook():
 
     elif event_type == "BOOKING_CANCELLED":
         db.collection("appointments").document(event_id).update({
-            "status": "canceled",
+            "status": "cancelled",
             "cancellation_reason": cancellation_reason,
             "time_zone": attendee_timezone,
             "start_time": start_time_local,
