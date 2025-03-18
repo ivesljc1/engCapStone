@@ -12,7 +12,6 @@ import {
 const navigation = [
   { name: "Home", href: "/dashboard", icon: HomeIcon },
   { name: "Appointments", href: "/dashboard/appointments", icon: CalendarIcon },
-  { name: "Profile", href: "/dashboard/profile", icon: UsersIcon },
 ];
 
 function classNames(...classes) {

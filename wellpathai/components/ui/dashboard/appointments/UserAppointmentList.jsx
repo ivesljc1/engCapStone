@@ -36,7 +36,7 @@ function getDuration(startStr, endStr) {
  *
  * This component displays the list of appointments for the current user,
  * with searching, status filtering, and sorting by start_time.
- * 
+ *
  * Columns displayed:
  *  - Date       -> formatDateShort(apt.startTime)
  *  - Duration   -> getDuration(apt.startTime, apt.endTime)
@@ -48,7 +48,10 @@ function getDuration(startStr, endStr) {
  * @param {String} props.currentUserEmail   - The current user's email (for reference)
  * @returns {JSX.Element} The rendered appointment list.
  */
-export default function UserAppointmentList({ appointments, currentUserEmail }) {
+export default function UserAppointmentList({
+  appointments,
+  currentUserEmail,
+}) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredAppointments, setFilteredAppointments] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState("all");
@@ -58,21 +61,41 @@ export default function UserAppointmentList({ appointments, currentUserEmail }) 
     let filtered = [...appointments];
 
     if (searchQuery) {
-      const q = searchQuery.toLowerCase();
+      let q = searchQuery.toLowerCase();
       filtered = filtered.filter((apt) => {
         const hasCase = apt.case_name?.toLowerCase().includes(q);
-        const hasDate = formatDateShort(apt.startTime || apt.start_time).toLowerCase().includes(q);
+        const hasDate = formatDateShort(apt.startTime || apt.start_time)
+          .toLowerCase()
+          .includes(q);
         const hasId = apt.id?.toLowerCase().includes(q);
         return hasCase || hasDate || hasId;
       });
     }
 
     if (selectedStatus !== "all") {
-      filtered = filtered.filter((apt) => apt.status === selectedStatus);
+      console.log("Filtering by status:", selectedStatus);
+
+      const now = new Date(); // Get current date and time
+
+      filtered = filtered.filter((apt) => {
+        const endTime = new Date(apt.end_time); // Convert Firestore string to Date object
+
+        if (selectedStatus === "scheduled") {
+          return apt.status === "confirmed" && endTime >= now;
+        } else if (selectedStatus === "completed") {
+          return apt.status === "completed" || endTime < now; // Mark past events as completed
+        } else if (selectedStatus === "cancelled") {
+          return apt.status === "cancelled";
+        }
+      });
     }
 
     // Sort by start_time ascending (using apt.startTime or apt.start_time)
-    filtered.sort((a, b) => new Date(a.startTime || a.start_time) - new Date(b.startTime || b.start_time));
+    filtered.sort(
+      (a, b) =>
+        new Date(a.startTime || a.start_time) -
+        new Date(b.startTime || b.start_time)
+    );
 
     setFilteredAppointments(filtered);
   }, [appointments, searchQuery, selectedStatus]);
@@ -98,25 +121,41 @@ export default function UserAppointmentList({ appointments, currentUserEmail }) 
       <div className="flex flex-col sm:flex-row justify-between gap-4">
         <div className="flex gap-2">
           <button
-            className={`rounded-full px-3 py-1 text-sm ${selectedStatus === "all" ? "bg-blue-600 text-white" : "bg-gray-100"}`}
+            className={`rounded-full px-3 py-1 text-sm ${
+              selectedStatus === "all"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-100"
+            }`}
             onClick={() => handleStatusChange("all")}
           >
             All
           </button>
           <button
-            className={`rounded-full px-3 py-1 text-sm ${selectedStatus === "scheduled" ? "bg-blue-600 text-white" : "bg-gray-100"}`}
+            className={`rounded-full px-3 py-1 text-sm ${
+              selectedStatus === "scheduled"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-100"
+            }`}
             onClick={() => handleStatusChange("scheduled")}
           >
             Scheduled
           </button>
           <button
-            className={`rounded-full px-3 py-1 text-sm ${selectedStatus === "completed" ? "bg-green-600 text-white" : "bg-gray-100"}`}
+            className={`rounded-full px-3 py-1 text-sm ${
+              selectedStatus === "completed"
+                ? "bg-green-600 text-white"
+                : "bg-gray-100"
+            }`}
             onClick={() => handleStatusChange("completed")}
           >
             Completed
           </button>
           <button
-            className={`rounded-full px-3 py-1 text-sm ${selectedStatus === "cancelled" ? "bg-red-700 text-white" : "bg-gray-100"}`}
+            className={`rounded-full px-3 py-1 text-sm ${
+              selectedStatus === "cancelled"
+                ? "bg-red-700 text-white"
+                : "bg-gray-100"
+            }`}
             onClick={() => handleStatusChange("cancelled")}
           >
             Cancelled
@@ -157,7 +196,10 @@ export default function UserAppointmentList({ appointments, currentUserEmail }) 
           <tbody>
             {filteredAppointments.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-6 py-4 text-center text-sm text-gray-500">
+                <td
+                  colSpan={4}
+                  className="px-6 py-4 text-center text-sm text-gray-500"
+                >
                   No appointments found.
                 </td>
               </tr>
@@ -168,13 +210,19 @@ export default function UserAppointmentList({ appointments, currentUserEmail }) 
                     {formatDateShort(apt.startTime || apt.start_time)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {getDuration(apt.startTime || apt.start_time, apt.endTime || apt.end_time)}
+                    {getDuration(
+                      apt.startTime || apt.start_time,
+                      apt.endTime || apt.end_time
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {apt.case_name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <AppointmentStatusBadge appointmentStatus={apt.status} />
+                    <AppointmentStatusBadge
+                      appointmentStatus={apt.status}
+                      endTime={apt.end_time}
+                    />
                   </td>
                 </tr>
               ))
