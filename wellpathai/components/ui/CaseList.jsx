@@ -53,7 +53,7 @@ export default function CaseList({ cases = [], loading = false }) {
     );
   }
 
-  // If no cases, show empty state
+  // If no cases AND not loading, show empty state
   if (!cases || cases.length === 0) {
     return (
       <div className="mt-8">
