@@ -1,15 +1,6 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbSeparator,
-  BreadcrumbPage,
-  BreadcrumbHome,
-} from "@/components/ui/breadcrumb";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import AppointmentStatusBadge from "./AppointmentStatusBadge";
 import { formatDateShort } from "@/lib/formatDate";
@@ -50,14 +41,12 @@ export default function UserAppointmentList({ appointments, currentUserEmail }) 
     let filtered = [...userAppointments];
 
     if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+      const q = searchQuery.toLowerCase();
       filtered = filtered.filter((apt) => {
-        const hasId = apt.id?.toLowerCase().includes(query);
-        const hasEvent = apt.event_name?.toLowerCase().includes(query);
-        const hasDate = formatDateShort(apt.start_time)
-          .toLowerCase()
-          .includes(query);
-        return hasId || hasEvent || hasDate;
+        const hasCase = apt.case_name?.toLowerCase().includes(q);
+        const hasDate = formatDateShort(apt.start_time).toLowerCase().includes(q);
+        const hasId = apt.id?.toLowerCase().includes(q);
+        return hasCase || hasDate || hasId;
       });
     }
 
@@ -65,11 +54,7 @@ export default function UserAppointmentList({ appointments, currentUserEmail }) 
       filtered = filtered.filter((apt) => apt.status === selectedStatus);
     }
 
-    filtered.sort((a, b) => {
-      const dateA = new Date(a.start_time);
-      const dateB = new Date(b.start_time);
-      return dateA - dateB;
-    });
+    filtered.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
 
     setFilteredAppointments(filtered);
   }, [userAppointments, searchQuery, selectedStatus]);
@@ -88,72 +73,46 @@ export default function UserAppointmentList({ appointments, currentUserEmail }) 
 
   return (
     <div className="space-y-6">
-      <Breadcrumb className="mb-6">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbHome href="/user" />
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>Home</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl font-semibold text-gray-900">My Appointments</h1>
+      <div className="mb-6">
+        <p className="text-sm text-gray-600">Home / My Appointments</p>
       </div>
 
+      <h1 className="text-2xl font-semibold text-gray-900">My Appointments</h1>
+
       <div className="flex flex-col sm:flex-row justify-between gap-4">
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant={selectedStatus === "all" ? "default" : "outline"}
-            size="sm"
-            onClick={() => handleStatusChange("all")}
-            className={`rounded-full ${
-              selectedStatus === "all"
-                ? "bg-[#D7A8A0] text-white hover:bg-[#c49991]"
-                : ""
+        <div className="flex gap-2">
+          <button
+            className={`rounded-full px-3 py-1 text-sm ${
+              selectedStatus === "all" ? "bg-blue-600 text-white" : "bg-gray-100"
             }`}
+            onClick={() => handleStatusChange("all")}
           >
             All
-          </Button>
-          <Button
-            variant={selectedStatus === "scheduled" ? "default" : "outline"}
-            size="sm"
-            onClick={() => handleStatusChange("scheduled")}
-            className={`rounded-full ${
-              selectedStatus === "scheduled"
-                ? "bg-blue-600 text-white hover:bg-blue-700"
-                : ""
+          </button>
+          <button
+            className={`rounded-full px-3 py-1 text-sm ${
+              selectedStatus === "scheduled" ? "bg-blue-600 text-white" : "bg-gray-100"
             }`}
+            onClick={() => handleStatusChange("scheduled")}
           >
             Scheduled
-          </Button>
-          <Button
-            variant={selectedStatus === "completed" ? "default" : "outline"}
-            size="sm"
-            onClick={() => handleStatusChange("completed")}
-            className={`rounded-full ${
-              selectedStatus === "completed"
-                ? "bg-green-600 text-white hover:bg-green-700"
-                : ""
+          </button>
+          <button
+            className={`rounded-full px-3 py-1 text-sm ${
+              selectedStatus === "completed" ? "bg-green-600 text-white" : "bg-gray-100"
             }`}
+            onClick={() => handleStatusChange("completed")}
           >
             Completed
-          </Button>
-          <Button
-            variant={selectedStatus === "cancelled" ? "default" : "outline"}
-            size="sm"
-            onClick={() => handleStatusChange("cancelled")}
-            className={`rounded-full ${
-              selectedStatus === "cancelled"
-                ? "bg-red-700 text-white hover:bg-red-800"
-                : ""
+          </button>
+          <button
+            className={`rounded-full px-3 py-1 text-sm ${
+              selectedStatus === "cancelled" ? "bg-red-700 text-white" : "bg-gray-100"
             }`}
+            onClick={() => handleStatusChange("cancelled")}
           >
             Cancelled
-          </Button>
+          </button>
         </div>
 
         <div className="relative w-full sm:w-auto">
@@ -161,14 +120,14 @@ export default function UserAppointmentList({ appointments, currentUserEmail }) 
           <input
             type="text"
             placeholder="Search appointments..."
-            className="pl-10 pr-4 py-2 w-full sm:w-64 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[#D7A8A0] focus:border-transparent"
+            className="pl-10 pr-4 py-2 w-full sm:w-64 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
             value={searchQuery}
             onChange={handleSearchChange}
           />
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-[1.5rem] border border-gray-200">
+      <div className="overflow-x-auto border border-gray-200 rounded-lg">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -186,7 +145,7 @@ export default function UserAppointmentList({ appointments, currentUserEmail }) 
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody>
             {filteredAppointments.length === 0 ? (
               <tr>
                 <td colSpan={4} className="px-6 py-4 text-center text-sm text-gray-500">
@@ -196,25 +155,17 @@ export default function UserAppointmentList({ appointments, currentUserEmail }) 
             ) : (
               filteredAppointments.map((apt) => {
                 const durationText = getDuration(apt.start_time, apt.end_time);
-
                 return (
                   <tr key={apt.id} className="hover:bg-gray-50">
-                    {/* 1) Date */}
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {formatDateShort(apt.start_time)}
                     </td>
-
-                    {/* 2) Duration => end_time - start_time */}
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {durationText}
                     </td>
-
-                    {/* 3) Case => apt.event_name */}
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {apt.event_name}
+                      {apt.case_name}
                     </td>
-
-                    {/* 4) Status */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <AppointmentStatusBadge appointmentStatus={apt.status} />
                     </td>

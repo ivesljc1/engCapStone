@@ -29,8 +29,7 @@ export default function UserAppointmentsPage() {
           throw new Error("Failed to fetch all appointments");
         }
         const data = await response.json();
-
-        console.log("UserAppointmentsPage: all appointments =>", data);
+        console.log("UserAppointmentsPage => all appointments:", data);
 
         setAppointments(data);
         setIsLoading(false);
