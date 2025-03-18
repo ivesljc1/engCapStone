@@ -9,25 +9,21 @@ export default function UserAppointmentsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [currentUserEmail, setCurrentUserEmail] = useState("");
 
-  // 1. 获取当前用户的 email
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setCurrentUserEmail(user.email);
       } else {
-        // 未登录时可跳转到 /login
         window.location.href = "/login";
       }
     });
     return () => unsubscribe();
   }, []);
 
-  // 2. 获取所有 appointments（和 admin 一样）
   useEffect(() => {
     const loadAllAppointments = async () => {
       try {
-        // 调用后端 API: /api/appointments/all
         const response = await fetch("/api/appointments/all");
         if (!response.ok) {
           throw new Error("Failed to fetch all appointments");
@@ -35,7 +31,6 @@ export default function UserAppointmentsPage() {
         const data = await response.json();
 
         console.log("UserAppointmentsPage: all appointments =>", data);
-        // data 里会包含 "email": "jamensgko@gmail.com" 等字段
 
         setAppointments(data);
         setIsLoading(false);

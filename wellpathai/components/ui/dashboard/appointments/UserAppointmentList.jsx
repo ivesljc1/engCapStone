@@ -12,53 +12,72 @@ import {
 } from "@/components/ui/breadcrumb";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import AppointmentStatusBadge from "./AppointmentStatusBadge";
-import { formatDateShort, formatTime } from "@/lib/formatDate";
+import { formatDateShort } from "@/lib/formatDate";
+
+
+function getDuration(startStr, endStr) {
+  if (!startStr || !endStr) return "N/A";
+
+  const start = new Date(startStr);
+  const end = new Date(endStr);
+
+  if (isNaN(start) || isNaN(end)) {
+    return "N/A";
+  }
+
+  const diffMs = end - start;
+  if (diffMs < 0) {
+    return "N/A";
+  }
+
+  const diffMins = diffMs / 60000;
+  const hours = Math.floor(diffMins / 60);
+  const minutes = Math.floor(diffMins % 60);
+
+  return `${hours}h ${minutes}m`;
+}
 
 export default function UserAppointmentList({ appointments, currentUserEmail }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredAppointments, setFilteredAppointments] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState("all");
 
-  // 只保留属于当前用户的 appointments
   const userAppointments = useMemo(() => {
     return appointments.filter((apt) => apt.email === currentUserEmail);
   }, [appointments, currentUserEmail]);
 
-  // 搜索 + 状态过滤 + 排序
   useEffect(() => {
     let filtered = [...userAppointments];
 
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (apt) =>
-          apt.id.toLowerCase().includes(query) ||
-          (apt.event_name && apt.event_name.toLowerCase().includes(query)) ||
-          formatDateShort(apt.start_time).toLowerCase().includes(query)
-      );
+      filtered = filtered.filter((apt) => {
+        const hasId = apt.id?.toLowerCase().includes(query);
+        const hasEvent = apt.event_name?.toLowerCase().includes(query);
+        const hasDate = formatDateShort(apt.start_time)
+          .toLowerCase()
+          .includes(query);
+        return hasId || hasEvent || hasDate;
+      });
     }
 
     if (selectedStatus !== "all") {
       filtered = filtered.filter((apt) => apt.status === selectedStatus);
     }
 
-    // 你可以根据 date 或 start_time 排序
-    // 这里演示: if scheduled => ascending, else => descending
-    if (selectedStatus === "scheduled") {
-      filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
-    } else {
-      filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
-    }
+    filtered.sort((a, b) => {
+      const dateA = new Date(a.start_time);
+      const dateB = new Date(b.start_time);
+      return dateA - dateB;
+    });
 
     setFilteredAppointments(filtered);
   }, [userAppointments, searchQuery, selectedStatus]);
 
-  // 处理搜索
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
 
-  // 处理状态
   const handleStatusChange = (status) => {
     setSelectedStatus(status);
   };
@@ -153,28 +172,16 @@ export default function UserAppointmentList({ appointments, currentUserEmail }) 
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Date
               </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Duration
               </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Case
               </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Status
               </th>
             </tr>
@@ -182,27 +189,38 @@ export default function UserAppointmentList({ appointments, currentUserEmail }) 
           <tbody className="bg-white divide-y divide-gray-200">
             {filteredAppointments.length === 0 ? (
               <tr>
-                <td colSpan="4" className="px-6 py-4 text-center text-sm text-gray-500">
+                <td colSpan={4} className="px-6 py-4 text-center text-sm text-gray-500">
                   No appointments found.
                 </td>
               </tr>
             ) : (
-              filteredAppointments.map((apt) => (
-                <tr key={apt.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatDateShort(apt.start_time)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatTime(apt.time)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {apt.event_name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <AppointmentStatusBadge appointmentStatus={apt.status} />
-                  </td>
-                </tr>
-              ))
+              filteredAppointments.map((apt) => {
+                const durationText = getDuration(apt.start_time, apt.end_time);
+
+                return (
+                  <tr key={apt.id} className="hover:bg-gray-50">
+                    {/* 1) Date */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {formatDateShort(apt.start_time)}
+                    </td>
+
+                    {/* 2) Duration => end_time - start_time */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {durationText}
+                    </td>
+
+                    {/* 3) Case => apt.event_name */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {apt.event_name}
+                    </td>
+
+                    {/* 4) Status */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <AppointmentStatusBadge appointmentStatus={apt.status} />
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
