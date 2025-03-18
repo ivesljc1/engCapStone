@@ -5,34 +5,38 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import UserAppointmentList from "@/components/ui/dashboard/appointments/UserAppointmentList";
 
 export default function UserAppointmentsPage() {
-  const [appointments, setAppointments] = useState(null);
+  const [appointments, setAppointments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentUserEmail, setCurrentUserEmail] = useState("");
-  const [userId, setUserId] = useState("");
 
-  // 监听用户登录状态
+  // 1. 获取当前用户的邮箱
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        setUserId(user.uid);
         setCurrentUserEmail(user.email);
       } else {
-        // 用户未登录，重定向到登录页
+        // 未登录时，可重定向 /login
         window.location.href = "/login";
       }
     });
     return () => unsubscribe();
   }, []);
 
-  // 当 userId 确定后，从后端 API 获取该用户的 appointments
+  // 2. 获取所有 appointments (和 admin 一样)
   useEffect(() => {
-    if (!userId) return;
     const fetchAppointments = async () => {
       try {
-        const response = await fetch(`/api/appointments/user?userId=${userId}`);
-        if (!response.ok) throw new Error("Failed to fetch appointments");
-        const data = await response.json();
+        // 改成真实后端:
+        // const response = await fetch("/api/appointments/all");
+        // const data = await response.json();
+
+        // 或者如果还在用 mock:
+        const response = await import("@/data/adminAppointments.json");
+        const data = response.default;
+
+        console.log("UserAppointmentsPage: all appointments =>", data);
+
         setAppointments(data);
         setIsLoading(false);
       } catch (error) {
@@ -42,10 +46,10 @@ export default function UserAppointmentsPage() {
     };
 
     fetchAppointments();
-  }, [userId]);
+  }, []);
 
   if (isLoading) {
-    return <div className="text-center py-10">Loading appointments...</div>;
+    return <div>Loading your appointments...</div>;
   }
 
   return (
