@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Breadcrumb,
@@ -17,12 +17,12 @@ import { formatDateShort, formatTime } from "@/lib/formatDate";
 /**
  * UserAppointmentList Component
  *
- * 1. 移除「Patient」列和「Actions」列
- * 2. 用户只能看到自己的 appointments（通过 `currentUserEmail` 过滤）
+ * 1. 只显示当前用户的 appointments（通过 currentUserEmail 过滤）
+ * 2. 移除 Patient 列和 Actions 列
  * 3. 其余功能（搜索、状态过滤）保持不变
  *
  * @param {Object} props - Component props
- * @param {Array}  props.appointments - List of appointment data (包含所有用户的)
+ * @param {Array} props.appointments - List of appointment data (包含所有用户的)
  * @param {String} props.currentUserEmail - 当前登录用户的邮箱
  * @returns {JSX.Element} The rendered appointment list for user
  */
@@ -32,17 +32,15 @@ export default function UserAppointmentList({ appointments, currentUserEmail }) 
   const [filteredAppointments, setFilteredAppointments] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState("all");
 
-  // 如果还没传 appointments，就显示 loading
-  if (!appointments) {
-    return <div className="text-center py-10">Loading appointments...</div>;
-  }
+  // 用 useMemo 缓存只属于当前用户的 appointments，避免每次 render 都产生新的数组
+  const userAppointments = useMemo(() => {
+    // 如果你的数据库字段是 email（而非 patientEmail），请改成 apt.email
+    return appointments.filter(
+      (apt) => apt.email === currentUserEmail
+    );
+  }, [appointments, currentUserEmail]);
 
-  // 1. 先根据 currentUserEmail 过滤出「只属于当前用户」的 appointments
-  const userAppointments = appointments.filter(
-    (apt) => apt.patientEmail === currentUserEmail
-  );
-
-  // 2. 根据搜索和状态进一步过滤
+  // 根据搜索和状态进一步过滤
   useEffect(() => {
     let filtered = [...userAppointments];
 
@@ -53,7 +51,6 @@ export default function UserAppointmentList({ appointments, currentUserEmail }) 
         (appointment) =>
           appointment.id.toLowerCase().includes(query) ||
           appointment.event_name?.toLowerCase().includes(query) ||
-          // 如果想搜索 case 的 title 等，可以在此添加
           formatDateShort(appointment.start_time).toLowerCase().includes(query)
       );
     }
@@ -65,12 +62,10 @@ export default function UserAppointmentList({ appointments, currentUserEmail }) 
       );
     }
 
-    // Sort by date based on selected tab
+    // Sort by date: 根据需求可以按 date 字段排序
     if (selectedStatus === "scheduled") {
-      // For scheduled tab: sort from oldest to latest (ascending)
       filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
     } else {
-      // For all other tabs: sort from latest to oldest (descending)
       filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
     }
 
@@ -89,7 +84,7 @@ export default function UserAppointmentList({ appointments, currentUserEmail }) 
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb navigation (可视需求保留或移除) */}
+      {/* Breadcrumb navigation */}
       <Breadcrumb className="mb-6">
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -102,7 +97,7 @@ export default function UserAppointmentList({ appointments, currentUserEmail }) 
         </BreadcrumbList>
       </Breadcrumb>
 
-      {/* Header with title (User不需要 Manage Availability 按钮) */}
+      {/* Header with title */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl font-semibold text-gray-900">My Appointments</h1>
       </div>
@@ -179,7 +174,7 @@ export default function UserAppointmentList({ appointments, currentUserEmail }) 
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              {/* 移除「Patient」列 */}
+              {/* 只显示 Date, Duration, Case, Status */}
               <th
                 scope="col"
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -204,7 +199,6 @@ export default function UserAppointmentList({ appointments, currentUserEmail }) 
               >
                 Status
               </th>
-              {/* 移除「Actions」列 */}
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -232,6 +226,7 @@ export default function UserAppointmentList({ appointments, currentUserEmail }) 
 
                   {/* Case */}
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {/* 如果后端提供的字段是 event_name 或 caseTitle，请根据实际调整 */}
                     {appointment.event_name}
                   </td>
 
@@ -247,7 +242,6 @@ export default function UserAppointmentList({ appointments, currentUserEmail }) 
           </tbody>
         </table>
 
-        {/* Results summary */}
         {filteredAppointments.length > 0 && (
           <div className="border-t border-gray-200 px-6 py-3 text-sm text-gray-500 bg-gray-50 text-center">
             Showing all {filteredAppointments.length}{" "}
