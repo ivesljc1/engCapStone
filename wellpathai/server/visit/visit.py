@@ -16,6 +16,7 @@ def create_visit(user_id, case_id, questionnaire_id):
             "questionnairesID": questionnaire_id,
             "consultationID": "",
             "hasNewReport": True,
+            "appointmentId": "",
             "appointmentStatus": "unscheduled"
         })
 

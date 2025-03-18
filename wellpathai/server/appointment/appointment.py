@@ -41,7 +41,7 @@ def get_user_appointments(user_id):
     """
     try:
         # Query Firestore for appointments with this user ID
-        appointments = db.collection('appointments').where('userId', '==', user_id).stream()
+        appointments = db.collection('appointments').where('user_id', '==', user_id).stream()
         
         appointment_list = []
         for appointment in appointments:
