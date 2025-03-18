@@ -60,7 +60,7 @@ export default function AppointmentList({ appointments }) {
     // Filter by status
     if (selectedStatus !== "all") {
       filtered = filtered.filter(
-        (appointment) => appointment.status === selectedStatus
+        (appointment) => appointment.appointmentStatus === selectedStatus
       );
     }
 
@@ -136,7 +136,7 @@ export default function AppointmentList({ appointments }) {
       {/* Header with title and button */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl font-semibold text-gray-900">Appointments</h1>
-        <Button className="flex items-center gap-2 text-white rounded-xl">
+        <Button className="flex items-center gap-2 text-white rounded-full bg-[#D7A8A0] hover:bg-[#c49991]">
           <CalendarIcon className="h-4 w-4" />
           <span>Manage Availability</span>
         </Button>
@@ -150,8 +150,10 @@ export default function AppointmentList({ appointments }) {
             variant={selectedStatus === "all" ? "default" : "outline"}
             size="sm"
             onClick={() => handleStatusChange("all")}
-            className={`rounded-xl ${
-              selectedStatus === "all" ? "text-white" : ""
+            className={`rounded-full ${
+              selectedStatus === "all"
+                ? "bg-[#D7A8A0] text-white hover:bg-[#c49991]"
+                : ""
             }`}
           >
             All
@@ -160,18 +162,34 @@ export default function AppointmentList({ appointments }) {
             variant={selectedStatus === "scheduled" ? "default" : "outline"}
             size="sm"
             onClick={() => handleStatusChange("scheduled")}
-            className={`rounded-xl ${
-              selectedStatus === "scheduled" ? "text-white" : ""
+            className={`rounded-full ${
+              selectedStatus === "scheduled"
+                ? "bg-blue-600 text-white hover:bg-blue-700"
+                : ""
             }`}
           >
             Scheduled
           </Button>
           <Button
+            variant={selectedStatus === "completed" ? "default" : "outline"}
+            size="sm"
+            onClick={() => handleStatusChange("completed")}
+            className={`rounded-full ${
+              selectedStatus === "completed"
+                ? "bg-green-600 text-white hover:bg-green-700"
+                : ""
+            }`}
+          >
+            Completed
+          </Button>
+          <Button
             variant={selectedStatus === "cancelled" ? "default" : "outline"}
             size="sm"
             onClick={() => handleStatusChange("cancelled")}
-            className={`rounded-xl ${
-              selectedStatus === "cancelled" ? "text-white" : ""
+            className={`rounded-full ${
+              selectedStatus === "cancelled"
+                ? "bg-red-700 text-white hover:bg-red-800"
+                : ""
             }`}
           >
             Cancelled
@@ -184,7 +202,7 @@ export default function AppointmentList({ appointments }) {
           <input
             type="text"
             placeholder="Search appointments..."
-            className="pl-10 pr-4 py-2 w-full sm:w-64 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="pl-10 pr-4 py-2 w-full sm:w-64 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[#D7A8A0] focus:border-transparent"
             value={searchQuery}
             onChange={handleSearchChange}
           />
@@ -192,7 +210,7 @@ export default function AppointmentList({ appointments }) {
       </div>
 
       {/* Appointments table */}
-      <div className="overflow-x-auto rounded-lg border border-gray-200">
+      <div className="overflow-x-auto rounded-[1.5rem] border border-gray-200">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -265,25 +283,27 @@ export default function AppointmentList({ appointments }) {
                     {appointment.event_name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <AppointmentStatusBadge status={appointment.status} />
+                    <AppointmentStatusBadge
+                      appointmentStatus={appointment.appointmentStatus}
+                    />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end items-center space-x-2">
                       <Button
                         variant="outline"
                         size="sm"
-                        className="text-xs px-2 py-1 h-auto rounded-xl"
+                        className="text-xs px-2 py-1 h-auto rounded-full hover:border-blue-600 hover:text-blue-600"
                         onClick={() => handleOpenUploadModal(appointment)}
                       >
-                        <DocumentTextIcon className="h-3 w-3 mr-1" />
+                        <DocumentTextIcon className="h-3 w-3" />
                         Upload Report
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        className="text-xs px-2 py-1 h-auto rounded-xl"
+                        className="text-xs px-2 py-1 h-auto rounded-full hover:border-green-600 hover:text-green-600"
                       >
-                        <ClipboardDocumentListIcon className="h-3 w-3 mr-1" />
+                        <ClipboardDocumentListIcon className="h-3 w-3" />
                         View Questionnaire
                       </Button>
                     </div>
