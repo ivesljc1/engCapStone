@@ -60,7 +60,7 @@ export default function AppointmentList({ appointments }) {
     // Filter by status
     if (selectedStatus !== "all") {
       filtered = filtered.filter(
-        (appointment) => appointment.appointmentStatus === selectedStatus
+        (appointment) => appointment.status === selectedStatus
       );
     }
 
@@ -74,6 +74,7 @@ export default function AppointmentList({ appointments }) {
     }
 
     setFilteredAppointments(filtered);
+    console.log(filtered);
   }, [appointments, searchQuery, selectedStatus]);
 
   /**
@@ -284,7 +285,7 @@ export default function AppointmentList({ appointments }) {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <AppointmentStatusBadge
-                      appointmentStatus={appointment.appointmentStatus}
+                      appointmentStatus={appointment.status}
                     />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
