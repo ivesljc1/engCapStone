@@ -45,6 +45,26 @@ def cal_webhook():
         attendee_name = "Unknown"
         attendee_timezone = "UTC"
 
+    # Extract case and visit IDs from the payload
+    # First check responses
+    responses = payload.get("responses", {})
+    user_fields = payload.get("userFieldsResponses", {})
+
+    # Try to get case and visit IDs from responses first, then userFieldsResponses
+    case_id_info = responses.get("caseId", user_fields.get("caseId", {}))
+    visit_id_info = responses.get("visitId", user_fields.get("visitId", {}))
+
+    # Extract the actual values
+    case_id = case_id_info.get("value", "Unknown") if isinstance(case_id_info, dict) else "Unknown"
+    visit_id = visit_id_info.get("value", "Unknown") if isinstance(visit_id_info, dict) else "Unknown"
+
+    # Also extract the human-readable case and visit names
+    case_info = responses.get("case", user_fields.get("case", {}))
+    visit_info = responses.get("visit", user_fields.get("visit", {}))
+
+    case_name = case_info.get("value", "Unknown Case") if isinstance(case_info, dict) else "Unknown Case"
+    visit_date = visit_info.get("value", "Unknown Visit") if isinstance(visit_info, dict) else "Unknown Visit" 
+
     # Convert UTC time to attendee's time zone
     try:
         utc_tz = pytz.utc
@@ -74,9 +94,18 @@ def cal_webhook():
             "end_time": end_time_local,
             "event_name": event_name,
             "time_zone": attendee_timezone,
+            "case_id": case_id,
+            "visit_id": visit_id,
+            "case_name": case_name,
+            "visit_date": visit_date,
             "status": "confirmed",
         })
         print(f"✅ Appointment Created: {event_id} (Local Time: {start_time_local} - {end_time_local})", flush=True)
+
+        # visit db, update status to scheduled
+        db.collection("visits").document(visit_id).update({
+            "appointmentStatus": "scheduled"
+        })
 
     elif event_type == "BOOKING_CANCELLED":
         db.collection("appointments").document(event_id).update({
@@ -85,7 +114,16 @@ def cal_webhook():
             "time_zone": attendee_timezone,
             "start_time": start_time_local,
             "end_time": end_time_local,
+            "case_id": case_id,
+            "visit_id": visit_id,
+            "case_name": case_name,
+            "visit_date": visit_date
         })
         print(f"❌ Appointment Canceled: {event_id} (Local Time: {start_time_local} - {end_time_local})", flush=True)
+
+        # visit db, update status to unscheduled
+        db.collection("visits").document(visit_id).update({
+            "appointmentStatus": "unscheduled"
+        })
 
     return jsonify({"status": "success"}), 200
