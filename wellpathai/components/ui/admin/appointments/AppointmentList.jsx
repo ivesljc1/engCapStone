@@ -18,7 +18,33 @@ import {
 } from "@heroicons/react/24/outline";
 import AppointmentStatusBadge from "./AppointmentStatusBadge";
 import FileUploadModal from "./FileUploadModal";
-import { formatDateShort, formatTime } from "@/lib/formatDate";
+import { formatDateShort } from "@/lib/formatDate";
+
+/**
+ * Compute duration from end_time - start_time
+ * Returns a string like "1h 30m"
+ *
+ * @param {string} startStr - The start time string.
+ * @param {string} endStr - The end time string.
+ * @returns {string} The computed duration.
+ */
+function getDuration(startStr, endStr) {
+  if (!startStr || !endStr) return "N/A";
+
+  const start = new Date(startStr);
+  const end = new Date(endStr);
+
+  if (isNaN(start) || isNaN(end)) return "N/A";
+
+  const diffMs = end - start;
+  if (diffMs < 0) return "N/A";
+
+  const diffMins = diffMs / 60000;
+  const hours = Math.floor(diffMins / 60);
+  const minutes = Math.floor(diffMins % 60);
+
+  return `${hours}h ${minutes}m`;
+}
 
 /**
  * AppointmentList Component
@@ -64,14 +90,8 @@ export default function AppointmentList({ appointments }) {
       );
     }
 
-    // Sort by date based on selected tab
-    if (selectedStatus === "scheduled") {
-      // For scheduled tab: sort from oldest to latest (ascending)
-      filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
-    } else {
-      // For all other tabs: sort from latest to oldest (descending)
-      filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
-    }
+    // Sort appointments by start_time ascending.
+    filtered.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
 
     setFilteredAppointments(filtered);
     console.log(filtered);
@@ -278,15 +298,13 @@ export default function AppointmentList({ appointments }) {
                     {formatDateShort(appointment.start_time)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatTime(appointment.time)}
+                    {getDuration(appointment.start_time, appointment.end_time)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {appointment.event_name}
+                    {appointment.case_name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <AppointmentStatusBadge
-                      appointmentStatus={appointment.status}
-                    />
+                    <AppointmentStatusBadge appointmentStatus={appointment.status} />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end items-center space-x-2">
@@ -315,7 +333,6 @@ export default function AppointmentList({ appointments }) {
           </tbody>
         </table>
 
-        {/* Results summary */}
         {filteredAppointments.length > 0 && (
           <div className="border-t border-gray-200 px-6 py-3 text-sm text-gray-500 bg-gray-50 text-center">
             Showing all {filteredAppointments.length}{" "}
@@ -324,7 +341,6 @@ export default function AppointmentList({ appointments }) {
         )}
       </div>
 
-      {/* File Upload Modal */}
       <FileUploadModal
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}

@@ -38,60 +38,6 @@ def api_get_user_appointments():
     return jsonify(appointments), 200
 
 
-@appointment_blueprint.route("/api/appointments/case-options", methods=["GET"])
-def get_case_options():
-    """Get all cases for a user to populate dropdown in Cal.com booking"""
-    user_id = request.args.get("userId")
-
-    if not user_id:
-        return jsonify({"error": "userId is required"}), 400
-
-    cases = get_user_cases(user_id)
-
-    if cases is None:
-        return jsonify({"error": "Failed to get cases"}), 500
-
-    # Format cases as options for dropdown
-    case_options = []
-    for case in cases:
-        case_options.append(
-            {
-                "id": case.get("id"),
-                "title": case.get("title") or f"Case {case.get('id')}",
-                "description": case.get("description") or "",
-            }
-        )
-
-    return jsonify(case_options), 200
-
-
-@appointment_blueprint.route("/api/appointments/visit-options", methods=["GET"])
-def get_visit_options():
-    """Get all visits for a case to populate dropdown in Cal.com booking"""
-    case_id = request.args.get("caseId")
-
-    if not case_id:
-        return jsonify({"error": "caseId is required"}), 400
-
-    visits = get_visit(case_id)
-
-    if visits is None:
-        return jsonify({"error": "Failed to get visits"}), 500
-
-    # Format visits as options for dropdown
-    visit_options = []
-    for visit in visits:
-        visit_options.append(
-            {
-                "id": visit.get("visitId"),
-                "date": visit.get("visitDate"),
-                "hasReport": visit.get("hasNewReport", False),
-            }
-        )
-
-    return jsonify(visit_options), 200
-
-
 @appointment_blueprint.route("/api/appointments/cancel", methods=["POST"])
 def api_cancel_appointment():
     """Cancel an appointment"""

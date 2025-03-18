@@ -1,34 +1,28 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbSeparator,
-  BreadcrumbPage,
-  BreadcrumbHome,
-} from "@/components/ui/breadcrumb";
+import { useState, useEffect } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import AppointmentStatusBadge from "./AppointmentStatusBadge";
 import { formatDateShort } from "@/lib/formatDate";
 
-
+/**
+ * Compute duration from end_time - start_time
+ * Returns a string like "1h 30m"
+ *
+ * @param {string} startStr - The start time string.
+ * @param {string} endStr - The end time string.
+ * @returns {string} The computed duration.
+ */
 function getDuration(startStr, endStr) {
   if (!startStr || !endStr) return "N/A";
 
   const start = new Date(startStr);
   const end = new Date(endStr);
 
-  if (isNaN(start) || isNaN(end)) {
-    return "N/A";
-  }
+  if (isNaN(start) || isNaN(end)) return "N/A";
 
   const diffMs = end - start;
-  if (diffMs < 0) {
-    return "N/A";
-  }
+  if (diffMs < 0) return "N/A";
 
   const diffMins = diffMs / 60000;
   const hours = Math.floor(diffMins / 60);
@@ -37,27 +31,39 @@ function getDuration(startStr, endStr) {
   return `${hours}h ${minutes}m`;
 }
 
+/**
+ * UserAppointmentList Component
+ *
+ * This component displays the list of appointments for the current user,
+ * with searching, status filtering, and sorting by start_time.
+ * 
+ * Columns displayed:
+ *  - Date       -> formatDateShort(apt.startTime)
+ *  - Duration   -> getDuration(apt.startTime, apt.endTime)
+ *  - Case       -> apt.case_name
+ *  - Status     -> apt.status (via AppointmentStatusBadge)
+ *
+ * @param {Object} props - Component props
+ * @param {Array} props.appointments       - The appointment data for the current user
+ * @param {String} props.currentUserEmail   - The current user's email (for reference)
+ * @returns {JSX.Element} The rendered appointment list.
+ */
 export default function UserAppointmentList({ appointments, currentUserEmail }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredAppointments, setFilteredAppointments] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState("all");
 
-  const userAppointments = useMemo(() => {
-    return appointments.filter((apt) => apt.email === currentUserEmail);
-  }, [appointments, currentUserEmail]);
-
+  // Searching, status filtering, and sorting
   useEffect(() => {
-    let filtered = [...userAppointments];
+    let filtered = [...appointments];
 
     if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+      const q = searchQuery.toLowerCase();
       filtered = filtered.filter((apt) => {
-        const hasId = apt.id?.toLowerCase().includes(query);
-        const hasEvent = apt.event_name?.toLowerCase().includes(query);
-        const hasDate = formatDateShort(apt.start_time)
-          .toLowerCase()
-          .includes(query);
-        return hasId || hasEvent || hasDate;
+        const hasCase = apt.case_name?.toLowerCase().includes(q);
+        const hasDate = formatDateShort(apt.startTime || apt.start_time).toLowerCase().includes(q);
+        const hasId = apt.id?.toLowerCase().includes(q);
+        return hasCase || hasDate || hasId;
       });
     }
 
@@ -65,14 +71,11 @@ export default function UserAppointmentList({ appointments, currentUserEmail }) 
       filtered = filtered.filter((apt) => apt.status === selectedStatus);
     }
 
-    filtered.sort((a, b) => {
-      const dateA = new Date(a.start_time);
-      const dateB = new Date(b.start_time);
-      return dateA - dateB;
-    });
+    // Sort by start_time ascending (using apt.startTime or apt.start_time)
+    filtered.sort((a, b) => new Date(a.startTime || a.start_time) - new Date(b.startTime || b.start_time));
 
     setFilteredAppointments(filtered);
-  }, [userAppointments, searchQuery, selectedStatus]);
+  }, [appointments, searchQuery, selectedStatus]);
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
@@ -82,78 +85,42 @@ export default function UserAppointmentList({ appointments, currentUserEmail }) 
     setSelectedStatus(status);
   };
 
-  if (!appointments) {
-    return <div className="text-center py-10">Loading appointments...</div>;
-  }
-
   return (
     <div className="space-y-6">
-      <Breadcrumb className="mb-6">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbHome href="/user" />
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>Home</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl font-semibold text-gray-900">My Appointments</h1>
+      {/* Breadcrumb Navigation */}
+      <div className="mb-6">
+        <p className="text-sm text-gray-600">Home / My Appointments</p>
       </div>
 
+      <h1 className="text-2xl font-semibold text-gray-900">My Appointments</h1>
+
+      {/* Filters and Search */}
       <div className="flex flex-col sm:flex-row justify-between gap-4">
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant={selectedStatus === "all" ? "default" : "outline"}
-            size="sm"
+        <div className="flex gap-2">
+          <button
+            className={`rounded-full px-3 py-1 text-sm ${selectedStatus === "all" ? "bg-blue-600 text-white" : "bg-gray-100"}`}
             onClick={() => handleStatusChange("all")}
-            className={`rounded-full ${
-              selectedStatus === "all"
-                ? "bg-[#D7A8A0] text-white hover:bg-[#c49991]"
-                : ""
-            }`}
           >
             All
-          </Button>
-          <Button
-            variant={selectedStatus === "scheduled" ? "default" : "outline"}
-            size="sm"
+          </button>
+          <button
+            className={`rounded-full px-3 py-1 text-sm ${selectedStatus === "scheduled" ? "bg-blue-600 text-white" : "bg-gray-100"}`}
             onClick={() => handleStatusChange("scheduled")}
-            className={`rounded-full ${
-              selectedStatus === "scheduled"
-                ? "bg-blue-600 text-white hover:bg-blue-700"
-                : ""
-            }`}
           >
             Scheduled
-          </Button>
-          <Button
-            variant={selectedStatus === "completed" ? "default" : "outline"}
-            size="sm"
+          </button>
+          <button
+            className={`rounded-full px-3 py-1 text-sm ${selectedStatus === "completed" ? "bg-green-600 text-white" : "bg-gray-100"}`}
             onClick={() => handleStatusChange("completed")}
-            className={`rounded-full ${
-              selectedStatus === "completed"
-                ? "bg-green-600 text-white hover:bg-green-700"
-                : ""
-            }`}
           >
             Completed
-          </Button>
-          <Button
-            variant={selectedStatus === "cancelled" ? "default" : "outline"}
-            size="sm"
+          </button>
+          <button
+            className={`rounded-full px-3 py-1 text-sm ${selectedStatus === "cancelled" ? "bg-red-700 text-white" : "bg-gray-100"}`}
             onClick={() => handleStatusChange("cancelled")}
-            className={`rounded-full ${
-              selectedStatus === "cancelled"
-                ? "bg-red-700 text-white hover:bg-red-800"
-                : ""
-            }`}
           >
             Cancelled
-          </Button>
+          </button>
         </div>
 
         <div className="relative w-full sm:w-auto">
@@ -161,14 +128,15 @@ export default function UserAppointmentList({ appointments, currentUserEmail }) 
           <input
             type="text"
             placeholder="Search appointments..."
-            className="pl-10 pr-4 py-2 w-full sm:w-64 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[#D7A8A0] focus:border-transparent"
+            className="pl-10 pr-4 py-2 w-full sm:w-64 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
             value={searchQuery}
             onChange={handleSearchChange}
           />
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-[1.5rem] border border-gray-200">
+      {/* Appointments Table */}
+      <div className="overflow-x-auto border border-gray-200 rounded-lg">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -186,7 +154,7 @@ export default function UserAppointmentList({ appointments, currentUserEmail }) 
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody>
             {filteredAppointments.length === 0 ? (
               <tr>
                 <td colSpan={4} className="px-6 py-4 text-center text-sm text-gray-500">
@@ -194,37 +162,25 @@ export default function UserAppointmentList({ appointments, currentUserEmail }) 
                 </td>
               </tr>
             ) : (
-              filteredAppointments.map((apt) => {
-                const durationText = getDuration(apt.start_time, apt.end_time);
-
-                return (
-                  <tr key={apt.id} className="hover:bg-gray-50">
-                    {/* 1) Date */}
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDateShort(apt.start_time)}
-                    </td>
-
-                    {/* 2) Duration => end_time - start_time */}
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {durationText}
-                    </td>
-
-                    {/* 3) Case => apt.event_name */}
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {apt.event_name}
-                    </td>
-
-                    {/* 4) Status */}
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <AppointmentStatusBadge appointmentStatus={apt.status} />
-                    </td>
-                  </tr>
-                );
-              })
+              filteredAppointments.map((apt) => (
+                <tr key={apt.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {formatDateShort(apt.startTime || apt.start_time)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {getDuration(apt.startTime || apt.start_time, apt.endTime || apt.end_time)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {apt.case_name}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <AppointmentStatusBadge appointmentStatus={apt.status} />
+                  </td>
+                </tr>
+              ))
             )}
           </tbody>
         </table>
-
         {filteredAppointments.length > 0 && (
           <div className="border-t border-gray-200 px-6 py-3 text-sm text-gray-500 bg-gray-50 text-center">
             Showing all {filteredAppointments.length}{" "}

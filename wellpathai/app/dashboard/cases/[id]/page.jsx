@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { formatDateShort } from "@/lib/formatDate";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { auth } from "../../../firebase";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
 import VisitStatusBadge from "@/components/ui/VisitStatusBadge";
 import {
   CalendarIcon,
@@ -90,6 +91,47 @@ export default function CaseDetailPage() {
 
     fetchCaseData();
   }, [caseId, userId]);
+
+  // refresh function when user finish/cancel the booking in cal.com
+  const refreshVisits = async () => {
+    if (!caseId) return;
+
+    try {
+      setIsLoading(true); // Optional: show some loading state
+
+      const response = await fetch(`/api/visit/getVisits?caseId=${caseId}`);
+      if (!response.ok) throw new Error("Failed to refresh visits");
+
+      const freshVisits = await response.json();
+      setVisits(freshVisits);
+
+      // Optional: Show a toast notification
+      console.log("Visit data refreshed successfully");
+    } catch (error) {
+      console.error("Error refreshing visits:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  //refresh visit data when window regains focus
+  useEffect(() => {
+    // Skip if we don't have necessary data
+    if (!userId || !caseId) return;
+
+    // Function to refresh data when window regains focus
+    const handleFocus = () => {
+      console.log("Window focused - checking for visit updates");
+      refreshVisits();
+    };
+
+    // Add event listener for when the page regains focus
+    window.addEventListener("focus", handleFocus);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [userId, caseId]);
 
   const updateNewReport = async (visitId) => {
     try {
