@@ -11,9 +11,7 @@ import {
 
 const navigation = [
   { name: "Home", href: "/dashboard", icon: HomeIcon },
-  { name: "Reports", href: "/dashboard/reports", icon: ChartPieIcon },
   { name: "Appointments", href: "/dashboard/appointments", icon: CalendarIcon },
-  { name: "Visit", href: "/dashboard/visit", icon: UsersIcon },
   { name: "Profile", href: "/dashboard/profile", icon: UsersIcon },
 ];
 
@@ -28,15 +26,17 @@ function Navigation() {
     <ul role="list" className="-mx-2 space-y-1">
       {navigation.map((item) => {
         // Check if this is the Home link and if we're on a cases page
-        const isHomeLinkAndOnCasePage = 
-          item.href === "/dashboard" && 
-          (pathname.startsWith("/dashboard/cases/") || pathname === "/dashboard");
-        
+        const isHomeLinkAndOnCasePage =
+          item.href === "/dashboard" &&
+          (pathname.startsWith("/dashboard/cases/") ||
+            pathname === "/dashboard");
+
         // For other items, check exact match as before
         const isExactMatch = pathname === item.href;
-        
+
         // Combine both conditions
-        const isActive = item.href === "/dashboard" ? isHomeLinkAndOnCasePage : isExactMatch;
+        const isActive =
+          item.href === "/dashboard" ? isHomeLinkAndOnCasePage : isExactMatch;
 
         return (
           <li key={item.name}>
