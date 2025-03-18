@@ -53,10 +53,14 @@ def cal_webhook():
     # Try to get case and visit IDs from responses first, then userFieldsResponses
     case_id_info = responses.get("caseId", user_fields.get("caseId", {}))
     visit_id_info = responses.get("visitId", user_fields.get("visitId", {}))
+    user_id_info = responses.get("userId", user_fields.get("userId", {}))
 
     # Extract the actual values
     case_id = case_id_info.get("value", "Unknown") if isinstance(case_id_info, dict) else "Unknown"
     visit_id = visit_id_info.get("value", "Unknown") if isinstance(visit_id_info, dict) else "Unknown"
+
+    # Extract the user ID
+    user_id = user_id_info.get("value", "Unknown") if isinstance(case_id_info, dict) else "Unknown"
 
     # Also extract the human-readable case and visit names
     case_info = responses.get("case", user_fields.get("case", {}))
@@ -96,6 +100,7 @@ def cal_webhook():
             "time_zone": attendee_timezone,
             "case_id": case_id,
             "visit_id": visit_id,
+            "user_id": user_id,
             "case_name": case_name,
             "visit_date": visit_date,
             "status": "confirmed",
@@ -104,22 +109,16 @@ def cal_webhook():
 
         # visit db, update status to scheduled
         db.collection("visits").document(visit_id).update({
-            "appointmentStatus": "scheduled"
+            "appointmentStatus": "scheduled",
+            "appointmentId": event_id
         })
 
     elif event_type == "BOOKING_CANCELLED":
         db.collection("appointments").document(event_id).update({
             "status": "cancelled",
-            "cancellation_reason": cancellation_reason,
-            "time_zone": attendee_timezone,
-            "start_time": start_time_local,
-            "end_time": end_time_local,
-            "case_id": case_id,
-            "visit_id": visit_id,
-            "case_name": case_name,
-            "visit_date": visit_date
+            "cancellation_reason": cancellation_reason
         })
-        print(f"❌ Appointment Canceled: {event_id} (Local Time: {start_time_local} - {end_time_local})", flush=True)
+        print(f"❌ Appointment Cancelled: {event_id} (Local Time: {start_time_local} - {end_time_local})", flush=True)
 
         # visit db, update status to unscheduled
         db.collection("visits").document(visit_id).update({

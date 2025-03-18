@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+import InPageLoading from "@/components/ui/InPageLoading";
 import CaseBreadcrumb from "@/components/ui/CaseBreadcrumb";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -200,26 +201,7 @@ export default function CaseDetailPage() {
 
   // Loading state
   if (isLoading) {
-    return (
-      <div className="px-6 py-8">
-        <CaseBreadcrumb />
-        <div className="animate-pulse">
-          <div className="h-10 bg-gray-200 rounded mb-6 w-1/3"></div>
-          <div className="h-6 bg-gray-200 rounded mb-4 w-2/3"></div>
-          <div className="h-6 bg-gray-200 rounded mb-4 w-1/2"></div>
-          <div className="h-6 bg-gray-200 rounded mb-8 w-3/4"></div>
-          <div className="h-10 bg-gray-200 rounded mb-6 w-1/4"></div>
-          <div className="bg-white rounded-[1.5rem] border border-gray-200 p-6">
-            <div className="h-6 bg-gray-200 rounded mb-4 w-full"></div>
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-12 bg-gray-200 rounded"></div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <InPageLoading />;
   }
 
   // Case not found (only show after data has been fetched)
@@ -257,7 +239,7 @@ export default function CaseDetailPage() {
         caseName
       )}&visit=${encodeURIComponent(
         selectedVisit.visitDate
-      )}&caseId=${caseId}&visitId=${visitId}`;
+      )}&caseId=${caseId}&visitId=${visitId}&userId=${userId}`;
 
       // Open the URL in a new window
       window.open(calUrl, "_blank");
