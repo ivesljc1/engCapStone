@@ -24,13 +24,39 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [userId, setUserId] = useState(null);
 
-  // Simulate fetching cases data from an API
+  // Check auth state and set user ID
   useEffect(() => {
+    const auth = getAuth();
+    
+    // Check initial auth state
+    if (auth.currentUser) {
+      setUserId(auth.currentUser.uid);
+    }
+
+    // Listen for auth changes
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUserId(user.uid);
+      } else {
+        setUserId(null);
+        window.location.href = "/login";
+      }
+    });
+
+    return () => unsubscribe();
+  }, []); // Auth listener setup only runs once
+
+  // Simulate fetching cases data from an API when userId changes
+  useEffect(() => {
+    // Don't attempt to load cases if there's no userId
+    if (!userId) return;
+    
+    // Set loading to true at the start of the fetch operation
+    setIsLoading(true);
+    
     // This would normally be a fetch call to your API
     const loadCases = async () => {
       try {
-        // In a real app, this would be a fetch call
-        // fetch('/api/cases').then(res => res.json())
         const response = await fetch("/api/cases/summary", {
           method: "POST",
           headers: {
@@ -53,29 +79,6 @@ export default function DashboardPage() {
 
     loadCases();
   }, [userId]); // Reload cases when userId changes
-
-  useEffect(() => {
-    const auth = getAuth();
-    setIsLoading(true);
-
-    // Check initial auth state
-    if (auth.currentUser) {
-      setUserId(auth.currentUser.uid);
-    }
-
-    // Listen for auth changes
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUserId(user.uid);
-        setIsLoading(false);
-      } else {
-        setUserId(null);
-        window.location.href = "/login";
-      }
-    });
-
-    return () => unsubscribe();
-  }, []); // Auth listener setup only runs once
 
   return (
     <div className="px-6 py-8">
