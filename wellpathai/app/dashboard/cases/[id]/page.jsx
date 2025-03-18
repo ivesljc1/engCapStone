@@ -213,7 +213,9 @@ export default function CaseDetailPage() {
       // Create the URL with query parameters
       const calUrl = `https://cal.com/wellpathai?case=${encodeURIComponent(
         caseName
-      )}&visit=${encodeURIComponent(selectedVisit.visitDate)}`;
+      )}&visit=${encodeURIComponent(
+        selectedVisit.visitDate
+      )}&caseId=${caseId}&visitId=${visitId}`;
 
       // Open the URL in a new window
       window.open(calUrl, "_blank");
@@ -347,7 +349,7 @@ export default function CaseDetailPage() {
                             size="sm"
                             className="text-xs px-3 py-1 h-auto rounded-full hover:border-green-600 hover:text-green-600"
                           >
-                            <ArrowDownTrayIcon className="h-3 w-3" />
+                            <ArrowDownTrayIcon className="h-3 w-3 mr-0.5" />
                             Download Report
                           </Button>
                         )}

@@ -45,7 +45,8 @@ def upload_pdf(file, user_email, user_id, visit_id):
     # Update visit document with consultation ID
     db.collection("visits").document(visit_id).update({
         "consultationID": pdf_id,
-        "hasNewReport": True
+        "hasNewReport": True,
+        "appointmentStatus": "completed"
     })
 
     # Update user document if it exists
