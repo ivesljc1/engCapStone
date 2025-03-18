@@ -38,7 +38,7 @@ export default function CaseDetailPage() {
   // Check auth state and set user ID
   useEffect(() => {
     const auth = getAuth();
-    
+
     // Check initial auth state
     if (auth.currentUser) {
       setUserId(auth.currentUser.uid);
@@ -60,7 +60,7 @@ export default function CaseDetailPage() {
   // Fetch case data when userId is available
   useEffect(() => {
     if (!userId || !caseId) return;
-    
+
     const fetchCaseData = async () => {
       setIsLoading(true);
       try {
@@ -154,18 +154,6 @@ export default function CaseDetailPage() {
     } catch (error) {
       console.error("Error downloading PDF:", error);
     }
-  };
-
-  // Handle book appointment
-  const handleBookAppointment = (visitId) => {
-    console.log(`Booking appointment for visit ${visitId}`);
-    // In a real app, this would navigate to the appointment booking page
-  };
-  
-  // Handle cancel appointment
-  const handleCancelAppointment = (visitId) => {
-    console.log(`Cancelling appointment for visit ${visitId}`);
-    // In a real app, this would trigger an API call to cancel the appointment
   };
 
   // Loading state

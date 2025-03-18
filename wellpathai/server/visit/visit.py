@@ -16,9 +16,8 @@ def create_visit(user_id, case_id, questionnaire_id):
             "questionnairesID": questionnaire_id,
             "consultationID": "",
             "hasNewReport": True,
-            "appointmentStatus": "unScheduled"
+            "appointmentStatus": "unscheduled"
         })
-        print(f"Visit created successfully: {visit_ref.id}", flush=True)
 
         # Add visit to the case
         success = add_visit_to_case(case_id, visit_ref.id)

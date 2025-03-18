@@ -90,7 +90,7 @@ export default function QuestionPage() {
         // Questionnaire is complete
         setCurrentQuestion(null);
         await generateVisit();
-        // await generateConclusion();
+        await generateConclusion();
       } else if (data.next_question) {
         // Set the next question from the bundled response
         setCurrentQuestion(data.next_question);
