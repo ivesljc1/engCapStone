@@ -27,6 +27,9 @@ export default function AdminAppointmentsPage() {
         // For now, we'll import our mock data
         const response = await import('@/data/adminAppointments.json');
         const data = response.default;
+
+        console.log("Admin appointments data:", data);
+
         
         // Simulate a brief loading delay for demo purposes
         setTimeout(() => {
