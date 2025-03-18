@@ -29,13 +29,38 @@ export default function CaseDetailPage() {
 
   // State for case data
   const [userId, setUserId] = useState(null);
-  const [visits, setVisits] = useState(null);
-  const [caseName, setCaseName] = useState(null);
-  const [caseDescription, setCaseDescription] = useState(null);
+  const [visits, setVisits] = useState([]);
+  const [caseName, setCaseName] = useState("");
+  const [caseDescription, setCaseDescription] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [dataFetched, setDataFetched] = useState(false);
 
-  // Fetch case data
+  // Check auth state and set user ID
   useEffect(() => {
+    const auth = getAuth();
+    
+    // Check initial auth state
+    if (auth.currentUser) {
+      setUserId(auth.currentUser.uid);
+    }
+
+    // Listen for auth changes
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUserId(user.uid);
+      } else {
+        setUserId(null);
+        window.location.href = "/login";
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Fetch case data when userId is available
+  useEffect(() => {
+    if (!userId || !caseId) return;
+    
     const fetchCaseData = async () => {
       setIsLoading(true);
       try {
@@ -54,37 +79,17 @@ export default function CaseDetailPage() {
         setCaseName(caseData.title);
         setCaseDescription(caseData.description);
         setVisits(visitData);
+        setDataFetched(true);
       } catch (error) {
         console.error("Error fetching data:", error);
+        setDataFetched(true);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchCaseData();
-  }, [caseId]);
-
-  useEffect(() => {
-    const auth = getAuth();
-    setIsLoading(true);
-
-    if (auth.currentUser) {
-      setUserId(auth.currentUser.uid);
-      setIsLoading(false);
-    }
-
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUserId(user.uid);
-        setIsLoading(false);
-      } else {
-        setUserId(null);
-        window.location.href = "/login";
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
+  }, [caseId, userId]);
 
   const updateNewReport = async (visitId) => {
     try {
@@ -151,6 +156,19 @@ export default function CaseDetailPage() {
     }
   };
 
+  // Handle book appointment
+  const handleBookAppointment = (visitId) => {
+    console.log(`Booking appointment for visit ${visitId}`);
+    // In a real app, this would navigate to the appointment booking page
+  };
+  
+  // Handle cancel appointment
+  const handleCancelAppointment = (visitId) => {
+    console.log(`Cancelling appointment for visit ${visitId}`);
+    // In a real app, this would trigger an API call to cancel the appointment
+  };
+
+  // Loading state
   if (isLoading) {
     return (
       <div className="px-6 py-8">
@@ -174,7 +192,8 @@ export default function CaseDetailPage() {
     );
   }
 
-  if (!caseName || !caseDescription) {
+  // Case not found (only show after data has been fetched)
+  if (dataFetched && (!caseName || !caseDescription)) {
     return (
       <div className="px-6 py-8">
         <CaseBreadcrumb />
@@ -196,18 +215,6 @@ export default function CaseDetailPage() {
       </div>
     );
   }
-  
-  // Handle book appointment
-  const handleBookAppointment = (visitId) => {
-    console.log(`Booking appointment for visit ${visitId}`);
-    // In a real app, this would navigate to the appointment booking page
-  };
-  
-  // Handle cancel appointment
-  const handleCancelAppointment = (visitId) => {
-    console.log(`Cancelling appointment for visit ${visitId}`);
-    // In a real app, this would trigger an API call to cancel the appointment
-  };
   
   return (
     <div className="px-6 py-8">
@@ -284,7 +291,7 @@ export default function CaseDetailPage() {
                           size="sm" 
                           className="text-xs px-3 py-1 h-auto rounded-full hover:border-gray-500 hover:text-gray-500"
                         >
-                          <CalendarIcon className="h-3 w-3" />
+                          <CalendarIcon className="h-3 w-3 mr-0.5" />
                           Book Appointment
                         </Button>
                       )}
@@ -295,7 +302,7 @@ export default function CaseDetailPage() {
                           size="sm"
                           className="text-xs px-3 py-1 h-auto rounded-full hover:border-blue-600 hover:text-blue-600"
                         >
-                          <XMarkIcon className="h-3 w-3" />
+                          <XMarkIcon className="h-3 w-3 mr-0.5" />
                           Cancel
                         </Button>
                       )}
@@ -309,7 +316,7 @@ export default function CaseDetailPage() {
                           size="sm"
                           className="text-xs px-3 py-1 h-auto rounded-full hover:border-green-600 hover:text-green-600"
                         >
-                          <ArrowDownTrayIcon className="h-3 w-3" />
+                          <ArrowDownTrayIcon className="h-3 w-3 mr-0.5" />
                           Download Report
                         </Button>
                       )}
