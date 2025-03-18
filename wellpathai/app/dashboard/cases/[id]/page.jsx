@@ -38,7 +38,7 @@ export default function CaseDetailPage() {
   // Check auth state and set user ID
   useEffect(() => {
     const auth = getAuth();
-    
+
     // Check initial auth state
     if (auth.currentUser) {
       setUserId(auth.currentUser.uid);
@@ -60,7 +60,7 @@ export default function CaseDetailPage() {
   // Fetch case data when userId is available
   useEffect(() => {
     if (!userId || !caseId) return;
-    
+
     const fetchCaseData = async () => {
       setIsLoading(true);
       try {
@@ -156,18 +156,6 @@ export default function CaseDetailPage() {
     }
   };
 
-  // Handle book appointment
-  const handleBookAppointment = (visitId) => {
-    console.log(`Booking appointment for visit ${visitId}`);
-    // In a real app, this would navigate to the appointment booking page
-  };
-  
-  // Handle cancel appointment
-  const handleCancelAppointment = (visitId) => {
-    console.log(`Cancelling appointment for visit ${visitId}`);
-    // In a real app, this would trigger an API call to cancel the appointment
-  };
-
   // Loading state
   if (isLoading) {
     return (
@@ -225,7 +213,9 @@ export default function CaseDetailPage() {
       // Create the URL with query parameters
       const calUrl = `https://cal.com/wellpathai?case=${encodeURIComponent(
         caseName
-      )}&visit=${encodeURIComponent(selectedVisit.visitDate)}`;
+      )}&visit=${encodeURIComponent(
+        selectedVisit.visitDate
+      )}&caseId=${caseId}&visitId=${visitId}`;
 
       // Open the URL in a new window
       window.open(calUrl, "_blank");
@@ -359,7 +349,7 @@ export default function CaseDetailPage() {
                             size="sm"
                             className="text-xs px-3 py-1 h-auto rounded-full hover:border-green-600 hover:text-green-600"
                           >
-                            <ArrowDownTrayIcon className="h-3 w-3" />
+                            <ArrowDownTrayIcon className="h-3 w-3 mr-0.5" />
                             Download Report
                           </Button>
                         )}
