@@ -249,9 +249,35 @@ export default function CaseDetailPage() {
   };
 
   // Handle cancel appointment
-  const handleCancelAppointment = (visitId) => {
+  const handleCancelAppointment = async (visitId) => {
     console.log(`Cancelling appointment for visit ${visitId}`);
-    // In a real app, this would trigger an API call to cancel the appointment
+
+    const request = await fetch(`/api/appointments/cancel`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        visitId: visitId,
+      }),
+    });
+
+    if (!request.ok) {
+      console.error("Failed to cancel appointment");
+      return;
+    }
+
+    const data = await request.json();
+    console.log(data.message);
+
+    const appointmentId = data.appointmentId;
+    const email = data.email;
+
+    const calUrl = `https://cal.com/booking/${appointmentId}?flag.coep=false&isSuccessBookingPage=true&email=${encodeURIComponent(
+      email
+    )}&eventTypeSlug=1hour&uid=${appointmentId}&cancel=true`;
+
+    window.open(calUrl, "_blank");
   };
 
   return (
@@ -351,7 +377,7 @@ export default function CaseDetailPage() {
                       )}
                       {visit.appointmentStatus === "scheduled" && (
                         <Button
-                          onClick={() => handleCancelAppointment(visit.id)}
+                          onClick={() => handleCancelAppointment(visit.visitId)}
                           variant="outline"
                           size="sm"
                           className="text-xs px-3 py-1 h-auto rounded-full hover:border-blue-600 hover:text-blue-600"
