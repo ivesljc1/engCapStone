@@ -266,11 +266,11 @@ export default function QuestionPage() {
       {/* Main content */}
       <div className="flex-1 flex items-center justify-center py-4 xl:py-12">
         <div className="flex h-[calc(100vh-100px)] xl:h-[calc(100vh-180px)] max-w-[1440px] w-full mx-auto px-6 xl:px-28">
-          <div className="w-1/2 pr-6">
+          <div className="flex-1 flex items-center justify-center">
             <Question title={currentQuestion.question} onBack={handleBack} />
           </div>
 
-          <div className="w-1/2 pl-6 flex items-center justify-center">
+          <div className="flex-1 flex items-center justify-center">
             <SurveyAnswer
               type={currentQuestion.type}
               placeholder={currentQuestion.placeholder}
