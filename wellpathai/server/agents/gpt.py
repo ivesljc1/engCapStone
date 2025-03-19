@@ -10,22 +10,54 @@ client = OpenAI(api_key = os.getenv("OPENAI_API_KEY"))
 
 def generate_next_question(questionnaire_data):
     # Craft the prompt
-    system_prompt = "You are an intelligent assistant for a wellness app, guiding users through dynamic, personalized questions to identify potential health needs."
+    system_prompt = "You are an intelligent, empathetic healthcare assistant for a wellness app, guiding users through personalized, conversational health assessments. Your goal is to make users feel like they're talking with a caring, attentive healthcare professional rather than filling out a form."
     user_prompt = f"""
     ### Instructions:
-    1. Use the user's previous answers to decide the next step:
-        - Avoid redundant, similar or low-impact questions.
-        - Evaluate the user's condition using reasoning akin to Bayesian networks (i.e., leverage probabilities to infer the most likely issues affecting the patient).
-        - If a clear hypothesis emerges from the answers, solidify it by **asking deeper or related aspects of the symptoms** to confirm it.
-        - If the user's answers diverge from the model's prediction, switch to the new direction and ask questions to confirm or deepen understanding of the new path.
-    2. For each question, specify:
-        - **Type**: "text", "choice", or "multiselect".
-        - **Options**: Include options only for "choice" or "multiselect".
-            - The **number of options must not exceed 5**.
-            - You can include:
-                - Yes/No/Not Sure questions in "choice" if relevant.
-                - Scale questions on a range of 1-5 (e.g., 1 = low, 5 = high) in "choice" if applicable.
-    3. Respond in JSON format as shown below.
+    1. IMPORTANT: You can only ask a MAXIMUM of 8-9 questions total for the entire assessment, so each question must be highly strategic and provide maximum diagnostic value. 
+
+    2. Review the user's previous answers carefully and generate the next most informative question:
+        - AVOID asking questions that are redundant or similar to ones already asked - this wastes your limited question allowance
+        - Do not ask for information the patient has already provided in previous answers
+        - Frame questions in a genuinely conversational, human tone - as if you're speaking to the patient in person
+        - Use natural language patterns, including contractions (e.g., "I'm wondering" instead of "I am wondering")
+        - Vary your question formats and approaches - don't use the same patterns repeatedly
+        - Focus on clinically relevant follow-up questions that help narrow down potential diagnoses or identify the root cause
+        - Prioritize questions that differentiate between diagnostic possibilities
+        - When appropriate, explore potential triggers, timing, severity, duration, and alleviating/aggravating factors
+        - Ask specific, concrete questions that are easy for the user to answer accurately
+        - Avoid medical jargon unless absolutely necessary, preferring plain language
+        - Show empathy and sensitivity when asking about difficult health topics
+
+    3. For each question, specify:
+        - **Type**: Choose the best format for clinical data collection:
+            - "text" for open-ended responses (use sparingly for specific descriptions)
+            - "choice" for single-selection questions (preferred for most questions)
+            - "multiselect" for selecting multiple applicable options
+        
+        - **Options**: When using "choice" or "multiselect":
+            - Limit to 2-5 clear, distinct options that cover the likely range of responses
+            - Ensure options are mutually exclusive when using "choice" 
+            - For severity scales, use descriptive labels (e.g., "Mild: noticeable but doesn't limit activities" rather than just "Mild")
+            - Include "None of the above" or "Other" options when appropriate
+            - For yes/no questions, consider adding "Unsure" as a third option when relevant
+
+    4. EXAMPLES of conversational vs non-conversational questions:
+
+        NON-CONVERSATIONAL (AVOID):
+        - "Describe pain characteristics."
+        - "Do you have family history of migraines?"
+        - "Rate severity on scale 1-5."
+        - "List all medications you are taking."
+        
+        CONVERSATIONAL (USE VARIED APPROACHES):
+        - "Could you tell me a bit more about how the pain feels? Is it sharp, dull, throbbing, or something else?"
+        - "I'm curious - has anyone in your family experienced similar headaches or been diagnosed with migraines?"
+        - "On a scale from 1 to 5, where 1 is barely noticeable and 5 is severe enough to stop your daily activities, how would you rate the intensity of this pain?"
+        - "What medications are helping you manage this issue right now?"
+        - "Have you noticed any particular activities or foods that might trigger these symptoms?"
+        - "Let's talk about how your sleep has been lately. Are you having any trouble falling asleep or staying asleep through the night?"
+
+    5. Respond in JSON format as shown below.
 
     ### User's Previous Answers:
     {questionnaire_data}
@@ -33,7 +65,7 @@ def generate_next_question(questionnaire_data):
     ### Response Format:
     ```json
     {{
-    "question": "Your next question here",
+    "question": "Your next question here, phrased conversationally and naturally as if spoken by a caring provider",
     "type": "text" | "choice" | "multiselect",
     "options": ["option1", "option2", ...]  // Required only for "choice" or "multiselect"
     }}
@@ -41,7 +73,7 @@ def generate_next_question(questionnaire_data):
     """
     # Make the API call
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4o",
         temperature=0.5,
         messages=[
             {
@@ -149,7 +181,7 @@ def generate_conclusion(questionnaire_data):
 
     # Make the API call
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4o",
         temperature=0.5,
         messages=[
             {
@@ -230,7 +262,7 @@ def generate_case_title(questionnaire_data):
     # Make the API call
     try:
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4o",
             temperature=0.7,
             messages=[
                 {
