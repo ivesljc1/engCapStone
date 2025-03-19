@@ -783,6 +783,7 @@ def record_gpt_conclusion(questionnaire_id, user_id):
 
     # Call GPT to generate the conclusion
     response_data = generate_conclusion(questionnaire_data)
+    print("response_data from record gpt conclusion/generate conclusion", response_data, flush=True)
 
     if "conclusion" in response_data:
         # Record the result in the questionnaire

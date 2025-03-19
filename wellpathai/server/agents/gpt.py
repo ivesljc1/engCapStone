@@ -197,14 +197,12 @@ def generate_conclusion(questionnaire_data):
     )
     
     # Get the response content
-    advice = response.choices[0].message.content
-    
+    advice = response.choices[0].message.content    
     # Strip the code block markers and newlines
-    json_string = advice.strip("```json\n").strip("```")
-    
+    json_string = advice.strip("```json\n").strip("```")    
     try:
-        # Parse the JSON string
-        response_data = json.loads(json_string)
+        import json5
+        response_data = json5.loads(json_string)
         print("Debugging output from response of gpt: ", response_data, flush=True)
         return response_data
     except json.JSONDecodeError:
