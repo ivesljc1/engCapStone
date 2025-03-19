@@ -22,7 +22,7 @@ export default function ResetPassword() {
     try {
       const auth = getAuth();
       sendPasswordResetEmail(auth, email, {
-        url: "http://localhost:3000/login",
+        url: `${window.location.origin}/login`,
       })
         .then(() => {
           window.location.href = `/checkemail?email=${encodeURIComponent(
