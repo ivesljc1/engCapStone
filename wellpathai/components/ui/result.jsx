@@ -33,64 +33,131 @@ const ReportSection = ({
             <h2 className="text-3xl font-bold text-center mb-10">Report</h2>
           </div>
 
-          {/* Questions Section */}
-          {filteredQuestions.length > 0 && (
+          {/* 1. Conclusion Section - Moved to top */}
+          {conclusion && (
             <div className="mb-8">
-              <h2 className="text-xl font-medium mb-4">Questions & Answers:</h2>
-              <div className="space-y-6">
-                {filteredQuestions.map((q, index) => (
-                  <div
-                    key={q.id}
-                    className="p-4 border border-gray-200 rounded-lg shadow-sm"
-                  >
-                    <h3 className="text-lg font-semibold text-gray-800">
-                      {index + 1}. {q.question}
-                    </h3>
-                    <p className="text-gray-600 mt-2">
-                      <span className="font-medium">Answer:</span> {q.answer}
-                    </p>
-                  </div>
-                ))}
+              <h2 className="text-xl font-medium mb-4">Conclusion:</h2>
+              <div className="bg-white p-6 border border-gray-200 rounded-2xl shadow-sm">
+                <ReactMarkdown
+                  remarkPlugins={remarkGfm}
+                  className="text-gray-700 leading-relaxed"
+                >
+                  {conclusion}
+                </ReactMarkdown>
               </div>
             </div>
           )}
 
-          {/* Conclusion Section */}
-          {conclusion && (
-            <div className="mb-8">
-              <h2 className="text-xl font-medium mb-4">Conclusion:</h2>
-              <ReactMarkdown
-                remarkPlugins={remarkGfm}
-                className="text-gray-600"
-              >
-                {conclusion}
-              </ReactMarkdown>
+          {/* 2. Clinical Notes Section - Moved up */}
+          {clinicalNotes && clinicalNotes.length > 0 && (
+            <div className="mb-10">
+              <h2 className="text-xl font-medium mb-4">
+                For Healthcare Providers:
+              </h2>
+
+              <div className="bg-white overflow-hidden shadow-md rounded-2xl border border-gray-100 hover:shadow-lg transition-shadow duration-300">
+                <div className="p-6">
+                  <ul className="space-y-4">
+                    {clinicalNotes.map((note, index) => (
+                      <li key={index} className="bg-gray-50 p-4 rounded-xl">
+                        <div className="flex">
+                          <div className="flex-shrink-0 mr-3">
+                            <div className="flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-500 rounded-full">
+                              {index + 1}
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-gray-700">{note}</p>
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Footer */}
+                <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
+                  <div className="flex items-center text-sm text-gray-500">
+                    <span>
+                      These notes are intended for healthcare professionals only
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
-          {/* Suggestions Section */}
-          <div className="mb-8">
-            <h2 className="text-xl font-medium mb-4">Suggestions:</h2>
-            <ul className="list-disc list-inside space-y-2 text-gray-600">
-              {suggestions.map((suggestion, index) => (
-                <li key={index}>{suggestion}</li>
-              ))}
-            </ul>
+          {/* 3. Questions Section - Improved UI */}
+          {filteredQuestions.length > 0 && (
+            <div className="mb-10">
+              <h2 className="text-xl font-medium mb-4">Patient Responses:</h2>
+              <div className="bg-white overflow-hidden shadow-md rounded-2xl border border-gray-100">
+                <div className="border-b border-gray-100 bg-gray-50 px-6 py-3">
+                  <h3 className="font-medium text-gray-700">Questionnaire Answers</h3>
+                </div>
+                <div className="p-6">
+                  <div className="divide-y divide-gray-100">
+                    {filteredQuestions.map((q, index) => (
+                      <div key={q.id} className="py-4 first:pt-0 last:pb-0">
+                        <div className="flex">
+                          <div className="flex-shrink-0 mr-3">
+                            <div className="flex items-center justify-center w-8 h-8 bg-gray-100 text-gray-600 rounded-full">
+                              {index + 1}
+                            </div>
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="text-md font-medium text-gray-800 mb-1">
+                              {q.question}
+                            </h4>
+                            <div className="bg-gray-50 p-3 rounded-lg text-gray-700">
+                              {q.answer}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 4. Suggestions Section */}
+          <div className="mb-10">
+            <h2 className="text-xl font-medium mb-4">Suggestions for Patient:</h2>
+            <div className="bg-white overflow-hidden shadow-md rounded-2xl border border-gray-100">
+              <div className="p-6">
+                <ul className="space-y-3">
+                  {suggestions.map((suggestion, index) => (
+                    <li key={index} className="flex items-start">
+                      <div className="flex-shrink-0 mr-3">
+                        <div className="flex items-center justify-center w-8 h-8 bg-primary/10 text-primary rounded-full">
+                          {index + 1}
+                        </div>
+                      </div>
+                      <div className="pt-1">
+                        <p className="text-gray-700">{suggestion}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
           </div>
 
-          {/* Recommended Medications Section */}
+          {/* 5. Recommended Medications Section - Modified for doctors */}
           {otcMedications && otcMedications.length > 0 && (
             <div className="mb-10">
               <h2 className="text-xl font-medium mb-4">
                 Recommended Medications
               </h2>
 
-              {/* Disclaimer */}
-              <div className="mb-6 p-4 bg-gray-50 border-l-4 border-primary rounded-r-lg text-sm">
+              {/* Disclaimer for healthcare providers */}
+              <div className="mb-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg text-sm">
                 <div className="flex items-start">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 mr-2 mt-0.5 text-primary flex-shrink-0"
+                    className="h-5 w-5 mr-2 mt-0.5 text-blue-500 flex-shrink-0"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -103,9 +170,9 @@ const ReportSection = ({
                     />
                   </svg>
                   <p className="text-gray-700">
-                    The following medications are provided for informational
-                    purposes only. Always consult with a healthcare professional
-                    before taking any medication.
+                    The patient has been informed that these medications are for informational purposes only 
+                    and advised to consult with you before starting any new treatment. Please review these 
+                    recommendations as part of your comprehensive care plan.
                   </p>
                 </div>
               </div>
@@ -169,51 +236,12 @@ const ReportSection = ({
                           />
                         </svg>
                         <span className="text-xs text-gray-500">
-                          Consult doctor before use
+                          Patient advised to consult you before use
                         </span>
                       </div>
                     </div>
                   </div>
                 ))}
-              </div>
-            </div>
-          )}
-
-          {/* Clinical Notes Section */}
-          {clinicalNotes && clinicalNotes.length > 0 && (
-            <div className="mb-10">
-              <h2 className="text-xl font-medium mb-4">
-                For Healthcare Providers:
-              </h2>
-
-              <div className="bg-white overflow-hidden shadow-md rounded-2xl border border-gray-100 hover:shadow-lg transition-shadow duration-300">
-                <div className="p-6">
-                  <ul className="space-y-4">
-                    {clinicalNotes.map((note, index) => (
-                      <li key={index} className="bg-gray-50 p-4 rounded-xl">
-                        <div className="flex">
-                          <div className="flex-shrink-0 mr-3">
-                            <div className="flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-500 rounded-full">
-                              {index + 1}
-                            </div>
-                          </div>
-                          <div>
-                            <p className="text-gray-700">{note}</p>
-                          </div>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Footer */}
-                <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
-                  <div className="flex items-center text-sm text-gray-500">
-                    <span>
-                      These notes are intended for healthcare professionals only
-                    </span>
-                  </div>
-                </div>
               </div>
             </div>
           )}
