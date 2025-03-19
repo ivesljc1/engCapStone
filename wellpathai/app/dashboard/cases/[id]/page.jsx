@@ -285,11 +285,22 @@ export default function CaseDetailPage() {
       <CaseBreadcrumb caseName={caseName} />
 
       {/* Case Header */}
-      <h1 className="text-2xl font-bold text-gray-900 mb-4">{caseName}</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">{caseName}</h1>
 
-      <h2 className="text-lg font-semibold text-gray-700 mb-8">
-        {caseDescription}
-      </h2>
+      {/* Case Description - Updated with a cleaner, more polished design */}
+      <div className="mb-8 bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+        <div className="border-b border-gray-100 bg-gray-50 px-6 py-3">
+          <h2 className="font-medium text-gray-700 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-primary" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+            SUMMARY
+          </h2>
+        </div>
+        <div className="p-6">
+          <p className="text-gray-700 leading-relaxed">{caseDescription}</p>
+        </div>
+      </div>
 
       {/* Visits Table */}
       <div className="mb-8">

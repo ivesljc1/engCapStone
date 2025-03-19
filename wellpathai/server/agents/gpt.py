@@ -189,12 +189,31 @@ def generate_case_title(questionnaire_data):
     """
     
     # Craft the prompt
-    system_prompt = "You are a medical assistant tasked with creating concise, descriptive titles."
+    system_prompt = "You are a medical professional creating concise, informative case summaries."
     user_prompt = f"""
     ### Instructions:
-    1. Based on the user's answers, generate a short description and a concise title with a maximum of 2 words.
-    2. The title should be descriptive of the health condition or main concern.
-    3. Use medical terminology when appropriate.
+    1. Based on the user's answers, generate two outputs:
+       a) A concise summary description of the primary health condition or concern
+       b) A brief title (maximum 2 words) that describes the primary health condition or concern
+    
+    2. For the description:
+       - Focus immediately on the key symptoms, health concerns, or conditions
+       - Describe specific characteristics, patterns, and notable features of the condition
+       - DO NOT include demographic information (age, gender, height, weight)
+       - DO NOT use phrases like "this case tracks" or refer to the case folder itself
+       - DO NOT use time-bound descriptions that would become outdated (e.g., "for the past two weeks")
+       - Write in clear, factual medical language that is still accessible to patients
+       - Limit to 1-2 sentences that capture the essential clinical picture
+    
+    3. For the title:
+       - Make it concise (1-2 words maximum)
+       - Focus on the primary symptom or health concern
+       - Use standard medical terminology that is still understandable to patients
+
+    ### Examples of good descriptions:
+    - "Recurring headaches characterized by pressure and throbbing sensations in the temples and behind the eyes. Symptoms are associated with stress, poor sleep, and sensitivity to light and noise."
+    - "Persistent difficulty falling and staying asleep with associated daytime fatigue and concentration issues."
+    - "General health assessment with focus on preventive care, lifestyle optimization, and establishing baseline health metrics."
 
     ### User's Answers:
     {questionnaire_data}
@@ -202,8 +221,8 @@ def generate_case_title(questionnaire_data):
     ### Response Format:
     ```json
     {{
-    "description": "Your description here",
-    "title": "Your Title Here"
+    "description": "Primary condition characterized by key symptoms and notable features. Associated with relevant triggers or factors.",
+    "title": "Primary Condition"
     }}
     ```
     """
