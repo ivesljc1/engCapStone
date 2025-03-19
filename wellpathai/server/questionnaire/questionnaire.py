@@ -532,7 +532,7 @@ def get_next_question(questionnaire_id, user_id):
         print("Calling GPT to generate next question", flush=True)
         
         # Set a maximum number of questions (adjust as needed)
-        MAX_QUESTIONS = 11
+        MAX_QUESTIONS = 18
         
         # Get all questions to check how many we've already asked
         all_questions = get_all_questions_in_questionnaire(questionnaire_id, user_id)

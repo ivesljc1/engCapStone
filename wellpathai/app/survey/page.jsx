@@ -13,7 +13,7 @@ export default function QuestionPage() {
   const [questionnaireId, setQuestionnaireId] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [progress, setProgress] = useState({ current: 1, max: 11 });
+  const [progress, setProgress] = useState({ current: 1, max: 18 });
   const [caseId, setCaseId] = useState("");
   const [needsNewCase, setNeedsNewCase] = useState(false);
 
