@@ -17,6 +17,7 @@ import {
   ClipboardDocumentListIcon,
 } from "@heroicons/react/24/outline";
 import AppointmentStatusBadge from "./AppointmentStatusBadge";
+import InPageLoading from "@/components/ui/InPageLoading";
 import FileUploadModal from "./FileUploadModal";
 import { formatDateShort } from "@/lib/formatDate";
 
@@ -74,16 +75,120 @@ export default function AppointmentList({ appointments }) {
 
     // Filter by search query
     if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (appointment) =>
-          appointment.patientName.toLowerCase().includes(query) ||
-          appointment.patientEmail.toLowerCase().includes(query) ||
-          appointment.id.toLowerCase().includes(query)
-      );
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter((appointment) => {
+        try {
+          // Search patient information
+          const nameFields = [];
+          if (appointment.patientName) nameFields.push(appointment.patientName);
+          if (appointment.name) nameFields.push(appointment.name);
+
+          // Create a single combined name field from all name variations
+          const fullName = nameFields.join(" ").trim();
+
+          // Match against the combined name field
+          const nameMatch = fullName.toLowerCase().includes(query) || false;
+
+          // Create a combined name+email field for searching
+          const nameEmailCombined = `${fullName} ${
+            appointment.email || ""
+          }`.toLowerCase();
+          const combinedMatch = nameEmailCombined.includes(query) || false;
+
+          // Keep existing email match separately
+          const emailMatch =
+            appointment.email?.toLowerCase().includes(query) || false;
+
+          // Search appointment details
+          const idMatch =
+            appointment.id?.toLowerCase().includes(query) || false;
+          const caseMatch =
+            appointment.case_name?.toLowerCase().includes(query) || false;
+          const statusMatch =
+            appointment.status?.toLowerCase().includes(query) || false;
+
+          // Search date information - safely format the date
+          let formattedDate = "";
+          try {
+            formattedDate = appointment.start_time
+              ? formatDateShort(appointment.start_time)
+              : "";
+          } catch (e) {}
+          const dateMatch =
+            formattedDate?.toLowerCase().includes(query) || false;
+
+          // Search date components - safely check if date is valid first
+          let monthMatch = false;
+          let yearMatch = false;
+          let dayMatch = false;
+          let timeMatch = false;
+          let durationMatch = false;
+
+          if (appointment.start_time) {
+            const dateObj = new Date(appointment.start_time);
+
+            // Check if the date is valid before using date methods
+            if (!isNaN(dateObj.getTime())) {
+              // Only run these operations if we have a valid date
+              const monthName = dateObj.toLocaleString("default", {
+                month: "long",
+              });
+              const shortMonthName = dateObj.toLocaleString("default", {
+                month: "short",
+              });
+
+              monthMatch =
+                monthName.toLowerCase().includes(query) ||
+                shortMonthName.toLowerCase().includes(query);
+              yearMatch = dateObj.getFullYear().toString().includes(query);
+              dayMatch = dateObj.getDate().toString().includes(query);
+
+              // Search time
+              const timeString = dateObj.toLocaleTimeString();
+              timeMatch = timeString.toLowerCase().includes(query);
+
+              // Search duration
+              if (appointment.end_time) {
+                const durationString = getDuration(
+                  appointment.start_time,
+                  appointment.end_time
+                );
+                durationMatch = durationString.toLowerCase().includes(query);
+              }
+            }
+          }
+
+          // Additional useful searches - with null checks
+          const doctorMatch =
+            appointment.doctorName?.toLowerCase().includes(query) || false;
+          const notesMatch =
+            appointment.notes?.toLowerCase().includes(query) || false;
+
+          // Return true if any field matches
+          return (
+            nameMatch ||
+            emailMatch ||
+            combinedMatch ||
+            idMatch ||
+            caseMatch ||
+            statusMatch ||
+            dateMatch ||
+            monthMatch ||
+            yearMatch ||
+            dayMatch ||
+            timeMatch ||
+            durationMatch ||
+            doctorMatch ||
+            notesMatch
+          );
+        } catch (error) {
+          console.error("Error in search filtering:", error);
+          return false;
+        }
+      });
     }
 
-    // Filter by status
+    // Filter by status - keep your existing status filter
     if (selectedStatus !== "all") {
       console.log("Filtering by status:", selectedStatus);
 
@@ -106,7 +211,6 @@ export default function AppointmentList({ appointments }) {
     filtered.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
 
     setFilteredAppointments(filtered);
-    console.log(filtered);
   }, [appointments, searchQuery, selectedStatus]);
 
   /**
@@ -213,7 +317,10 @@ export default function AppointmentList({ appointments }) {
       {/* Header with title and button */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl font-semibold text-gray-900">Appointments</h1>
-        <Button className="flex items-center gap-2 text-white rounded-full bg-[#D7A8A0] hover:bg-[#c49991]">
+        <Button
+          className="flex items-center gap-2 text-white rounded-full bg-[#D7A8A0] hover:bg-[#c49991]"
+          onClick={() => window.open("https://app.cal.com/availability")}
+        >
           <CalendarIcon className="h-4 w-4" />
           <span>Manage Availability</span>
         </Button>
@@ -371,6 +478,7 @@ export default function AppointmentList({ appointments }) {
                         variant="outline"
                         size="sm"
                         className="text-xs px-2 py-1 h-auto rounded-full hover:border-blue-600 hover:text-blue-600"
+                        disabled={appointment.status === "cancelled"}
                         onClick={() => handleOpenUploadModal(appointment)}
                       >
                         <DocumentTextIcon className="h-3 w-3" />
@@ -383,6 +491,7 @@ export default function AppointmentList({ appointments }) {
                         variant="outline"
                         size="sm"
                         className="text-xs px-2 py-1 h-auto rounded-full hover:border-green-600 hover:text-green-600"
+                        disabled={appointment.status === "cancelled"}
                       >
                         <ClipboardDocumentListIcon className="h-3 w-3" />
                         View Questionnaire
