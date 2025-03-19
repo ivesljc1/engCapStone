@@ -17,27 +17,62 @@ const Question = ({ title, onBack }) => {
       const container = containerRef.current;
       const availableHeight = container.clientHeight;
       const maxFontSize = 64;
-      let currentFontSize = maxFontSize;
-
-      let min = 12;
-      let max = maxFontSize;
-
-      while (min <= max) {
-        currentFontSize = Math.floor((min + max) / 2);
-        textRef.current.style.fontSize = `${currentFontSize}px`;
-
-        const isOverflowing =
-          textRef.current.scrollHeight > availableHeight ||
-          textRef.current.scrollWidth > container.clientWidth;
-
-        if (isOverflowing) {
-          max = currentFontSize - 1;
-        } else {
-          min = currentFontSize + 1;
-        }
+      
+      // Set initial font size based on word count
+      const wordCount = title.split(/\s+/).length;
+      
+      // Define font size thresholds based on word count
+      let initialFontSize;
+      if (wordCount <= 10) {
+        // Short questions (1-10 words) - large font
+        initialFontSize = 64;
+      } else if (wordCount <= 20) {
+        // Medium questions (11-20 words) - medium font
+        initialFontSize = 52;
+      } else if (wordCount <= 35) {
+        // Longer questions (21-35 words) - medium-small font
+        initialFontSize = 40;
+      } else if (wordCount <= 50) {
+        // Very long questions (36-50 words) - small font
+        initialFontSize = 30;
+      } else {
+        // Extremely long questions (51+ words) - very small font
+        initialFontSize = 22;
       }
-
-      setFontSize(Math.min(maxFontSize, max));
+      
+      // Apply initial font size
+      textRef.current.style.fontSize = `${initialFontSize}px`;
+      
+      // Check if we need to adjust further using binary search
+      const isOverflowing =
+        textRef.current.scrollHeight > availableHeight ||
+        textRef.current.scrollWidth > container.clientWidth;
+      
+      // If the word-count-based size is too large, adjust it down with binary search
+      if (isOverflowing) {
+        let min = 12; // Minimum readable font size
+        let max = initialFontSize - 1;
+        
+        while (min <= max) {
+          const currentFontSize = Math.floor((min + max) / 2);
+          textRef.current.style.fontSize = `${currentFontSize}px`;
+          
+          const stillOverflowing =
+            textRef.current.scrollHeight > availableHeight ||
+            textRef.current.scrollWidth > container.clientWidth;
+          
+          if (stillOverflowing) {
+            max = currentFontSize - 1;
+          } else {
+            min = currentFontSize + 1;
+          }
+        }
+        
+        setFontSize(Math.max(12, max)); // Ensure minimum font size
+      } else {
+        // If not overflowing, use the word-count based size
+        setFontSize(initialFontSize);
+      }
     };
 
     calculateOptimalFontSize();
@@ -69,8 +104,13 @@ const Question = ({ title, onBack }) => {
       <div className="flex-grow flex justify-center items-center">
         {/* Fixed-size container with scroll */}
         <div
-          className="w-full max-w-2xl h-[50vh] overflow-y-auto rounded-lg"
-          style={{ maxHeight: "calc(100vh - 250px)" }}
+          className="w-full max-w-2xl h-[50vh] overflow-y-auto rounded-lg custom-scrollbar"
+          style={{ 
+            maxHeight: "calc(100vh - 250px)",
+            /* Custom scrollbar styling */
+            scrollbarWidth: "thin",
+            scrollbarColor: "#D7A8A0 #F5F5F5" 
+          }}
         >
           {/* Text container */}
           <div ref={containerRef} className="flex w-full items-start">

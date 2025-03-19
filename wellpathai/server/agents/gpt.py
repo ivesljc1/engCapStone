@@ -19,8 +19,7 @@ def generate_next_question(questionnaire_data):
         - AVOID asking questions that are redundant or similar to ones already asked - this wastes your limited question allowance
         - Do not ask for information the patient has already provided in previous answers
         - Frame questions in a genuinely conversational, human tone - as if you're speaking to the patient in person
-        - Use natural language patterns, including contractions (e.g., "I'm wondering" instead of "I am wondering")
-        - Vary your question formats and approaches - don't use the same patterns repeatedly
+        - Very important: Vary your question formats and approaches - don't use the same patterns repeatedly, aviod sounding repetitive
         - Focus on clinically relevant follow-up questions that help narrow down potential diagnoses or identify the root cause
         - Prioritize questions that differentiate between diagnostic possibilities
         - When appropriate, explore potential triggers, timing, severity, duration, and alleviating/aggravating factors
