@@ -134,6 +134,20 @@ export default function AppointmentList({ appointments }) {
     );
   };
 
+  const viewClientQuestionnaire = async (visit_id) => {
+    const request = await fetch(
+      `/api/questionnaire/get-questionnaire-by-visit?visit_id=${visit_id}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const data = await request.json();
+    window.open(`/clientReport?questionnaireID=${data.questionnairesID}`);
+  };
+
   // If appointments data isn't loaded yet, show loading state
   if (!appointments) {
     return <div className="text-center py-10">Loading appointments...</div>;
@@ -304,7 +318,9 @@ export default function AppointmentList({ appointments }) {
                     {appointment.case_name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <AppointmentStatusBadge appointmentStatus={appointment.status} />
+                    <AppointmentStatusBadge
+                      appointmentStatus={appointment.status}
+                    />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end items-center space-x-2">
@@ -318,6 +334,9 @@ export default function AppointmentList({ appointments }) {
                         Upload Report
                       </Button>
                       <Button
+                        onClick={() =>
+                          viewClientQuestionnaire(appointment.visit_id)
+                        }
                         variant="outline"
                         size="sm"
                         className="text-xs px-2 py-1 h-auto rounded-full hover:border-green-600 hover:text-green-600"

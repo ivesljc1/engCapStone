@@ -161,7 +161,6 @@ export default function CaseDetailPage() {
   };
 
   const handleView = (questionnairesID, visitID) => {
-    console.log("Visit ID:", visitID);
     updateNewReport(visitID);
     window.open(
       `/questionnaireView?questionnaireID=${questionnairesID}`,
