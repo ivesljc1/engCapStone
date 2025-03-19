@@ -26,9 +26,9 @@ def initialize_questionnaire_database(user_id):
             "id": "q2",
             "question": "Have you visited us before for the same reason?",
             "type": "choice",
-            "options": ["Select Existing Case", "Create New Case"],
-            "initialized": True,
-        },
+            "options": ["Yes", "No"],
+            "initialized": True
+        }
     ]
 
     general_demographic_questions = [
@@ -272,8 +272,8 @@ def record_answer_to_question(questionnaire_id, user_id, question_id, answer):
                 }
             )
         # Handle case selection question
-        elif question_id == "q2":
-            if answer == "Select Existing Case":
+        elif question_id == 'q2':
+            if answer == 'Yes':
                 # Get user's existing cases
                 user_cases = get_user_cases_data(user_id)
 
@@ -307,17 +307,16 @@ def record_answer_to_question(questionnaire_id, user_id, question_id, answer):
 
                     # Add this question after q2
                     questions.insert(questions.index(question) + 1, case_selection_q)
-
-                    questionnaire_ref.update(
-                        {
-                            "caseSelectionMade": False,
-                            "selectedAction": "select_existing",
-                        }
-                    )
-            else:  # "Create New Case"
-                questionnaire_ref.update(
-                    {"caseSelectionMade": True, "selectedAction": "create_new"}
-                )
+                    
+                    questionnaire_ref.update({
+                        'caseSelectionMade': False,
+                        'selectedAction': 'select_existing'
+                    })
+            else:  # "No"
+                questionnaire_ref.update({
+                    'caseSelectionMade': True,
+                    'selectedAction': 'create_new'
+                })
 
         # Handle case selection from list
         elif question_id == "q2b":
@@ -602,7 +601,7 @@ def get_next_question(questionnaire_id, user_id):
         print("Calling GPT to generate next question", flush=True)
 
         # Set a maximum number of questions (adjust as needed)
-        MAX_QUESTIONS = 11
+        MAX_QUESTIONS = 18
 
         # Get all questions to check how many we've already asked
         all_questions = get_all_questions_in_questionnaire(questionnaire_id, user_id)

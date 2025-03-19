@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import PropTypes from 'prop-types';
-import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
+import PropTypes from "prop-types";
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 
 const Question = ({ title, onBack }) => {
   const containerRef = useRef(null);
@@ -25,10 +25,11 @@ const Question = ({ title, onBack }) => {
       while (min <= max) {
         currentFontSize = Math.floor((min + max) / 2);
         textRef.current.style.fontSize = `${currentFontSize}px`;
-        
-        const isOverflowing = textRef.current.scrollHeight > availableHeight ||
-                            textRef.current.scrollWidth > container.clientWidth;
-        
+
+        const isOverflowing =
+          textRef.current.scrollHeight > availableHeight ||
+          textRef.current.scrollWidth > container.clientWidth;
+
         if (isOverflowing) {
           max = currentFontSize - 1;
         } else {
@@ -50,15 +51,11 @@ const Question = ({ title, onBack }) => {
   }, [title]);
 
   return (
-    <div className="h-full flex flex-col justify-between">
-      <div className="invisible">
-        <button className="px-6 py-3">Placeholder</button>
-      </div>
-      
-      <div className="flex flex-col items-start h-1/2">
-        {/* Logo with margin compensation */}
-        <div className="w-16 h-16 -mb-16">
-          <Image 
+    <div className="h-full flex flex-col relative">
+      {/* Logo at the top */}
+      <div className="absolute top-7 left-0 w-full flex justify-start">
+        <div className="flex w-16 h-16">
+          <Image
             src="/logo_no_text.svg"
             alt="Logo"
             width={logoSize}
@@ -66,43 +63,55 @@ const Question = ({ title, onBack }) => {
             priority
           />
         </div>
+      </div>
 
-        {/* Text container with top padding to prevent overlap */}
-        <div ref={containerRef} className="h-full w-full pt-20">
-          <h2 
-            ref={textRef}
-            style={{ 
-              fontSize: `${fontSize}px`,
-              lineHeight: '125%'
-            }}
-            className="font-normal text-[#1E2E35] font-serif w-full"
-          >
-            {title}
-          </h2>
+      {/* Content vertically centered with fixed height */}
+      <div className="flex-grow flex justify-center items-center">
+        {/* Fixed-size container with scroll */}
+        <div
+          className="w-full max-w-2xl h-[50vh] overflow-y-auto rounded-lg"
+          style={{ maxHeight: "calc(100vh - 250px)" }}
+        >
+          {/* Text container */}
+          <div ref={containerRef} className="flex w-full items-start">
+            <h2
+              ref={textRef}
+              style={{
+                fontSize: `${fontSize}px`,
+                lineHeight: "125%",
+              }}
+              className="font-normal text-[#1E2E35] font-serif w-full text-left"
+            >
+              {title}
+            </h2>
+          </div>
         </div>
       </div>
 
-      <button
-        onClick={onBack}
-        className="w-fit px-6 py-3 
-          rounded-full
-          border border-primary
-          text-primary
-          transition-all
-          hover:bg-[#F0EDEE]
-          active:bg-primary
-          active:text-white
-          active:scale-95"
-      >
-        Back
-      </button>
+      {/* Button fixed at the bottom and left-aligned */}
+      <div className="absolute bottom-7 left-0 w-full flex justify-start">
+        <button
+          onClick={onBack}
+          className="w-fit px-6 py-3 
+            rounded-full
+            border border-primary
+            text-primary
+            transition-all
+            hover:bg-[#F0EDEE]
+            active:bg-primary
+            active:text-white
+            active:scale-95"
+        >
+          Back
+        </button>
+      </div>
     </div>
   );
 };
 
 Question.propTypes = {
   title: PropTypes.string.isRequired,
-  onBack: PropTypes.func.isRequired
+  onBack: PropTypes.func.isRequired,
 };
 
 export default Question;
