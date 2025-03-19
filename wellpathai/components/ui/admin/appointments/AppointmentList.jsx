@@ -85,9 +85,21 @@ export default function AppointmentList({ appointments }) {
 
     // Filter by status
     if (selectedStatus !== "all") {
-      filtered = filtered.filter(
-        (appointment) => appointment.status === selectedStatus
-      );
+      console.log("Filtering by status:", selectedStatus);
+
+      const now = new Date(); // Get current date and time
+
+      filtered = filtered.filter((apt) => {
+        const endTime = new Date(apt.end_time); // Convert Firestore string to Date object
+
+        if (selectedStatus === "scheduled") {
+          return apt.status === "confirmed" && endTime >= now;
+        } else if (selectedStatus === "completed") {
+          return apt.status === "completed" || endTime < now; // Mark past events as completed
+        } else if (selectedStatus === "cancelled") {
+          return apt.status === "cancelled";
+        }
+      });
     }
 
     // Sort appointments by start_time ascending.
@@ -123,15 +135,45 @@ export default function AppointmentList({ appointments }) {
   };
 
   /**
-   * Handle file upload
+   * Handle file upload to Flask server
    * @param {File} file - The uploaded file
    */
-  const handleFileUpload = (file) => {
-    // In a real app, this would send the file to the server
-    console.log(
-      `File uploaded for patient ${selectedPatient?.patientName}:`,
-      file
-    );
+  const handleFileUpload = async (file) => {
+    if (!file) {
+      console.error("No file selected");
+      return;
+    }
+
+    if (!selectedPatient) {
+      console.error("No patient selected for upload");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("newsletter", file);
+    formData.append("userEmail", selectedPatient.email);
+    formData.append("userId", selectedPatient.user_id);
+    formData.append("visitId", selectedPatient.visit_id);
+
+    try {
+      const response = await fetch("/api/upload_user_pdf", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("File uploaded successfully!");
+        console.log("Upload Success:", data);
+        setIsUploadModalOpen(false); // Close the modal after successful upload
+      } else {
+        alert(data.error || "Upload failed.");
+      }
+    } catch (error) {
+      console.error("Upload Error:", error);
+      alert("Error uploading file.");
+    }
   };
 
   const viewClientQuestionnaire = async (visit_id) => {
@@ -320,6 +362,7 @@ export default function AppointmentList({ appointments }) {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <AppointmentStatusBadge
                       appointmentStatus={appointment.status}
+                      endTime={appointment.end_time}
                     />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -364,7 +407,7 @@ export default function AppointmentList({ appointments }) {
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
         onUpload={handleFileUpload}
-        patientName={selectedPatient?.patientName || ""}
+        patientName={selectedPatient?.name || ""}
       />
     </div>
   );
