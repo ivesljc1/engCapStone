@@ -4,6 +4,10 @@ import remarkGfm from "remark-gfm";
 import PropTypes from "prop-types";
 
 const ReportSection = ({ questions, conclusion, suggestions }) => {
+  const filteredQuestions = questions.filter(
+    (q) => !["q2", "q3"].includes(q.id)
+  );
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex gap-8">
@@ -24,11 +28,11 @@ const ReportSection = ({ questions, conclusion, suggestions }) => {
           </div>
 
           {/* Questions Section */}
-          {questions.length > 0 && (
+          {filteredQuestions.length > 0 && (
             <div className="mb-8">
               <h2 className="text-xl font-medium mb-4">Questions & Answers:</h2>
               <div className="space-y-6">
-                {questions.map((q, index) => (
+                {filteredQuestions.map((q, index) => (
                   <div
                     key={q.id}
                     className="p-4 border border-gray-200 rounded-lg shadow-sm"
