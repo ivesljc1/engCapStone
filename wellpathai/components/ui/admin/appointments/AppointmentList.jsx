@@ -157,7 +157,10 @@ export default function AppointmentList({ appointments }) {
       {/* Header with title and button */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl font-semibold text-gray-900">Appointments</h1>
-        <Button className="flex items-center gap-2 text-white rounded-full bg-[#D7A8A0] hover:bg-[#c49991]">
+        <Button
+          className="flex items-center gap-2 text-white rounded-full bg-[#D7A8A0] hover:bg-[#c49991]"
+          onClick={() => window.open("https://app.cal.com/availability")}
+        >
           <CalendarIcon className="h-4 w-4" />
           <span>Manage Availability</span>
         </Button>
@@ -304,7 +307,9 @@ export default function AppointmentList({ appointments }) {
                     {appointment.case_name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <AppointmentStatusBadge appointmentStatus={appointment.status} />
+                    <AppointmentStatusBadge
+                      appointmentStatus={appointment.status}
+                    />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end items-center space-x-2">
