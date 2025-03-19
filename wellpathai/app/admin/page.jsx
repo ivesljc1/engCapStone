@@ -30,7 +30,6 @@ function AdminPage({ onLogout }) {
         },
       });
       const data = await request.json();
-      console.log(data);
       setAppointments(data);
     };
 

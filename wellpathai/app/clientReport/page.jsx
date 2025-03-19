@@ -17,6 +17,7 @@ export default function ReportPage() {
   const [conclusion, setConclusion] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [questionnaireID, setQuestionnaireID] = useState(null);
+  const [questions, setQuestions] = useState([]);
 
   const fetchReport = async () => {
     // Fetch the user's questionnaire report from the API endpoint
@@ -40,6 +41,7 @@ export default function ReportPage() {
       const result = await data.json();
       console.log(result);
       // Update the state with the fetched conclusion and suggestions
+      setQuestions(result.questions);
       setConclusion(result.result.analysis.conclusion);
       setSuggestions(result.result.analysis.suggestions);
     }
@@ -86,7 +88,7 @@ export default function ReportPage() {
 
   return (
     <ReportSection
-      questions={{}}
+      questions={questions}
       conclusion={conclusion}
       suggestions={suggestions}
     />
