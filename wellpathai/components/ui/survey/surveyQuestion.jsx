@@ -77,6 +77,7 @@ const Question = ({ title, onBack }) => {
 
     calculateOptimalFontSize();
 
+    // Recalculate on window resize
     const resizeObserver = new ResizeObserver(calculateOptimalFontSize);
     if (containerRef.current) {
       resizeObserver.observe(containerRef.current);
@@ -84,6 +85,46 @@ const Question = ({ title, onBack }) => {
 
     return () => resizeObserver.disconnect();
   }, [title]);
+
+  // Add CSS for custom scrollbar styles
+  useEffect(() => {
+    // Create a style element
+    const styleElement = document.createElement('style');
+    styleElement.textContent = `
+      /* Custom scrollbar styles for webkit browsers */
+      .scrollbar-container::-webkit-scrollbar {
+        width: 8px;
+      }
+      
+      .scrollbar-container::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      
+      .scrollbar-container::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 20px;
+        border: transparent;
+      }
+      
+      .scrollbar-container::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(0, 0, 0, 0.3);
+      }
+      
+      /* Only show scrollbar when hovering */
+      .scrollbar-container {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+      }
+    `;
+    
+    // Append the style element to the document head
+    document.head.appendChild(styleElement);
+    
+    // Clean up function to remove the style element when component unmounts
+    return () => {
+      document.head.removeChild(styleElement);
+    };
+  }, []);
 
   return (
     <div className="h-full flex flex-col relative">
@@ -102,7 +143,7 @@ const Question = ({ title, onBack }) => {
 
       {/* Content vertically centered with fixed height */}
       <div className="flex-grow flex justify-center items-center">
-        {/* Fixed-size container with scroll */}
+        {/* Fixed-size container with custom scrollbar */}
         <div
           className="w-full max-w-2xl h-[50vh] overflow-y-auto rounded-lg custom-scrollbar"
           style={{ 
@@ -113,14 +154,14 @@ const Question = ({ title, onBack }) => {
           }}
         >
           {/* Text container */}
-          <div ref={containerRef} className="flex w-full items-start">
+          <div ref={containerRef} className="flex w-full items-start p-1">
             <h2
               ref={textRef}
               style={{
                 fontSize: `${fontSize}px`,
                 lineHeight: "125%",
               }}
-              className="font-normal text-[#1E2E35] font-serif w-full text-left"
+              className="font-normal text-[#1E2E35] font-serif w-full text-left transition-all duration-300"
             >
               {title}
             </h2>

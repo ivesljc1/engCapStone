@@ -68,6 +68,10 @@ export default function AdminReportPage() {
         setClinicalNotes([]);
         setOtcMedications([]);
       }
+      // Handle OTC medications if they exist in the response
+      if (result.result.analysis.otc_medications) {
+        setOtcMedications(result.result.analysis.otc_medications);
+      }
     }
   };
 

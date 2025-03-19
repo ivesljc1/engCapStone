@@ -127,12 +127,12 @@ const ReportSection = ({
                 <h2 className="text-xl font-medium">Recommended Medications</h2>
               </div>
 
-              {/* Disclaimer */}
-              <div className="mb-6 p-4 bg-gray-50 border-l-4 border-primary rounded-r-lg text-sm">
+              {/* Disclaimer for healthcare providers */}
+              <div className="mb-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg text-sm">
                 <div className="flex items-start">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 mr-2 mt-0.5 text-primary flex-shrink-0"
+                    className="h-5 w-5 mr-2 mt-0.5 text-blue-500 flex-shrink-0"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -145,9 +145,9 @@ const ReportSection = ({
                     />
                   </svg>
                   <p className="text-gray-700">
-                    The following medications are provided for informational
-                    purposes only. Always consult with a healthcare professional
-                    before taking any medication.
+                    The patient has been informed that these medications are for informational purposes only 
+                    and advised to consult with you before starting any new treatment. Please review these 
+                    recommendations as part of your comprehensive care plan.
                   </p>
                 </div>
               </div>
