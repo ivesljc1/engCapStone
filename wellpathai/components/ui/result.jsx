@@ -4,9 +4,9 @@ import remarkGfm from "remark-gfm";
 import PropTypes from "prop-types";
 
 const ReportSection = ({ questions, conclusion, suggestions }) => {
-  const filteredQuestions = questions.filter(
-    (q) => !["q2", "q3"].includes(q.id)
-  );
+  const filteredQuestions = Array.isArray(questions)
+    ? questions.filter((q) => !["q2", "q3"].includes(q.id))
+    : [];
 
   return (
     <div className="container mx-auto px-4 py-8">
