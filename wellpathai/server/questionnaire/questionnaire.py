@@ -25,7 +25,7 @@ def initialize_questionnaire_database(user_id):
             "id": "q2",
             "question": "Have you visited us before for the same reason?",
             "type": "choice",
-            "options": ["Select Existing Case", "Create New Case"],
+            "options": ["Yes", "No"],
             "initialized": True
     }
     ]
@@ -256,7 +256,7 @@ def record_answer_to_question(questionnaire_id, user_id, question_id, answer):
             })
         # Handle case selection question
         elif question_id == 'q2':
-            if answer == 'Select Existing Case':
+            if answer == 'Yes':
                 # Get user's existing cases
                 user_cases = get_user_cases_data(user_id)
                 
@@ -296,7 +296,7 @@ def record_answer_to_question(questionnaire_id, user_id, question_id, answer):
                         'caseSelectionMade': False,
                         'selectedAction': 'select_existing'
                     })
-            else:  # "Create New Case"
+            else:  # "No"
                 questionnaire_ref.update({
                     'caseSelectionMade': True,
                     'selectedAction': 'create_new'
