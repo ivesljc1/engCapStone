@@ -161,7 +161,6 @@ export default function CaseDetailPage() {
   };
 
   const handleView = (questionnairesID, visitID) => {
-    console.log("Visit ID:", visitID);
     updateNewReport(visitID);
     window.open(
       `/questionnaireView?questionnaireID=${questionnairesID}`,
@@ -286,6 +285,10 @@ export default function CaseDetailPage() {
 
       {/* Case Header */}
       <h1 className="text-2xl font-bold text-gray-900 mb-4">{caseName}</h1>
+
+      <h2 className="text-lg font-semibold text-gray-700 mb-8">
+        {caseDescription}
+      </h2>
 
       {/* Visits Table */}
       <div className="mb-8">
