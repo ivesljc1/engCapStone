@@ -16,6 +16,8 @@ export default function ReportPage() {
   const [loading, setLoading] = useState(true);
   const [conclusion, setConclusion] = useState("");
   const [suggestions, setSuggestions] = useState([]);
+  const [otcMedications, setOtcMedications] = useState([]);
+  const [clinicalNotes, setClinicalNotes] = useState([]);
   const [questionnaireID, setQuestionnaireID] = useState(null);
 
   const fetchReport = async () => {
@@ -42,6 +44,16 @@ export default function ReportPage() {
       // Update the state with the fetched conclusion and suggestions
       setConclusion(result.result.analysis.conclusion);
       setSuggestions(result.result.analysis.suggestions);
+      
+      // Handle otc_medications if they exist in the response
+      if (result.result.analysis.otc_medications) {
+        setOtcMedications(result.result.analysis.otc_medications);
+      }
+      
+      // Handle clinical_notes if they exist in the response
+      if (result.result.analysis.clinical_notes) {
+        setClinicalNotes(result.result.analysis.clinical_notes);
+      }
     }
   };
 
@@ -84,5 +96,10 @@ export default function ReportPage() {
 
   if (loading) return <LoadingPage />;
 
-  return <ReportSection conclusion={conclusion} suggestions={suggestions} />;
+  return <ReportSection 
+    conclusion={conclusion} 
+    suggestions={suggestions}
+    otcMedications={otcMedications}
+    clinicalNotes={clinicalNotes} 
+  />;
 }
