@@ -27,12 +27,12 @@ const TransitionChild = dynamic(
 
 /**
  * AdminSidebar Component - Renders the sidebar for the admin section
- * 
+ *
  * This component includes:
  * - Mobile responsive sidebar with transition effects
  * - Admin navigation links
  * - User profile section with logout functionality
- * 
+ *
  * @param {Object} props - Component props
  * @param {boolean} props.sidebarOpen - Whether the sidebar is open on mobile
  * @param {Function} props.setSidebarOpen - Function to toggle sidebar visibility
@@ -103,7 +103,16 @@ function AdminSidebar({ sidebarOpen, setSidebarOpen, onLogout }) {
           <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-2">
             <div className="flex h-16 shrink-0 items-center">
               <img alt="WellPathAI" src="/wplogo.svg" className="h-8 w-auto" />
-              <span className="ml-2 text-lg font-semibold">Admin</span>
+              <span
+                style={{
+                  fontFamily: "'Carot Display', serif",
+                  fontWeight: 100,
+                  fontSize: "1.5rem",
+                  marginLeft: "0.3rem",
+                }}
+              >
+                Admin
+              </span>
             </div>
             <nav className="flex flex-1 flex-col">
               <ul role="list" className="flex flex-1 flex-col gap-y-7">
@@ -128,7 +137,16 @@ function AdminSidebar({ sidebarOpen, setSidebarOpen, onLogout }) {
         <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6">
           <div className="flex h-16 shrink-0 items-center">
             <img alt="WellPathAI" src="/wplogo.svg" className="h-8 w-auto" />
-            <span className="ml-2 text-lg font-semibold">Admin</span>
+            <span
+              style={{
+                fontFamily: "'Carot Display', serif",
+                fontWeight: 100,
+                fontSize: "1.5rem",
+                marginLeft: "0.3rem",
+              }}
+            >
+              Admin
+            </span>
           </div>
           <nav className="flex flex-1 flex-col">
             <ul role="list" className="flex flex-1 flex-col gap-y-7">
@@ -144,7 +162,7 @@ function AdminSidebar({ sidebarOpen, setSidebarOpen, onLogout }) {
                     className="flex w-full items-center gap-x-4 px-6 py-3 text-sm/6 font-semibold text-gray-900 hover:bg-gray-50"
                     aria-expanded={isOpen}
                     aria-haspopup="true"
-                  >                    
+                  >
                     <span className="sr-only">Your profile</span>
                     <span aria-hidden="true">{name}</span>
                   </button>
@@ -190,4 +208,4 @@ function AdminSidebar({ sidebarOpen, setSidebarOpen, onLogout }) {
   );
 }
 
-export default AdminSidebar; 
+export default AdminSidebar;

@@ -1,10 +1,14 @@
-"use client";
-
-import PropTypes from "prop-types";
+import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import PropTypes from "prop-types";
 
-const ReportSection = ({ conclusion, suggestions, otcMedications, clinicalNotes }) => {
+const ReportSection = ({ questions, conclusion, suggestions, otcMedications, clinicalNotes }) => {
+  
+const filteredQuestions = Array.isArray(questions)
+    ? questions.filter((q) => !["q2", "q3"].includes(q.id))
+    : [];
+  
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex gap-8">
@@ -13,7 +17,7 @@ const ReportSection = ({ conclusion, suggestions, otcMedications, clinicalNotes 
           <h1 className="text-[40px] font-serif leading-tight">
             Questionnaire
             <br />
-            report
+            Report
           </h1>
         </div>
 
@@ -23,13 +27,29 @@ const ReportSection = ({ conclusion, suggestions, otcMedications, clinicalNotes 
           <div className="mb-8">
             <h2 className="text-3xl font-bold text-center mb-10">Report</h2>
           </div>
-          <div className="mb-8">
-            <h2 className="text-xl font-medium mb-4">Conclusion:</h2>
-            <ReactMarkdown remarkPlugins={remarkGfm} className="text-gray-600">
-              {conclusion}
-            </ReactMarkdown>
-          </div>
 
+        {/* Questions Section */}
+          {filteredQuestions.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-xl font-medium mb-4">Questions & Answers:</h2>
+              <div className="space-y-6">
+                {filteredQuestions.map((q, index) => (
+                  <div
+                    key={q.id}
+                    className="p-4 border border-gray-200 rounded-lg shadow-sm"
+                  >
+                    <h3 className="text-lg font-semibold text-gray-800">
+                      {index + 1}. {q.question}
+                    </h3>
+                    <p className="text-gray-600 mt-2">
+                      <span className="font-medium">Answer:</span> {q.answer}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
           <div className="mb-8">
             <h2 className="text-xl font-medium mb-4">Suggestions:</h2>
             <ul className="list-disc list-inside space-y-2 text-gray-600">
@@ -99,11 +119,6 @@ const ReportSection = ({ conclusion, suggestions, otcMedications, clinicalNotes 
                         <span className="text-xs text-gray-500">Consult doctor before use</span>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
           {clinicalNotes && clinicalNotes.length > 0 && (
             <div className="mb-10">
@@ -163,6 +178,13 @@ const ReportSection = ({ conclusion, suggestions, otcMedications, clinicalNotes 
 };
 
 ReportSection.propTypes = {
+  questions: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      question: PropTypes.string.isRequired,
+      answer: PropTypes.string.isRequired,
+    })
+  ),
   conclusion: PropTypes.string.isRequired,
   suggestions: PropTypes.arrayOf(PropTypes.string).isRequired,
   otcMedications: PropTypes.arrayOf(
@@ -180,6 +202,8 @@ ReportSection.propTypes = {
 ReportSection.defaultProps = {
   otcMedications: [],
   clinicalNotes: [],
+  questions: [],
 };
+
 
 export default ReportSection;
