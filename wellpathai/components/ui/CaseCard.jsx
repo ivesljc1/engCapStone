@@ -42,7 +42,7 @@ export default function CaseCard({ caseData }) {
   };
 
   return (
-    <div className="p-6 border border-gray-200 rounded-[1.5rem] shadow-sm hover:shadow-sm hover:border-[#D7A8A0] transition-all duration-200 bg-white">
+    <div className="p-6 border border-gray-200 rounded-[1.5rem] shadow-sm hover:shadow-sm hover:border-[#D7A8A0] transition-all duration-200 bg-white flex flex-col h-full">
       {/* Card Header with title and update button */}
       <div className="flex justify-between items-start mb-4">
         <h3 className="text-lg font-medium text-gray-900">
@@ -60,12 +60,14 @@ export default function CaseCard({ caseData }) {
       </div>
       
       {/* Case description */}
-      <p className="text-sm text-gray-600 mb-6 line-clamp-3">
-        {caseData.description}
-      </p>
+      <div className="flex-grow">
+        <p className="text-sm text-gray-600 mb-6 line-clamp-3 leading-relaxed">
+          {caseData.description}
+        </p>
+      </div>
       
       {/* Case metadata */}
-      <div className="grid grid-cols-2 gap-2 mb-4">
+      <div className="grid grid-cols-2 gap-2 mb-4 mt-auto">
         <div>
           <p className="text-xs text-gray-500 mb-1">Last Visit</p>
           <p className="text-sm font-medium">

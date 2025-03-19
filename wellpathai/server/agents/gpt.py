@@ -84,22 +84,65 @@ def generate_next_question(questionnaire_data):
 
 def generate_conclusion(questionnaire_data):
     # Craft the prompt
-    system_prompt = "You are a health assistant generating concise wellness report and personalized recommendations for supplements or tests based on users' questionnaire responses."
+    system_prompt = "You are a clinical advisor generating insightful health reports with actionable, personalized recommendations based on questionnaire data."
     user_prompt = f"""
     ### Instructions:
-    1. Based on the user's answers, generate a concise and actionable health report:
-        - Provide a **conclusion** that synthesizes the data and identifies key health recommendations.
-        - Include **suggestions** for supplements, tests, or lifestyle changes relevant to the user's responses.
-    2. Avoid making guessing recommendations. Base all suggestions on the provided answers.
+    1. Based on the patient's answers, generate an insightful health report with four distinct sections:
+        
+        a) For the **conclusion** section:
+           - Focus on analyzing symptoms, patterns, and potential underlying causes
+           - DO NOT repeat demographic information (age, gender) or directly restate questionnaire answers
+           - Synthesize key insights and clinical implications of the information provided
+           - Use third-person language (e.g., "The patient," "They") - never use "you" pronouns
+        
+        b) For the **suggestions** section:
+           - Provide 3-5 specific, actionable recommendations
+           - Each suggestion should be detailed and personalized (not generic advice)
+           - Include specific lifestyle modifications, self-care approaches, or health strategies
+           - When recommending supplements or tests, explain WHY they would be beneficial
+        
+        c) For the **otc_medications** section (over-the-counter recommendations):
+           - ONLY include if appropriate based on the patient's symptoms and condition
+           - Provide EXACTLY 2-3 relevant medication or product options (not 1, not 4+)
+           - Your recommendations can include ANY over-the-counter products including:
+              * Oral medications (tablets, capsules, liquids)
+              * Topical products (creams, ointments, patches)
+              * Medical devices (braces, massagers, hot/cold packs)
+              * Supplements or vitamins when appropriate
+           - For each recommendation, provide:
+              * name: Full product name
+              * medication_type: Format or type of product (e.g., "Tablet", "Cream", "Spray", "Patch", "Device", "Supplement")
+              * purpose: How it helps with the specific symptom(s)
+              * price_range: Approximate cost range (e.g., "$5-$15")
+              * considerations: Important usage notes, potential side effects, and contraindications
+           - If medications/products are not appropriate, return an empty array
+        
+        d) For the **clinical_notes** section (for healthcare providers):
+           - Identify 2-4 key areas for clinical investigation
+           - Suggest specific tests, examinations, or specialist referrals that would be appropriate
+           - Note any red flags or priority concerns in the patient's data
+           - Use professional medical terminology while keeping it understandable
 
-    ### User's Answers:
+    2. Only base your analysis on the provided answers - avoid speculative recommendations.
+
+    ### Patient's Answers:
     {questionnaire_data}
 
-    ### Response Formats:
+    ### Response Format:
     ```json
     {{
-    "conclusion": "Your conclusion here",
-    "suggestions": ["suggestion1", "suggestion2", ...]
+    "conclusion": "Your clinical analysis here",
+    "suggestions": ["detailed suggestion 1", "detailed suggestion 2", ...],
+    "otc_medications": [
+      {{
+        "name": "Medication name",
+        "medication_type": "Product type (Tablet, Cream, Device, etc.)",
+        "purpose": "What it does for this specific condition",
+        "price_range": "$X-$Y",
+        "considerations": "Important usage notes, side effects, contraindications"
+      }}
+    ],
+    "clinical_notes": ["clinical recommendation 1", "clinical recommendation 2", ...]
     }}
     ```
     """
@@ -131,16 +174,6 @@ def generate_conclusion(questionnaire_data):
         response_data = json.loads(json_string)
         print("Debugging output from response of gpt: ", response_data, flush=True)
         return response_data
-        # Check if the response is a conclusion
-        # if "conclusion" in response_data:
-        #     # Record the result in the questionnaire
-        #     success, message = record_result_to_questionnaire(questionnaire_id, user_id, response_data)
-        #     if success:
-        #         return response_data
-        #     else:
-        #         return {"status": "error", "error": message}
-        # else:
-        #     return {"status": "error", "error": "Unknown response format"}
     except json.JSONDecodeError:
         return {"status": "error", "error": "Failed to parse JSON response"}
 
@@ -156,12 +189,31 @@ def generate_case_title(questionnaire_data):
     """
     
     # Craft the prompt
-    system_prompt = "You are a medical assistant tasked with creating concise, descriptive titles."
+    system_prompt = "You are a medical professional creating concise, informative case summaries."
     user_prompt = f"""
     ### Instructions:
-    1. Based on the user's answers, generate a short description and a concise title with a maximum of 2 words.
-    2. The title should be descriptive of the health condition or main concern.
-    3. Use medical terminology when appropriate.
+    1. Based on the user's answers, generate two outputs:
+       a) A concise summary description of the primary health condition or concern
+       b) A brief title (maximum 2 words) that describes the primary health condition or concern
+    
+    2. For the description:
+       - Focus immediately on the key symptoms, health concerns, or conditions
+       - Describe specific characteristics, patterns, and notable features of the condition
+       - DO NOT include demographic information (age, gender, height, weight)
+       - DO NOT use phrases like "this case tracks" or refer to the case folder itself
+       - DO NOT use time-bound descriptions that would become outdated (e.g., "for the past two weeks")
+       - Write in clear, factual medical language that is still accessible to patients
+       - Limit to 1-2 sentences that capture the essential clinical picture
+    
+    3. For the title:
+       - Make it concise (1-2 words maximum)
+       - Focus on the primary symptom or health concern
+       - Use standard medical terminology that is still understandable to patients
+
+    ### Examples of good descriptions:
+    - "Recurring headaches characterized by pressure and throbbing sensations in the temples and behind the eyes. Symptoms are associated with stress, poor sleep, and sensitivity to light and noise."
+    - "Persistent difficulty falling and staying asleep with associated daytime fatigue and concentration issues."
+    - "General health assessment with focus on preventive care, lifestyle optimization, and establishing baseline health metrics."
 
     ### User's Answers:
     {questionnaire_data}
@@ -169,8 +221,8 @@ def generate_case_title(questionnaire_data):
     ### Response Format:
     ```json
     {{
-    "description": "Your description here",
-    "title": "Your Title Here"
+    "description": "Primary condition characterized by key symptoms and notable features. Associated with relevant triggers or factors.",
+    "title": "Primary Condition"
     }}
     ```
     """
