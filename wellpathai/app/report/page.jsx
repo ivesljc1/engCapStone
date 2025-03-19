@@ -38,37 +38,66 @@ export default function ReportPage() {
 
   const fetchReport = async () => {
     // Fetch the user's health report from the API endpoint
-    const data = await fetch(
-      `/api/questionnaire/get-most-recent-result?user_id=${userId}`,
-      {
-        method: "GET", // HTTP method to use for the request
-        headers: {
-          "Content-Type": "application/json", // Specify the content type as JSON
-        },
-      }
-    );
+    try {
+      const data = await fetch(
+        `/api/questionnaire/get-most-recent-result?user_id=${userId}`,
+        {
+          method: "GET", // HTTP method to use for the request
+          headers: {
+            "Content-Type": "application/json", // Specify the content type as JSON
+          },
+        }
+      );
 
-    // Check if the fetch request was successful
-    if (!data.ok) {
-      // Log an error message if the request failed
-      console.error("Failed to fetch user's health report");
-      return; // Exit the function early
-    } else {
-      // Parse the JSON response from the server
-      const result = await data.json();
-      // Update the state with the fetched conclusion and suggestions
-      setConclusion(result[1].conclusion);
-      setSuggestions(result[1].suggestions);
-      
-      // Handle otc_medications if they exist in the response
-      if (result[1].otc_medications) {
-        setOtcMedications(result[1].otc_medications);
+      // Check if the fetch request was successful
+      if (!data.ok) {
+        // Log an error message if the request failed
+        console.error(`Failed to fetch user's health report: ${data.status} ${data.statusText}`);
+        setLoading(false);
+        return; // Exit the function early
+      } else {
+        // Parse the JSON response from the server
+        const result = await data.json();
+        console.log("API Response:", result);
+        
+        // Check if result exists and has the expected structure
+        if (result && result[1]) {
+          // Update the state with the fetched conclusion and suggestions
+          setConclusion(result[1].conclusion || "No conclusion available");
+          setSuggestions(result[1].suggestions || []);
+          
+          // Handle otc_medications if they exist in the response
+          if (result[1].otc_medications) {
+            setOtcMedications(result[1].otc_medications);
+          } else {
+            setOtcMedications([]);
+          }
+          
+          // Handle clinical_notes if they exist in the response
+          if (result[1].clinical_notes) {
+            setClinicalNotes(result[1].clinical_notes);
+          } else {
+            setClinicalNotes([]);
+          }
+        } else {
+          console.error("Unexpected API response structure:", result);
+          // Set default values for missing data
+          setConclusion("Could not retrieve conclusion at this time");
+          setSuggestions([]);
+          setOtcMedications([]);
+          setClinicalNotes([]);
+        }
+        
+        setLoading(false);
       }
-      
-      // Handle clinical_notes if they exist in the response
-      if (result[1].clinical_notes) {
-        setClinicalNotes(result[1].clinical_notes);
-      }
+    } catch (error) {
+      console.error("Error fetching report:", error);
+      // Set default values in case of error
+      setConclusion("An error occurred while retrieving your health report");
+      setSuggestions([]);
+      setOtcMedications([]);
+      setClinicalNotes([]);
+      setLoading(false);
     }
   };
 
@@ -149,9 +178,13 @@ export default function ReportPage() {
           <div className="mb-8">
             <h2 className="text-xl font-medium mb-4">Suggestions:</h2>
             <ul className="list-disc list-inside space-y-2 text-gray-600">
-              {suggestions.map((suggestion, index) => (
-                <li key={index}>{suggestion}</li>
-              ))}
+              {suggestions && suggestions.length > 0 ? (
+                suggestions.map((suggestion, index) => (
+                  <li key={index}>{suggestion}</li>
+                ))
+              ) : (
+                <li>No suggestions available.</li>
+              )}
             </ul>
           </div>
           
