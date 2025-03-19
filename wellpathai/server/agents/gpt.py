@@ -19,6 +19,7 @@ def generate_next_question(questionnaire_data):
         - AVOID asking questions that are redundant or similar to ones already asked - this wastes your limited question allowance
         - Do not ask for information the patient has already provided in previous answers
         - Frame questions in a genuinely conversational, human tone - as if you're speaking to the patient in person
+        - Very important: Vary your question formats and approaches - don't use the same patterns repeatedly, aviod sounding repetitive
         - Use natural language patterns, including contractions (e.g., "I'm wondering" instead of "I am wondering")
         - Vary your question formats and approaches - don't use the same patterns repeatedly
         - Focus on clinically relevant follow-up questions that help narrow down potential diagnoses or identify the root cause
@@ -179,119 +180,35 @@ def generate_conclusion(questionnaire_data):
     ```
     """
 
-    print("=== QUESTIONNAIRE DATA ===", flush=True)
-    print(questionnaire_data, flush=True)
-    print("=========================", flush=True)
-
-    # Try up to 3 times to get a valid response
-    max_retries = 3
-    for attempt in range(max_retries):
-        try:
-            print(f"Attempt {attempt+1} to generate conclusion", flush=True)
-            
-            # Make the API call
-            response = client.chat.completions.create(
-                model="gpt-4o",
-                temperature=0.5,
-                messages=[
-                    {
-                        "role": "system", 
-                        "content": system_prompt
-                    },
-                    {
-                        "role": "user", 
-                        "content": user_prompt
-                    }
-                ]
-            )
-            
-            # Get the response content
-            advice = response.choices[0].message.content
-            
-            # Log the raw response for debugging
-            print("=== RAW GPT RESPONSE ===", flush=True)
-            print(advice, flush=True)
-            print("=======================", flush=True)
-            
-            # Check if response contains JSON
-            if "```json" not in advice and "```" not in advice:
-                print("Warning: Response does not contain JSON code block markers", flush=True)
-                # Try to locate JSON-like structure anyway
-                if "{" in advice and "}" in advice:
-                    start_idx = advice.find("{")
-                    end_idx = advice.rfind("}") + 1
-                    json_string = advice[start_idx:end_idx]
-                    print("Extracted JSON-like content:", flush=True)
-                    print(json_string, flush=True)
-                else:
-                    print("Cannot find JSON structure in response", flush=True)
-                    if attempt < max_retries - 1:
-                        print("Retrying...", flush=True)
-                        continue
-                    else:
-                        return {"status": "error", "error": "No JSON structure found in response after maximum retries"}
-            else:
-                # Strip the code block markers and newlines
-                json_string = advice
-                if "```json" in json_string:
-                    json_string = json_string.split("```json")[1]
-                if "```" in json_string:
-                    json_string = json_string.split("```")[0]
-                json_string = json_string.strip()
-            
-            try:
-                # Parse the JSON string
-                response_data = json.loads(json_string)
-                print("Successfully parsed JSON response", flush=True)
-                
-                # Validate the response structure
-                required_keys = ["conclusion", "suggestions"]
-                missing_keys = [key for key in required_keys if key not in response_data]
-                
-                if missing_keys:
-                    print(f"Warning: Response is missing required keys: {missing_keys}", flush=True)
-                    if attempt < max_retries - 1:
-                        print("Retrying...", flush=True)
-                        continue
-                    else:
-                        print("Failed to get valid response structure after maximum retries", flush=True)
-                        # Return what we have with empty arrays for missing keys
-                        for key in missing_keys:
-                            response_data[key] = [] if key != "conclusion" else ""
-                
-                # Initialize any missing optional keys with empty values
-                if "otc_medications" not in response_data:
-                    response_data["otc_medications"] = []
-                if "clinical_notes" not in response_data:
-                    response_data["clinical_notes"] = []
-                
-                print("Final processed response:", flush=True)
-                print(response_data, flush=True)
-                return response_data
-                
-            except json.JSONDecodeError as e:
-                print(f"JSON Decode Error: {e}", flush=True)
-                print(f"Failed to parse JSON string: {json_string}", flush=True)
-                if attempt < max_retries - 1:
-                    print("Retrying...", flush=True)
-                    continue
-                else:
-                    return {
-                        "status": "error", 
-                        "error": "Failed to parse JSON response after maximum retries",
-                        "raw_response": advice
-                    }
-        
-        except Exception as e:
-            print(f"Unexpected error: {str(e)}", flush=True)
-            if attempt < max_retries - 1:
-                print("Retrying due to unexpected error...", flush=True)
-                continue
-            else:
-                return {"status": "error", "error": f"API call failed after maximum retries: {str(e)}"}
+    # Make the API call
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        temperature=0.5,
+        messages=[
+            {
+                "role": "system", 
+                "content": system_prompt
+            },
+            {
+                "role": "user", 
+                "content": user_prompt
+            }
+        ]
+    )
     
-    # If we've exhausted all retries
-    return {"status": "error", "error": "Failed to generate conclusion after maximum retries"}
+    # Get the response content
+    advice = response.choices[0].message.content
+    
+    # Strip the code block markers and newlines
+    json_string = advice.strip("```json\n").strip("```")
+    
+    try:
+        # Parse the JSON string
+        response_data = json.loads(json_string)
+        print("Debugging output from response of gpt: ", response_data, flush=True)
+        return response_data
+    except json.JSONDecodeError:
+        return {"status": "error", "error": "Failed to parse JSON response"}
 
 def generate_case_title(questionnaire_data):
     """
