@@ -18,6 +18,7 @@ export default function ReportPage() {
   const [suggestions, setSuggestions] = useState([]);
   const [questionnaireID, setQuestionnaireID] = useState(null);
   const [questions, setQuestions] = useState([]);
+  const [clinicalNotes, setClinicalNotes] = useState([]);
 
   const fetchReport = async () => {
     // Fetch the user's questionnaire report from the API endpoint
@@ -44,6 +45,10 @@ export default function ReportPage() {
       setQuestions(result.questions);
       setConclusion(result.result.analysis.conclusion);
       setSuggestions(result.result.analysis.suggestions);
+      // Handle clinical_notes if they exist in the response
+      if (result.result.analysis.clinical_notes) {
+        setClinicalNotes(result.result.analysis.clinical_notes);
+      }
     }
   };
 
@@ -91,6 +96,8 @@ export default function ReportPage() {
       questions={questions}
       conclusion={conclusion}
       suggestions={suggestions}
+      otcMedications={[]}
+      clinicalNotes={clinicalNotes}
     />
   );
 }
