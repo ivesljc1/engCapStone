@@ -15,6 +15,7 @@ import {
   CalendarIcon,
   DocumentTextIcon,
   ClipboardDocumentListIcon,
+  ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 import AppointmentStatusBadge from "./AppointmentStatusBadge";
 import InPageLoading from "@/components/ui/InPageLoading";
@@ -66,6 +67,10 @@ export default function AppointmentList({ appointments }) {
   // State for file upload modal
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState(null);
+  
+  // State to track appointments with reports
+  const [appointmentsWithReports, setAppointmentsWithReports] = useState({});
+  const [isCheckingReports, setIsCheckingReports] = useState(false);
 
   // Filter and sort appointments based on search query and status
   useEffect(() => {
@@ -211,7 +216,54 @@ export default function AppointmentList({ appointments }) {
     filtered.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
 
     setFilteredAppointments(filtered);
+
+    // Check for existing reports for all appointments
+    checkExistingReports(filtered);
   }, [appointments, searchQuery, selectedStatus]);
+
+  /**
+   * Check which appointments have existing reports
+   * @param {Array} appointmentsList - The list of appointments to check
+   */
+  const checkExistingReports = async (appointmentsList) => {
+    if (!appointmentsList.length) return;
+    
+    setIsCheckingReports(true);
+    const reportsMap = {};
+    
+    // Create an array of promises to check each appointment
+    const checkPromises = appointmentsList.map(async (appointment) => {
+      try {
+        if (!appointment.visit_id) return;
+        
+        const response = await fetch(
+          `/api/check_report_exists?visit_id=${appointment.visit_id}`,
+          { method: "GET" }
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          reportsMap[appointment.visit_id] = data.exists;
+        }
+      } catch (error) {
+        console.error("Error checking report existence:", error);
+      }
+    });
+    
+    // Wait for all checks to complete
+    await Promise.all(checkPromises);
+    setAppointmentsWithReports(reportsMap);
+    setIsCheckingReports(false);
+  };
+
+  /**
+   * Check if a specific appointment has a report
+   * @param {string} visitId - The visit ID to check
+   * @returns {boolean} - Whether the appointment has a report
+   */
+  const hasReport = (visitId) => {
+    return appointmentsWithReports[visitId] === true;
+  };
 
   /**
    * Handle search input change
@@ -270,6 +322,13 @@ export default function AppointmentList({ appointments }) {
       if (response.ok) {
         alert("File uploaded successfully!");
         console.log("Upload Success:", data);
+        
+        // Update local state to reflect the new report
+        setAppointmentsWithReports(prev => ({
+          ...prev,
+          [selectedPatient.visit_id]: true
+        }));
+        
         setIsUploadModalOpen(false); // Close the modal after successful upload
       } else {
         alert(data.error || "Upload failed.");
@@ -477,12 +536,25 @@ export default function AppointmentList({ appointments }) {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="text-xs px-2 py-1 h-auto rounded-full hover:border-blue-600 hover:text-blue-600"
+                        className={`text-xs px-2 py-1 h-auto rounded-full ${
+                          hasReport(appointment.visit_id)
+                            ? "hover:border-amber-600 hover:text-amber-600 bg-amber-50"
+                            : "hover:border-blue-600 hover:text-blue-600"
+                        }`}
                         disabled={appointment.status === "cancelled"}
                         onClick={() => handleOpenUploadModal(appointment)}
                       >
-                        <DocumentTextIcon className="h-3 w-3" />
-                        Upload Report
+                        {hasReport(appointment.visit_id) ? (
+                          <>
+                            <ArrowPathIcon className="h-3 w-3 mr-1" />
+                            Replace Report
+                          </>
+                        ) : (
+                          <>
+                            <DocumentTextIcon className="h-3 w-3 mr-1" />
+                            Upload Report
+                          </>
+                        )}
                       </Button>
                       <Button
                         onClick={() =>
@@ -493,7 +565,7 @@ export default function AppointmentList({ appointments }) {
                         className="text-xs px-2 py-1 h-auto rounded-full hover:border-green-600 hover:text-green-600"
                         disabled={appointment.status === "cancelled"}
                       >
-                        <ClipboardDocumentListIcon className="h-3 w-3" />
+                        <ClipboardDocumentListIcon className="h-3 w-3 mr-1" />
                         View Questionnaire
                       </Button>
                     </div>
@@ -517,6 +589,7 @@ export default function AppointmentList({ appointments }) {
         onClose={() => setIsUploadModalOpen(false)}
         onUpload={handleFileUpload}
         patientName={selectedPatient?.name || ""}
+        isReplacing={selectedPatient ? hasReport(selectedPatient.visit_id) : false}
       />
     </div>
   );

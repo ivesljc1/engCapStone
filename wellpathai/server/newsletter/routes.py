@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from .services import upload_pdf
 from .firebase_init import db
-from newsletter.services import ( get_pdf )
+from newsletter.services import ( get_pdf, check_report_exists )
 
 newsletter_bp = Blueprint("newsletter", __name__)
 
@@ -37,3 +37,14 @@ def get_consultation_pdf():
         return jsonify({"error": "Failed to get PDF"}), 500
     
     return jsonify({"pdfUrl": result}), 200
+
+@newsletter_bp.route("/api/check_report_exists", methods=["GET"])
+def check_visit_report():
+    visit_id = request.args.get("visit_id")
+    
+    if not visit_id:
+        return jsonify({"error": "visit_id is required"}), 400
+    
+    result = check_report_exists(visit_id)
+    
+    return jsonify(result), 200

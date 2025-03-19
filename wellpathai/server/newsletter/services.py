@@ -104,3 +104,47 @@ def get_pdf(consultation_id):
         return consultation.to_dict().get("pdfUrl")
     
     return None
+
+def check_report_exists(visit_id):
+    """
+    Check if a report already exists for a specific visit
+    
+    Args:
+        visit_id (str): The ID of the visit to check
+        
+    Returns:
+        dict: A dictionary containing:
+            - exists (bool): Whether a report exists
+            - consultation_id (str, optional): The consultation ID if a report exists
+            - pdf_url (str, optional): The URL of the PDF if a report exists
+    """
+    if not visit_id:
+        return {"exists": False}
+    
+    # Get the visit document
+    visit_doc = db.collection("visits").document(visit_id).get()
+    
+    if not visit_doc.exists:
+        return {"exists": False}
+    
+    # Check if the visit has a consultation ID
+    visit_data = visit_doc.to_dict()
+    consultation_id = visit_data.get("consultationID")
+    
+    if not consultation_id:
+        return {"exists": False}
+    
+    # Get the consultation document to retrieve the PDF URL
+    consultation_doc = db.collection("consultation").document(consultation_id).get()
+    
+    if not consultation_doc.exists:
+        return {"exists": False}
+    
+    consultation_data = consultation_doc.to_dict()
+    pdf_url = consultation_data.get("pdfUrl")
+    
+    return {
+        "exists": True, 
+        "consultation_id": consultation_id,
+        "pdf_url": pdf_url
+    }
