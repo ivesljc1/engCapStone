@@ -421,6 +421,7 @@ export default function AppointmentList({ appointments }) {
                         variant="outline"
                         size="sm"
                         className="text-xs px-2 py-1 h-auto rounded-full hover:border-blue-600 hover:text-blue-600"
+                        disabled={appointment.status === "cancelled"}
                         onClick={() => handleOpenUploadModal(appointment)}
                       >
                         <DocumentTextIcon className="h-3 w-3" />
@@ -430,6 +431,7 @@ export default function AppointmentList({ appointments }) {
                         variant="outline"
                         size="sm"
                         className="text-xs px-2 py-1 h-auto rounded-full hover:border-green-600 hover:text-green-600"
+                        disabled={appointment.status === "cancelled"}
                       >
                         <ClipboardDocumentListIcon className="h-3 w-3" />
                         View Questionnaire
