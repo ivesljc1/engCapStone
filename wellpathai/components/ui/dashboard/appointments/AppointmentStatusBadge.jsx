@@ -22,10 +22,14 @@ export default function AppointmentStatusBadge({ appointmentStatus, endTime }) {
 
   // Define color schemes for different statuses
   const statusStyles = {
-    confirmed: "bg-blue-100 text-blue-800",
+    scheduled: "bg-blue-100 text-blue-800",
     completed: "bg-green-100 text-green-800",
     cancelled: "bg-red-200 text-red-900",
   };
+
+  if (appointmentStatus == "confirmed") {
+    appointmentStatus = "scheduled";
+  }
 
   // Get the appropriate style for the current status
   const style = statusStyles[appointmentStatus] || "bg-gray-100 text-gray-800";
