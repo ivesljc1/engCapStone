@@ -1,7 +1,7 @@
 # engCapStone# WellPath AI - Engineering Capstone Project
 
 <p align="center">
-  <img src="wellpathai/public/logo_no_text.svg" alt="WellPath AI Logo" width="200"/>
+  <img src="wellpathai/public/wplogo.svg" alt="WellPath AI Logo" width="200"/>
 </p>
 
 ## Project Overview
