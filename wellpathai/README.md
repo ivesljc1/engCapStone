@@ -62,7 +62,7 @@ Ensure you have the following installed:
 1. **Clone the repository**
 
    ```sh
-   git clone https://github.com/yourusername/engCapStone.git
+   git clone https://github.com/ivesljc1/engCapStone.git
    cd wellpathai
    ```
 
@@ -95,15 +95,9 @@ Ensure you have the following installed:
 
 5. **Start the development servers**
 
-   - **Frontend**:
-     ```sh
-     npm run dev
-     ```
-   - **Backend**:
-     ```sh
-     cd server
-     uvicorn main:app --reload
-     ```
+   ```sh
+   npm run dev
+   ```
 
 6. **Open your browser**
    Navigate to `http://localhost:3000`
