@@ -93,7 +93,7 @@ Ensure you have the following installed:
    pip install -r requirements.txt
    ```
 
-5. **Start the development servers**
+5. **Start the app**
 
    ```sh
    npm run dev
