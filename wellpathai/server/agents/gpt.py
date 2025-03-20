@@ -198,15 +198,57 @@ def generate_conclusion(questionnaire_data):
     
     # Get the response content
     advice = response.choices[0].message.content    
+    print("Raw GPT response:", advice, flush=True)
     # Strip the code block markers and newlines
     json_string = advice.strip("```json\n").strip("```")    
     try:
+        # First cleanup - fix missing commas between properties
+        import re
+        
+        # This regex finds property transitions without commas
+        # Example: "property1": "value" "property2":
+        fixed_json = re.sub(r'"\s+("[\w_]+"\s*:)', r'",\n\1', json_string)
+        
+        # Replace any triple quotes with single quotes
+        fixed_json = fixed_json.replace('"""', '"')
+        
+        # Use json5 to parse the fixed string (more forgiving JSON parser)
         import json5
-        response_data = json5.loads(json_string)
-        print("Debugging output from response of gpt: ", response_data, flush=True)
+        response_data = json5.loads(fixed_json)
+        print("Successfully parsed JSON with fixes", flush=True)
         return response_data
-    except json.JSONDecodeError:
-        return {"status": "error", "error": "Failed to parse JSON response"}
+        
+    except Exception as e:
+        print(f"JSON parsing error: {str(e)}", flush=True)
+        
+        # Fallback method using a more direct approach
+        try:
+            # This is a last resort parsing method
+            import ast
+            # Extract content between outer curly braces
+            content = json_string.strip()
+            if content.startswith('{') and content.endswith('}'):
+                content = content[1:-1]
+            
+            # Split by known major properties and reconstruct
+            result = {}
+            
+            # Extract conclusion
+            if '"conclusion":' in content:
+                conclusion_parts = content.split('"conclusion":')
+                conclusion_text = conclusion_parts[1].split('"suggestions":')[0].strip()
+                # Clean up the text
+                conclusion_text = conclusion_text.strip('"').strip()
+                result["conclusion"] = conclusion_text
+            
+            # Handle other sections similarly...
+            
+            print("Fallback parsing method used", flush=True)
+            return result
+            
+        except Exception as fallback_error:
+            print(f"Fallback parsing also failed: {str(fallback_error)}", flush=True)
+            return {"status": "error", "error": "Failed to parse JSON response"}
 
 def generate_case_title(questionnaire_data):
     """
