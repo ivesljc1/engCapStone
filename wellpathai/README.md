@@ -1,36 +1,174 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# WellPath AI - Healthcare AI Assistant
+
+<p align="center">
+  <img src="public/logo_no_text.svg" alt="WellPath AI Logo" width="200"/>
+</p>
+
+## About The Project
+
+WellPath AI is an innovative healthcare platform that leverages AI to provide personalized health insights based on user-provided information. The platform connects patients with healthcare providers through an intelligent system that collects health data, analyzes symptoms, and generates comprehensive health reports.
+
+## Features
+
+- **User Authentication**: Secure login/registration system with email verification.
+- **Dynamic Health Questionnaires**: AI-driven surveys that adapt based on user responses.
+- **Case Management**: Organize health concerns into cases with detailed history.
+- **Visit Tracking**: Record and monitor health visits over time.
+- **AI Analysis**:
+  - Health conclusions based on symptoms.
+  - Personalized recommendations.
+  - OTC medication suggestions.
+  - Clinical notes for healthcare providers.
+- **Appointment Scheduling**: Book appointments with healthcare providers.
+- **Admin Dashboard**: Manage patients and appointments.
+
+## Tech Stack
+
+### **Frontend**
+
+- Next.js 14 (React framework)
+- TailwindCSS (styling)
+- Shadcn/UI (component library)
+- React Hooks for state management
+
+### **Backend**
+
+- Python with Flask
+- Firebase Firestore (database)
+- Firebase Authentication
+
+### **AI Integration**
+
+- OpenAI GPT for health analysis
+
+### **Third-party Services**
+
+- Cal.com for appointment scheduling
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Ensure you have the following installed:
+
+- Node.js 18 or higher
+- Python 3.9 or higher
+- Firebase account
+- OpenAI API key
+- Cal.com account (for appointment functionality)
+
+### Installation
+
+1. **Clone the repository**
+
+   ```sh
+   git clone https://github.com/yourusername/engCapStone.git
+   cd wellpathai
+   ```
+
+2. **Install frontend dependencies**
+
+   ```sh
+   npm install
+   ```
+
+3. **Setup environment variables**
+   Create a `.env.local` file in the root directory and add the following:
+
+   ```sh
+   NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
+   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_firebase_auth_domain
+   NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_firebase_project_id
+   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket
+   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_firebase_messaging_sender_id
+   NEXT_PUBLIC_FIREBASE_APP_ID=your_firebase_app_id
+   OPENAI_API_KEY=your_openai_api_key
+   CAL_API_KEY=your_cal_api_key
+   ```
+
+4. **Install backend dependencies**
+
+   ```sh
+   cd server
+   pip install -r requirements.txt
+   ```
+
+5. **Start the development servers**
+
+   - **Frontend**:
+     ```sh
+     npm run dev
+     ```
+   - **Backend**:
+     ```sh
+     cd server
+     uvicorn main:app --reload
+     ```
+
+6. **Open your browser**
+   Navigate to `http://localhost:3000`
+
+## Project Structure
+
+```sh
+wellpathai/
+├── app/                  # Next.js app directory
+│   ├── clientReport/     # Client report viewing
+│   ├── dashboard/        # User dashboard
+│   ├── login/            # Authentication
+│   ├── questionnaireView/# Questionnaire viewing
+│   ├── register/         # User registration
+│   ├── report/           # Health reports
+│   ├── resetpassword/    # Password reset
+│   ├── survey/           # Health questionnaires
+│   └── ...
+├── components/           # Reusable React components
+│   ├── ui/               # UI components
+│   └── ...
+├── public/               # Static assets
+├── server/               # Python backend
+│   ├── agents/           # AI integration
+│   ├── appointment/      # Appointment management
+│   ├── questionnaire/    # Questionnaire processing
+│   └── ...
+└── ...
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Usage
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+1. Create an account or log in.
+2. Start a health survey from the dashboard.
+3. Complete the questionnaire by answering the adaptive questions.
+4. View your health report with personalized recommendations.
+5. Book an appointment with a healthcare provider.
+6. Track your cases and visits over time.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## API Documentation
 
-## Learn More
+The backend API provides several endpoints:
 
-To learn more about Next.js, take a look at the following resources:
+- `/api/questionnaire/*` - Questionnaire management
+- `/api/cases/*` - Case management
+- `/api/visit/*` - Visit management
+- `/api/appointments/*` - Appointment scheduling
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Development Guidelines
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Component Creation**: All new UI components should be placed in the `/components/ui/` directory.
+- **Styling**: Use TailwindCSS for styling components.
+- **State Management**: Use React Hooks for component state.
+- **Authentication**: Firebase handles all authentication operations.
 
-## Deploy on Vercel
+## Deployment
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The application can be deployed using:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Frontend**: Vercel
+- **Backend**: Google Cloud Run or any Python-compatible service
+
+## Contributors
+
+- Kai On Ng
+- Jiancheng Luo
+- Yun Yuan
+- Leyang Xing
