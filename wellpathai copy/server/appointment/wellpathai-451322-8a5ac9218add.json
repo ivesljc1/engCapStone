@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "wellpathai-451322",
+  "private_key_id": "8a5ac9218adde2da84d3ad4037d70de2446a86bb",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDmYp0RdIBKrOSx\nn7t6bOAAtcLHXtQeSx845g66goC8eDWJKBLnOf4a8mghFg5BmjXyLEupyDL8jWIX\nT1vJ2hocXFT7XylG+MELAmM3Y4zudvm8o6r8M5og4MhPiuu5DWK7m2y0stPVOuxI\nxsVfpA5m6lkXHwTetXRZwGNbbFF3cMU9da1KrVdWDCmZj3cj+qnRAWm2jF08hzxj\nB6suEh06VcCuwRSl7W8PvxVyRwrVIfiX3qm+TjxtZs9EoKNlaaEqq8pFaws+iNVk\niy/5stOJrm8EPlM3uyAgxZ8rdpEpPWioyVzt4oMaYp05Bp4J2SbELmW9vfHE1oCh\nxVblrzLVAgMBAAECggEACHTtj7rMtsZamAvlUDIiQC8Wg5up16Qpn5IPpQMDV2e7\njK7+5U6jUuPmX0iK+hd/YXCvelT8oiP3yiPsmkqPk3ju2adS7DsCAwscZJJv6upN\nHS041TcjsjnuFcAOCmXruOKUqUa4hebleNUVtlQJqfdyO79faLlqbZz6ngbU2rh5\nf15DDQ0QrFVeu5FukccrzbY0vUgCZkDPNTi5zEZxNgebyAiRXjJciROKk9kW2CVD\nlKz9PPM/NT+OIhSlOo7irNk4417Cf/NjSMjSz0M85wscyhDBHSMOYbBny09wxx/6\nBX6Br1hFB8iC0xCaV5MqkjsBiX9aThRekwmx2g4hQQKBgQD43XEkFf9zpfH31or4\nxgzDBmxKF5pFLcfSz4hGzd1UUGvjvvKRfcGzEPPFZWIxzA7pPu9YT4ngY5Xa87yE\nVZofrMIeRMWJBrEn9BitJVEXV3EEYvr06stPN7Zl353mqgRKwWjZ821++9LR8Unz\nnr9W9E8Clt7B99bYaPylbFpacQKBgQDs/YnCSDY8pOySEwZAqLtBwOXPMJ6gmJq4\nkY3Bj2TDC87ssFiPtBm1LHAv3xmOYLa4cqmEzWPAwtOuOhs2Ku8xWpgCIs7PylFJ\nCSRWw7R5KPrsuLkdnI2KGa2yJLtAILeF0lJNyVVe6+vZg5p2iifOvbh2yP1b2KHx\nJNsLPoVopQKBgQCmjOyvTdmMOD7bssWHAGSCEMZgP7OLILxepW16lUPOrZPG83+7\nRwJfKLU8IkG5OeuwxeHApFqNxZgA1KYRmohvMlsnjrb0oXnmV0I8foDqsiZ83RE+\n3/P4rDxxqVoviREeRpo5YuSg2z+YKXdoh5FeTFqkTPv/rDIo2vpaa018wQKBgHDS\nwyKa/jcgzP89z1w49+z1yHI600nhXMdBhBsCCRZSKNDFo2PGefamkUI5FBGUOWjW\nLZ3rqfG6zsvDHfFLv1PfrT5XE94Yk1oR4BruUJzdxZes2XQfc8KrNuX4VqzQ5o3u\n8v/VOa9W4ZFL9d05KHpkF811Iij3mSEUSrOvsBOBAoGBAKp0fx7zuhWqcPEwLaMX\ncRFV0q3g1rTeKLAkEjD4fxU6oWh4hGpT3aFDpWWdpT3QQFrOpBmWoIXckDN+habW\ncUTL2wLrxJp8m3ETg/02fPCJ/ci/lFUqRCxQH31GUZEH6nuRswPKjPbXc2SRgfkM\nFdLwzA28WSFKN842O5F55wsn\n-----END PRIVATE KEY-----\n",
+  "client_email": "wellpathai-calendar@wellpathai-451322.iam.gserviceaccount.com",
+  "client_id": "113878958430402950171",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/wellpathai-calendar%40wellpathai-451322.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
