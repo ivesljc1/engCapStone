@@ -6,7 +6,7 @@
   "proxy": "http://localhost:5002",
   "scripts": {
     "dev": "concurrently \"npm run api\" \"next dev\"",
-    "api": "nodemon .././server/app.py --exec python3",
+    "api": "nodemon ./server/app.py --exec python3",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
